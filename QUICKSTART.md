@@ -98,9 +98,10 @@ npx create-next-app@latest tempaskill-fe --typescript --tailwind --app --src-dir
 # ✔ Would you like to use TypeScript? → Yes
 # ✔ Would you like to use ESLint? → Yes
 # ✔ Would you like to use Tailwind CSS? → Yes
-# ✔ Would you like to use `src/` directory? → Yes
+# ✔ Would you like your code inside a `src/` directory? → Yes
 # ✔ Would you like to use App Router? → Yes
-# ✔ Would you like to customize the default import alias? → Yes (@/*)
+# ✔ Would you like to use Turbopack for `next dev`? → Yes
+# ✔ Would you like to customize the import alias (@/* by default)? → No
 ```
 
 ### 2. Install Dependencies
@@ -109,39 +110,67 @@ npx create-next-app@latest tempaskill-fe --typescript --tailwind --app --src-dir
 cd tempaskill-fe
 
 # Install Shadcn/ui
-npx shadcn-ui@latest init
+npx shadcn@latest init
 
 # Pilihan saat setup:
-# ✔ Which style would you like to use? → Default
-# ✔ Which color would you like to use as base color? → Slate
+# ✔ Which style would you like to use? → New York
+# ✔ Which color would you like to use as base color? → Neutral
 # ✔ Would you like to use CSS variables for colors? → Yes
 
-# Install additional dependencies
-npm install @tanstack/react-query zustand
-npm install react-hook-form @hookform/resolvers zod
+# Install core dependencies
+npm install @tanstack/react-query @tanstack/react-query-devtools
 npm install axios
-npm install velite -D
+npm install react-hook-form @hookform/resolvers zod
+npm install zustand
 
-# Install Shadcn components yang sering dipakai
-npx shadcn-ui@latest add button
-npx shadcn-ui@latest add card
-npx shadcn-ui@latest add input
-npx shadcn-ui@latest add form
-npx shadcn-ui@latest add badge
-npx shadcn-ui@latest add avatar
-npx shadcn-ui@latest add dialog
-npx shadcn-ui@latest add dropdown-menu
-npx shadcn-ui@latest add skeleton
+# Install Shadcn components
+npx shadcn@latest add button
+npx shadcn@latest add card
+npx shadcn@latest add input
+npx shadcn@latest add label
+npx shadcn@latest add badge
+npx shadcn@latest add alert
+npx shadcn@latest add progress
+npx shadcn@latest add skeleton
 ```
 
 ### 3. Environment Variables
 
 ```powershell
-# Copy .env.example ke .env.local
-copy .env.example .env.local
+# Create .env.local file
+echo "NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1" > .env.local
+```
 
-# Edit .env.local
-notepad .env.local
+### 4. Brand Colors Setup
+
+Update `tailwind.config.ts` dengan brand colors TempaSKill:
+
+```typescript
+// tailwind.config.ts
+import type { Config } from "tailwindcss";
+
+const config: Config = {
+  content: [
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        // Brand colors TempaSKill
+        brand: {
+          primary: "#ea580c", // orange-600
+          secondary: "#1e293b", // slate-800
+          accent: "#3b82f6", // blue-500
+        },
+      },
+    },
+  },
+  plugins: [],
+};
+
+export default config;
 ```
 
 ---
@@ -226,40 +255,98 @@ Invoke-RestMethod -Uri "http://localhost:8080/api/v1/auth/register" -Method POST
 
 ```
 d:\non-bri\tempa-skill\
-├── README.md              ← Dokumentasi utama
-├── DEVELOPMENT.md         ← Panduan development detail
-├── API_SPEC.md           ← Spesifikasi API lengkap
-├── DATABASE.md           ← Schema database
-├── QUICKSTART.md         ← File ini
-├── .gitignore
+├── 📄 README.md              ← Dokumentasi utama
+├── 📄 DEVELOPMENT.md         ← Panduan development detail
+├── 📄 API_SPEC.md           ← Spesifikasi API lengkap
+├── 📄 DATABASE.md           ← Schema database
+├── 📄 QUICKSTART.md         ← File ini
+├── 📄 CONTEXT.md            ← Aturan untuk AI
+├── 📄 DOCS.md               ← Index dokumentasi
+├── 📄 ROADMAP.md            ← Development timeline
+├── 📄 STRUCTURE.md          ← Folder structure
+├── 📄 CHEATSHEET.md         ← Quick reference
+├── 📄 UI_AUDIT_REPORT.md    ← UI compliance audit
+├── 📄 BRAND_FIXES_SUMMARY.md ← Brand color fixes
+├── 📄 .gitignore
 │
-├── tempaskill-be/        ← Backend workspace
-│   └── (akan dibuat)
+├── 📁 tempaskill-be/        ← Backend workspace (✅ 100% Complete)
+│   ├── cmd/api/
+│   ├── internal/
+│   │   ├── auth/
+│   │   ├── user/
+│   │   ├── course/
+│   │   ├── lesson/
+│   │   ├── progress/
+│   │   └── middleware/
+│   ├── pkg/
+│   ├── config/
+│   ├── .env
+│   ├── go.mod
+│   └── Makefile
 │
-└── tempaskill-fe/        ← Frontend workspace
-    └── (akan dibuat)
+└── 📁 tempaskill-fe/        ← Frontend workspace (🚧 45% Complete)
+    ├── src/
+    │   ├── app/
+    │   │   ├── (auth)/
+    │   │   │   ├── login/page.tsx
+    │   │   │   └── register/page.tsx
+    │   │   ├── courses/
+    │   │   │   ├── page.tsx         # Course listing
+    │   │   │   └── [slug]/page.tsx  # Course detail (521 lines)
+    │   │   ├── dashboard/page.tsx   # User dashboard
+    │   │   ├── layout.tsx           # Root layout
+    │   │   ├── page.tsx             # Landing page
+    │   │   └── globals.css
+    │   ├── components/
+    │   │   ├── ui/                  # Shadcn components (8 installed)
+    │   │   └── providers.tsx        # TanStack Query provider
+    │   ├── hooks/                   # Custom React Query hooks
+    │   │   ├── use-auth.ts
+    │   │   ├── use-courses.ts
+    │   │   ├── use-lessons.ts
+    │   │   ├── use-progress.ts
+    │   │   └── use-user.ts
+    │   ├── lib/
+    │   │   ├── api-client.ts        # Axios instance
+    │   │   └── utils.ts             # cn() and formatters
+    │   └── types/                   # TypeScript types
+    ├── .env.local
+    ├── package.json
+    ├── tailwind.config.ts
+    ├── tsconfig.json
+    └── components.json
 ```
 
 ---
 
 ## 🎯 Development Roadmap
 
-Lihat file `README.md` bagian **Development Roadmap** untuk timeline lengkap.
+Lihat file `ROADMAP.md` untuk timeline lengkap.
 
-**Phase 1 (Week 1-2)**: Foundation
+**Phase 1 (Week 1-2)**: ✅ COMPLETED
 
-- [x] Setup dokumentasi
-- [ ] Setup backend infrastructure
-- [ ] Setup frontend infrastructure
-- [ ] Authentication system
+- [x] Setup dokumentasi lengkap
+- [x] Setup backend infrastructure
+- [x] Setup frontend infrastructure
+- [x] Authentication system (backend + frontend)
+- [x] Brand identity implementation
+
+**Phase 2 (Week 3-4)**: 🚧 85% COMPLETED
+
+- [x] Backend API complete (22 endpoints)
+- [x] Frontend core pages (landing, courses, detail, dashboard)
+- [x] Brand compliance audit & fixes (100% compliant)
+- [ ] Lesson viewer with MDX (Next: Task #2)
 
 **Next Steps**:
 
-1. Setup struktur folder backend
-2. Konfigurasi database connection
-3. Buat authentication module
-4. Setup frontend dengan brand colors
-5. Integrasi login/register
+1. ✅ ~~Setup struktur folder backend~~
+2. ✅ ~~Konfigurasi database connection~~
+3. ✅ ~~Buat authentication module~~
+4. ✅ ~~Setup frontend dengan brand colors~~
+5. ✅ ~~Integrasi login/register~~
+6. ✅ ~~Implementasi course listing & detail~~
+7. 🎯 **NEXT**: Lesson viewer with MDX rendering
 
 ---
 
@@ -308,17 +395,20 @@ Setelah setup selesai, baca dokumentasi berikut sesuai kebutuhan:
 
 ## ✅ Checklist Setup
 
-- [ ] Go terinstall
-- [ ] MySQL terinstall
-- [ ] Node.js terinstall
-- [ ] Database `tempaskill` sudah dibuat
-- [ ] Backend folder `tempaskill-be` sudah dibuat
-- [ ] Frontend folder `tempaskill-fe` sudah dibuat
-- [ ] Dependencies backend terinstall
-- [ ] Dependencies frontend terinstall
-- [ ] Environment variables dikonfigurasi
-- [ ] Backend berjalan di port 8080
-- [ ] Frontend berjalan di port 3000
+- [x] Go terinstall (v1.23+)
+- [x] MySQL terinstall (v8.0+)
+- [x] Node.js terinstall (v18+)
+- [x] Database `tempaskill` sudah dibuat
+- [x] Backend folder `tempaskill-be` sudah dibuat
+- [x] Frontend folder `tempaskill-fe` sudah dibuat
+- [x] Dependencies backend terinstall
+- [x] Dependencies frontend terinstall (TanStack Query, Axios, Shadcn, etc.)
+- [x] Environment variables dikonfigurasi
+- [x] Backend berjalan di port 8080 (22 API endpoints)
+- [x] Frontend berjalan di port 3000 (Next.js 16 + Turbopack)
+- [x] Brand colors implemented (orange #ea580c)
+- [x] 8 Shadcn components installed
+- [x] All pages functional (landing, login, register, courses, detail, dashboard)
 
 ---
 

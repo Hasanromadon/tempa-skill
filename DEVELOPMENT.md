@@ -132,105 +132,85 @@ tempaskill-fe/
 │   ├── app/
 │   │   ├── (auth)/                 # Route group (tidak muncul di URL)
 │   │   │   ├── login/
-│   │   │   │   └── page.tsx
+│   │   │   │   └── page.tsx        # ✅ Implemented
 │   │   │   └── register/
-│   │   │       └── page.tsx
-│   │   │
-│   │   ├── (dashboard)/            # Protected routes
-│   │   │   ├── dashboard/
-│   │   │   │   └── page.tsx
-│   │   │   └── profile/
-│   │   │       └── page.tsx
+│   │   │       └── page.tsx        # ✅ Implemented
 │   │   │
 │   │   ├── courses/
-│   │   │   ├── page.tsx            # Course catalog
-│   │   │   └── [id]/
-│   │   │       ├── page.tsx        # Course detail
+│   │   │   ├── page.tsx            # ✅ Course catalog with search
+│   │   │   └── [slug]/
+│   │   │       ├── page.tsx        # ✅ Course detail (521 lines)
 │   │   │       └── lessons/
-│   │   │           └── [lessonId]/
-│   │   │               └── page.tsx
+│   │   │           └── [id]/
+│   │   │               └── page.tsx # 🚧 Lesson viewer (Next)
 │   │   │
-│   │   ├── layout.tsx              # Root layout
-│   │   ├── page.tsx                # Homepage
-│   │   └── globals.css
+│   │   ├── dashboard/
+│   │   │   └── page.tsx            # ✅ User dashboard
+│   │   │
+│   │   ├── layout.tsx              # ✅ Root layout with providers
+│   │   ├── page.tsx                # ✅ Landing page (brand colors)
+│   │   └── globals.css             # ✅ Global styles
 │   │
 │   ├── components/
-│   │   ├── ui/                     # Shadcn components
+│   │   ├── ui/                     # ✅ Shadcn components (8 installed)
 │   │   │   ├── button.tsx
 │   │   │   ├── card.tsx
 │   │   │   ├── input.tsx
-│   │   │   ├── form.tsx
-│   │   │   └── ...
+│   │   │   ├── label.tsx
+│   │   │   ├── badge.tsx
+│   │   │   ├── alert.tsx
+│   │   │   ├── progress.tsx
+│   │   │   └── skeleton.tsx
 │   │   │
-│   │   ├── shared/                 # Reusable app components
-│   │   │   ├── navbar.tsx
-│   │   │   ├── footer.tsx
-│   │   │   ├── course-card.tsx
-│   │   │   └── lesson-sidebar.tsx
-│   │   │
-│   │   └── layout/                 # Layout components
-│   │       ├── auth-layout.tsx
-│   │       └── dashboard-layout.tsx
+│   │   └── providers.tsx           # ✅ TanStack Query provider
+│   │
+│   ├── hooks/                      # ✅ Custom React Query hooks
+│   │   ├── index.ts
+│   │   ├── use-auth.ts             # Login, register, logout, etc.
+│   │   ├── use-courses.ts          # Courses, enroll, unenroll
+│   │   ├── use-lessons.ts          # Lessons, get lesson
+│   │   ├── use-progress.ts         # Mark complete, get progress
+│   │   └── use-user.ts             # Get user, update profile
 │   │
 │   ├── lib/
-│   │   ├── api.ts                  # Axios/Fetch client setup
-│   │   ├── utils.ts                # cn(), formatters, etc.
-│   │   ├── constants.ts            # App constants
-│   │   └── hooks/
-│   │       ├── use-auth.ts
-│   │       └── use-media-query.ts
+│   │   ├── api-client.ts           # ✅ Axios instance with interceptors
+│   │   └── utils.ts                # ✅ cn(), formatPrice(), etc.
+│   │   └── use-user.ts             # Get user, update profile
 │   │
-│   ├── queries/                    # TanStack Query hooks
-│   │   ├── auth.queries.ts
-│   │   ├── course.queries.ts
-│   │   ├── lesson.queries.ts
-│   │   └── user.queries.ts
+│   ├── lib/
+│   │   ├── api-client.ts           # ✅ Axios instance with interceptors
+│   │   └── utils.ts                # ✅ cn(), formatPrice(), etc.
 │   │
-│   ├── store/                      # Zustand stores
-│   │   ├── auth.store.ts
-│   │   └── ui.store.ts
-│   │
-│   ├── types/
-│   │   ├── api.types.ts            # API response types
-│   │   ├── course.types.ts
-│   │   └── user.types.ts
-│   │
-│   └── schemas/                    # Zod validation schemas
-│       ├── auth.schema.ts
-│       └── course.schema.ts
+│   └── types/                      # ✅ TypeScript type definitions
+│       └── index.ts
 │
-├── content/                        # MDX course content
-│   ├── courses/
-│   │   ├── golang-basics/
-│   │   │   ├── metadata.json
-│   │   │   ├── 01-introduction.mdx
-│   │   │   └── 02-variables.mdx
-│   │   └── nextjs-mastery/
-│   │       └── ...
-│   └── velite.config.ts
+├── public/                         # Static assets
+│   └── (empty for now)
 │
-├── public/
-│   ├── images/
-│   └── icons/
-│
-├── .env.example
-├── .env.local
+├── .env.local                      # ✅ Environment variables
 ├── .gitignore
-├── next.config.js
-├── tailwind.config.ts
+├── next.config.ts
+├── tailwind.config.ts              # ✅ Brand colors configured
 ├── tsconfig.json
-├── package.json
-└── components.json                 # Shadcn config
+├── package.json                    # ✅ Dependencies installed
+└── components.json                 # ✅ Shadcn config
 ```
+
+**Note**: Struktur ini berbeda dari dokumentasi awal karena:
+
+- No `queries/` folder - hooks langsung di `hooks/` dengan React Query
+- No `store/` folder - Auth state managed via React Query + localStorage
+- No `schemas/` folder - Validation inline dengan Zod di components
+- No `content/` folder yet - MDX akan ditambahkan di Task #2
 
 ---
 
 ## 🎨 Design System
 
-### Tailwind Configuration
+### Tailwind Configuration (✅ Implemented)
 
 ```typescript
-// tailwind.config.ts
+// tailwind.config.ts (Actual implementation)
 import type { Config } from "tailwindcss";
 
 const config: Config = {
