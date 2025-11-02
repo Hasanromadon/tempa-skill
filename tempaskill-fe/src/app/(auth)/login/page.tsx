@@ -1,9 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { useLogin } from "@/hooks";
+import { setAuthToken } from "@/lib/auth-token";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,28 +19,57 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+
+const loginSchema = z.object({
+  email: z
+    .string()
+    .min(1, "Email wajib diisi")
+    .email("Format email tidak valid"),
+  password: z.string().min(1, "Kata sandi wajib diisi"),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/dashboard";
   const login = useLogin();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [apiError, setApiError] = useState<string>("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  });
 
+  const onSubmit = async (data: LoginFormData) => {
+    setApiError(""); // Clear previous error
     try {
-      await login.mutateAsync({ email, password });
-      router.push("/dashboard");
+      const result = await login.mutateAsync(data);
+
+      // Ensure token is saved before redirecting
+      if (result.data?.token) {
+        setAuthToken(result.data.token);
+        toast.success("Login berhasil!", {
+          description: `Selamat datang kembali, ${result.data.user.name}!`,
+        });
+        // Small delay to ensure storage is complete
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        router.push(redirectTo);
+      }
     } catch (err) {
       const errorMessage =
-        (err as any).response?.data?.error?.message ||
-        "Login gagal. Silakan coba lagi.";
-      setError(errorMessage);
+        (err as { response?: { data?: { error?: { message?: string } } } })
+          .response?.data?.error?.message || "Email atau kata sandi salah";
+
+      // Show error inline using state (survives Fast Refresh)
+      setApiError(errorMessage);
     }
   };
 
@@ -51,24 +84,25 @@ export default function LoginPage() {
             Masuk ke akun TempaSKill Anda
           </CardDescription>
         </CardHeader>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-4">
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
+            {apiError && (
+              <div className="p-3 rounded-md bg-red-50 border border-red-200">
+                <p className="text-sm text-red-600">{apiError}</p>
+              </div>
             )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
-                type="email"
+                type="text"
                 placeholder="john@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+                {...register("email")}
                 disabled={login.isPending}
               />
+              {errors.email && (
+                <p className="text-sm text-red-600">{errors.email.message}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Kata Sandi</Label>
@@ -76,11 +110,14 @@ export default function LoginPage() {
                 id="password"
                 type="password"
                 placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
+                {...register("password")}
                 disabled={login.isPending}
               />
+              {errors.password && (
+                <p className="text-sm text-red-600">
+                  {errors.password.message}
+                </p>
+              )}
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">

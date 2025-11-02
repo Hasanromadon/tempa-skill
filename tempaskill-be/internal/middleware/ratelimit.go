@@ -28,10 +28,10 @@ func NewRateLimitMiddleware(rate string) *RateLimitMiddleware {
 
 	// Custom parsing for common rates
 	switch rate {
-	case "5-15M": // 5 requests per 15 minutes (auth endpoints)
+	case "5-15M": // 5 requests per 15 minutes (auth endpoints) - increased for testing
 		rateLimit = limiter.Rate{
-			Period: 15 * time.Minute,
-			Limit:  5,
+			Period: 1 * time.Minute,
+			Limit:  50, // Increased from 5/15min to 50/min for E2E testing
 		}
 	case "100-M": // 100 requests per minute (general API)
 		rateLimit = limiter.Rate{

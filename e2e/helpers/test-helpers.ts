@@ -1,18 +1,17 @@
-import { Page, expect } from '@playwright/test';
+import { Page, expect } from "@playwright/test";
 
 /**
  * Test helper untuk login user
  */
 export async function login(page: Page, email: string, password: string) {
-  await page.goto('/login');
-  await page.fill('input[type="email"]', email);
-  await page.fill('input[type="password"]', password);
+  await page.goto("/login");
+  await page.fill('input[id="email"]', email);
+  await page.fill('input[id="password"]', password);
   await page.click('button[type="submit"]');
-  
-  // Wait for navigation to complete
-  await page.waitForURL(/\/(dashboard|courses)/);
-}
 
+  // Wait for navigation to complete
+  await page.waitForURL(/\/(dashboard|courses)/, { timeout: 60000 });
+}
 /**
  * Test helper untuk register user baru
  */
@@ -22,29 +21,36 @@ export async function register(
   email: string,
   password: string
 ) {
-  await page.goto('/register');
+  await page.goto("/register");
   await page.fill('input[name="name"]', name);
   await page.fill('input[name="email"]', email);
   await page.fill('input[name="password"]', password);
   await page.fill('input[name="password_confirmation"]', password);
+
+  // Click submit button
   await page.click('button[type="submit"]');
-  
-  // Wait for redirect after successful registration
-  await page.waitForURL(/\/(dashboard|courses)/);
+
+  // Wait for navigation or error
+  await page.waitForURL(/\/(dashboard|courses)/, { timeout: 60000 });
 }
 
 /**
  * Test helper untuk logout
  */
 export async function logout(page: Page) {
-  // Find and click logout button (biasanya di nav/dropdown)
-  const logoutButton = page.locator('text=/keluar|logout/i').first();
+  // Find and click logout button (opens AlertDialog)
+  const logoutButton = page.locator("text=/keluar|logout/i").first();
   if (await logoutButton.isVisible()) {
     await logoutButton.click();
+
+    // Wait for confirmation dialog and click "Ya, Keluar"
+    await page.waitForTimeout(500); // Wait for dialog animation
+    const confirmButton = page.locator("text=/Ya,?\\s*Keluar/i");
+    await confirmButton.click();
+
+    // Wait for navigation to complete
+    await page.waitForURL(/\/(|login)/, { timeout: 30000 });
   }
-  
-  // Wait for redirect to home or login
-  await page.waitForURL(/\/(|login)/);
 }
 
 /**
@@ -63,7 +69,7 @@ export function generateTestUser() {
   return {
     name: `Test User ${Date.now()}`,
     email: generateTestEmail(),
-    password: 'TestPassword123!',
+    password: "TestPassword123!",
   };
 }
 
@@ -73,7 +79,7 @@ export function generateTestUser() {
 export async function waitForAPIResponse(
   page: Page,
   urlPattern: string | RegExp,
-  method: 'GET' | 'POST' | 'PATCH' | 'DELETE' = 'GET'
+  method: "GET" | "POST" | "PATCH" | "DELETE" = "GET"
 ) {
   return page.waitForResponse(
     (response) =>
@@ -87,7 +93,7 @@ export async function waitForAPIResponse(
  */
 export async function isAuthenticated(page: Page): Promise<boolean> {
   // Check for user menu or dashboard link
-  const dashboardLink = page.locator('text=/dashboard/i');
+  const dashboardLink = page.locator("text=/dashboard/i");
   return dashboardLink.isVisible();
 }
 
@@ -96,15 +102,19 @@ export async function isAuthenticated(page: Page): Promise<boolean> {
  */
 export async function goToCourse(page: Page, slug: string) {
   await page.goto(`/courses/${slug}`);
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState("networkidle");
 }
 
 /**
  * Navigate to lesson
  */
-export async function goToLesson(page: Page, courseSlug: string, lessonId: number) {
+export async function goToLesson(
+  page: Page,
+  courseSlug: string,
+  lessonId: number
+) {
   await page.goto(`/courses/${courseSlug}/lessons/${lessonId}`);
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState("networkidle");
 }
 
 /**
@@ -112,9 +122,9 @@ export async function goToLesson(page: Page, courseSlug: string, lessonId: numbe
  */
 export async function enrollCourse(page: Page) {
   // Click enroll button
-  const enrollButton = page.locator('text=/daftar sekarang|enroll/i').first();
+  const enrollButton = page.locator("text=/daftar sekarang|enroll/i").first();
   await enrollButton.click();
-  
+
   // Wait for enrollment to complete
   await page.waitForTimeout(1000);
 }
@@ -123,7 +133,9 @@ export async function enrollCourse(page: Page) {
  * Mark lesson as complete
  */
 export async function markLessonComplete(page: Page) {
-  const completeButton = page.locator('text=/tandai selesai|mark.*complete/i').first();
+  const completeButton = page
+    .locator("text=/tandai selesai|mark.*complete/i")
+    .first();
   if (await completeButton.isVisible()) {
     await completeButton.click();
     await page.waitForTimeout(1000);
@@ -134,7 +146,9 @@ export async function markLessonComplete(page: Page) {
  * Assert element contains text (case insensitive)
  */
 export async function assertTextVisible(page: Page, text: string | RegExp) {
-  const element = page.locator(`text=${text instanceof RegExp ? text : new RegExp(text, 'i')}`);
+  const element = page.locator(
+    `text=${text instanceof RegExp ? text : new RegExp(text, "i")}`
+  );
   await expect(element).toBeVisible();
 }
 

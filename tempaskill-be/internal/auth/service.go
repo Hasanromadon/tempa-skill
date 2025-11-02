@@ -14,7 +14,7 @@ import (
 
 // Service handles authentication business logic
 type Service interface {
-	Register(c *gin.Context, req *RegisterRequest) (*User, error)
+	Register(c *gin.Context, req *RegisterRequest) (*User, string, error)
 	Login(c *gin.Context, req *LoginRequest) (*User, string, error)
 	GetUserByID(id uint) (*User, error)
 }
@@ -33,7 +33,7 @@ func NewService(repo Repository, cfg *config.Config) Service {
 }
 
 // Register creates a new user account
-func (s *service) Register(c *gin.Context, req *RegisterRequest) (*User, error) {
+func (s *service) Register(c *gin.Context, req *RegisterRequest) (*User, string, error) {
 	requestID := middleware.GetRequestID(c)
 	
 	// Normalize email to lowercase
@@ -46,7 +46,7 @@ func (s *service) Register(c *gin.Context, req *RegisterRequest) (*User, error) 
 			zap.String("request_id", requestID),
 			zap.String("email", email),
 		)
-		return nil, errors.New("email already registered")
+		return nil, "", errors.New("email already registered")
 	}
 
 	// Hash password
@@ -56,7 +56,7 @@ func (s *service) Register(c *gin.Context, req *RegisterRequest) (*User, error) 
 			zap.String("request_id", requestID),
 			zap.Error(err),
 		)
-		return nil, errors.New("failed to hash password")
+		return nil, "", errors.New("failed to hash password")
 	}
 
 	// Set default role if not provided
@@ -79,7 +79,18 @@ func (s *service) Register(c *gin.Context, req *RegisterRequest) (*User, error) 
 			zap.String("email", email),
 			zap.Error(err),
 		)
-		return nil, errors.New("failed to create user")
+		return nil, "", errors.New("failed to create user")
+	}
+
+	// Generate JWT token for auto-login after registration
+	token, err := middleware.GenerateToken(user.ID, user.Email, user.Role, s.cfg)
+	if err != nil {
+		logger.Error("Failed to generate token after registration",
+			zap.String("request_id", requestID),
+			zap.Uint("user_id", user.ID),
+			zap.Error(err),
+		)
+		return nil, "", errors.New("failed to generate token")
 	}
 
 	logger.Info("User registered successfully",
@@ -89,7 +100,7 @@ func (s *service) Register(c *gin.Context, req *RegisterRequest) (*User, error) 
 		zap.String("role", user.Role),
 	)
 
-	return user, nil
+	return user, token, nil
 }
 
 // Login authenticates a user and returns token

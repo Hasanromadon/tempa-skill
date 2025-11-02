@@ -38,14 +38,19 @@ func (h *Handler) Register(c *gin.Context) {
 	}
 
 	// Call service
-	user, err := h.service.Register(c, &req)
+	user, token, err := h.service.Register(c, &req)
 	if err != nil {
 		response.Error(c, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
-	// Return success response
-	response.Success(c, http.StatusCreated, "User registered successfully", user.ToResponse())
+	// Return success response with token (auto-login after registration)
+	authResp := &AuthResponse{
+		Token: token,
+		User:  user.ToResponse(),
+	}
+
+	response.Success(c, http.StatusCreated, "User registered successfully", authResp)
 }
 
 // Login godoc
