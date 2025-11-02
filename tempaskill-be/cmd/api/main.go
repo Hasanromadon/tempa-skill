@@ -6,6 +6,7 @@ import (
 
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/config"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/auth"
+	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/course"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/middleware"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/user"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/database"
@@ -27,7 +28,12 @@ func main() {
 
 	// Auto-migrate database models
 	db := database.GetDB()
-	if err := db.AutoMigrate(&auth.User{}); err != nil {
+	if err := db.AutoMigrate(
+		&auth.User{},
+		&course.Course{},
+		&course.Lesson{},
+		&course.Enrollment{},
+	); err != nil {
 		log.Fatalf("❌ Failed to migrate database: %v", err)
 	}
 	log.Println("✅ Database migrations completed")
@@ -93,6 +99,9 @@ func main() {
 
 		// Register user routes
 		user.RegisterRoutes(v1, userHandler, authMiddleware)
+
+		// Register course routes
+		course.RegisterRoutes(v1, db, authMiddleware)
 	}
 
 	// Start server
