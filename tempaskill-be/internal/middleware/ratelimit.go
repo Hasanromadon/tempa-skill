@@ -5,9 +5,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/ulule/limiter/v3"
 	"github.com/ulule/limiter/v3/drivers/store/memory"
+	"go.uber.org/zap"
 )
 
 // RateLimitMiddleware creates a rate limiting middleware
@@ -77,6 +79,13 @@ func (rl *RateLimitMiddleware) Limit() gin.HandlerFunc {
 
 		// Check if limit is reached
 		if context.Reached {
+			logger.Warn("Rate limit exceeded",
+				zap.String("request_id", GetRequestID(c)),
+				zap.String("ip", key),
+				zap.Int64("limit", context.Limit),
+				zap.String("path", c.Request.URL.Path),
+			)
+			
 			c.JSON(http.StatusTooManyRequests, gin.H{
 				"error":   "Rate limit exceeded",
 				"message": "Too many requests. Please try again later.",
@@ -112,6 +121,13 @@ func (rl *RateLimitMiddleware) LimitByUser() gin.HandlerFunc {
 			c.Header("X-RateLimit-Reset", fmt.Sprintf("%d", context.Reset))
 
 			if context.Reached {
+				logger.Warn("Rate limit exceeded (unauthenticated)",
+					zap.String("request_id", GetRequestID(c)),
+					zap.String("ip", key),
+					zap.Int64("limit", context.Limit),
+					zap.String("path", c.Request.URL.Path),
+				)
+				
 				c.JSON(http.StatusTooManyRequests, gin.H{
 					"error":   "Rate limit exceeded",
 					"message": "Too many requests. Please try again later.",
@@ -141,6 +157,13 @@ func (rl *RateLimitMiddleware) LimitByUser() gin.HandlerFunc {
 		c.Header("X-RateLimit-Reset", fmt.Sprintf("%d", context.Reset))
 
 		if context.Reached {
+			logger.Warn("Rate limit exceeded (authenticated)",
+				zap.String("request_id", GetRequestID(c)),
+				zap.Any("user_id", userID),
+				zap.Int64("limit", context.Limit),
+				zap.String("path", c.Request.URL.Path),
+			)
+			
 			c.JSON(http.StatusTooManyRequests, gin.H{
 				"error":   "Rate limit exceeded",
 				"message": "Too many requests. Please try again later.",

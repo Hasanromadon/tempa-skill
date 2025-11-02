@@ -2,12 +2,14 @@ package database
 
 import (
 	"fmt"
-	"log"
+	"time"
 
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/config"
+	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/logger"
+	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	gormlogger "gorm.io/gorm/logger"
 )
 
 var DB *gorm.DB
@@ -23,13 +25,13 @@ func ConnectDB(cfg *config.Config) error {
 	)
 
 	// Set logger level based on environment
-	logLevel := logger.Silent
+	logLevel := gormlogger.Silent
 	if cfg.Server.AppEnv == "development" {
-		logLevel = logger.Info
+		logLevel = gormlogger.Info
 	}
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logLevel),
+		Logger: gormlogger.Default.LogMode(logLevel),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %v", err)
@@ -42,11 +44,18 @@ func ConnectDB(cfg *config.Config) error {
 	}
 
 	// Set connection pool settings
-	sqlDB.SetMaxIdleConns(10)
-	sqlDB.SetMaxOpenConns(100)
+	sqlDB.SetMaxIdleConns(10)                  // Maximum idle connections
+	sqlDB.SetMaxOpenConns(100)                 // Maximum open connections
+	sqlDB.SetConnMaxLifetime(time.Hour)        // Connection max lifetime (prevents stale connections)
+	sqlDB.SetConnMaxIdleTime(5 * time.Minute) // Idle connection timeout (cleanup unused connections)
 
 	DB = db
-	log.Println("✅ Database connected successfully")
+	logger.Info("Database connected successfully",
+		zap.String("host", cfg.Database.Host),
+		zap.String("database", cfg.Database.DBName),
+		zap.Int("max_idle_conns", 10),
+		zap.Int("max_open_conns", 100),
+	)
 	return nil
 }
 

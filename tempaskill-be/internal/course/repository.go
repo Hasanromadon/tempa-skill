@@ -13,6 +13,7 @@ type Repository interface {
 	FindCourseByID(ctx context.Context, id uint) (*Course, error)
 	FindCourseBySlug(ctx context.Context, slug string) (*Course, error)
 	FindAllCourses(ctx context.Context, query *CourseListQuery) ([]*Course, int, error)
+	FindAllCoursesWithMeta(ctx context.Context, userID uint, query *CourseListQuery) ([]*CourseWithMeta, int, error)
 	UpdateCourse(ctx context.Context, course *Course) error
 	DeleteCourse(ctx context.Context, id uint) error
 	IncrementEnrolledCount(ctx context.Context, courseID uint) error
@@ -113,6 +114,104 @@ func (r *repository) FindAllCourses(ctx context.Context, query *CourseListQuery)
 	}
 
 	return courses, int(total), nil
+}
+
+// FindAllCoursesWithMeta optimized version that fetches courses with metadata in 1-2 queries
+// Solves N+1 query problem by using JOINs and subqueries
+func (r *repository) FindAllCoursesWithMeta(ctx context.Context, userID uint, query *CourseListQuery) ([]*CourseWithMeta, int, error) {
+	var coursesWithMeta []*CourseWithMeta
+	var total int64
+
+	db := r.db.WithContext(ctx).Model(&Course{})
+
+	// Apply filters (same as FindAllCourses)
+	if query.Search != "" {
+		searchTerm := "%" + strings.ToLower(query.Search) + "%"
+		db = db.Where("LOWER(title) LIKE ? OR LOWER(description) LIKE ?", searchTerm, searchTerm)
+	}
+
+	if query.Category != "" {
+		db = db.Where("category = ?", query.Category)
+	}
+
+	if query.Difficulty != "" {
+		db = db.Where("difficulty = ?", query.Difficulty)
+	}
+
+	if query.Published != nil {
+		db = db.Where("is_published = ?", *query.Published)
+	}
+
+	// Count total
+	if err := db.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// Apply pagination
+	page := query.Page
+	if page < 1 {
+		page = 1
+	}
+	limit := query.Limit
+	if limit < 1 {
+		limit = 10
+	}
+	offset := (page - 1) * limit
+
+	// Build optimized query with LEFT JOINs
+	// This reduces N+1 queries to just 1 query
+	db = r.db.WithContext(ctx).
+		Table("courses").
+		Select(`
+			courses.*,
+			COALESCE(lesson_counts.count, 0) as lesson_count,
+			CASE WHEN enrollments.id IS NOT NULL THEN 1 ELSE 0 END as is_enrolled
+		`).
+		Joins(`
+			LEFT JOIN (
+				SELECT course_id, COUNT(*) as count 
+				FROM lessons 
+				WHERE deleted_at IS NULL 
+				GROUP BY course_id
+			) AS lesson_counts ON lesson_counts.course_id = courses.id
+		`)
+
+	// Only join enrollments if user is logged in
+	if userID > 0 {
+		db = db.Joins(`
+			LEFT JOIN enrollments ON enrollments.course_id = courses.id 
+			AND enrollments.user_id = ? 
+			AND enrollments.deleted_at IS NULL
+		`, userID)
+	}
+
+	// Apply same filters as count query
+	if query.Search != "" {
+		searchTerm := "%" + strings.ToLower(query.Search) + "%"
+		db = db.Where("LOWER(courses.title) LIKE ? OR LOWER(courses.description) LIKE ?", searchTerm, searchTerm)
+	}
+
+	if query.Category != "" {
+		db = db.Where("courses.category = ?", query.Category)
+	}
+
+	if query.Difficulty != "" {
+		db = db.Where("courses.difficulty = ?", query.Difficulty)
+	}
+
+	if query.Published != nil {
+		db = db.Where("courses.is_published = ?", *query.Published)
+	}
+
+	// Add WHERE for soft deletes
+	db = db.Where("courses.deleted_at IS NULL")
+
+	// Fetch courses with metadata
+	if err := db.Order("courses.created_at DESC").Limit(limit).Offset(offset).Scan(&coursesWithMeta).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return coursesWithMeta, int(total), nil
 }
 
 func (r *repository) UpdateCourse(ctx context.Context, course *Course) error {

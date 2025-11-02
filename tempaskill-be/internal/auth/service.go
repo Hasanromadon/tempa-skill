@@ -6,13 +6,16 @@ import (
 
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/config"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/middleware"
+	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/logger"
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // Service handles authentication business logic
 type Service interface {
-	Register(req *RegisterRequest) (*User, error)
-	Login(req *LoginRequest) (*User, string, error)
+	Register(c *gin.Context, req *RegisterRequest) (*User, error)
+	Login(c *gin.Context, req *LoginRequest) (*User, string, error)
 	GetUserByID(id uint) (*User, error)
 }
 
@@ -30,19 +33,29 @@ func NewService(repo Repository, cfg *config.Config) Service {
 }
 
 // Register creates a new user account
-func (s *service) Register(req *RegisterRequest) (*User, error) {
+func (s *service) Register(c *gin.Context, req *RegisterRequest) (*User, error) {
+	requestID := middleware.GetRequestID(c)
+	
 	// Normalize email to lowercase
 	email := strings.ToLower(strings.TrimSpace(req.Email))
 
 	// Check if user already exists
 	existingUser, _ := s.repo.FindByEmail(email)
 	if existingUser != nil {
+		logger.Warn("Registration failed - email already exists",
+			zap.String("request_id", requestID),
+			zap.String("email", email),
+		)
 		return nil, errors.New("email already registered")
 	}
 
 	// Hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
+		logger.Error("Failed to hash password",
+			zap.String("request_id", requestID),
+			zap.Error(err),
+		)
 		return nil, errors.New("failed to hash password")
 	}
 
@@ -61,33 +74,68 @@ func (s *service) Register(req *RegisterRequest) (*User, error) {
 	}
 
 	if err := s.repo.Create(user); err != nil {
+		logger.Error("Failed to create user",
+			zap.String("request_id", requestID),
+			zap.String("email", email),
+			zap.Error(err),
+		)
 		return nil, errors.New("failed to create user")
 	}
+
+	logger.Info("User registered successfully",
+		zap.String("request_id", requestID),
+		zap.String("email", email),
+		zap.Uint("user_id", user.ID),
+		zap.String("role", user.Role),
+	)
 
 	return user, nil
 }
 
 // Login authenticates a user and returns token
-func (s *service) Login(req *LoginRequest) (*User, string, error) {
+func (s *service) Login(c *gin.Context, req *LoginRequest) (*User, string, error) {
+	requestID := middleware.GetRequestID(c)
+	
 	// Normalize email
 	email := strings.ToLower(strings.TrimSpace(req.Email))
 
 	// Find user by email
 	user, err := s.repo.FindByEmail(email)
 	if err != nil {
+		logger.Warn("Login failed - user not found",
+			zap.String("request_id", requestID),
+			zap.String("email", email),
+		)
 		return nil, "", errors.New("invalid email or password")
 	}
 
 	// Compare password
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+		logger.Warn("Login failed - invalid password",
+			zap.String("request_id", requestID),
+			zap.String("email", email),
+			zap.Uint("user_id", user.ID),
+		)
 		return nil, "", errors.New("invalid email or password")
 	}
 
 	// Generate JWT token
 	token, err := middleware.GenerateToken(user.ID, user.Email, user.Role, s.cfg)
 	if err != nil {
+		logger.Error("Failed to generate token",
+			zap.String("request_id", requestID),
+			zap.Uint("user_id", user.ID),
+			zap.Error(err),
+		)
 		return nil, "", errors.New("failed to generate token")
 	}
+
+	logger.Info("User logged in successfully",
+		zap.String("request_id", requestID),
+		zap.String("email", email),
+		zap.Uint("user_id", user.ID),
+		zap.String("role", user.Role),
+	)
 
 	return user, token, nil
 }

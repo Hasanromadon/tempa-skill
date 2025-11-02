@@ -141,3 +141,16 @@ func (l *Lesson) ToResponse(includeContent bool) *LessonResponse {
 	
 	return resp
 }
+
+// CourseWithMeta extends Course with metadata for batch queries
+// This helps solve N+1 query problem by including counts in a single query
+type CourseWithMeta struct {
+	Course
+	LessonCount int  `gorm:"column:lesson_count" json:"-"`
+	IsEnrolled  bool `gorm:"column:is_enrolled" json:"-"`
+}
+
+// ToResponse converts CourseWithMeta to CourseResponse
+func (c *CourseWithMeta) ToResponse() *CourseResponse {
+	return c.Course.ToResponse(c.LessonCount, c.IsEnrolled)
+}

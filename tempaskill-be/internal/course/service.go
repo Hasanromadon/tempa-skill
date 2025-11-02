@@ -130,22 +130,16 @@ func (s *service) GetCourseBySlug(ctx context.Context, userID uint, slug string)
 }
 
 func (s *service) ListCourses(ctx context.Context, userID uint, query *CourseListQuery) (*CourseListResponse, error) {
-	courses, total, err := s.repo.FindAllCourses(ctx, query)
+	// Use optimized query that solves N+1 problem (1 query instead of 201 for 100 courses)
+	coursesWithMeta, total, err := s.repo.FindAllCoursesWithMeta(ctx, userID, query)
 	if err != nil {
 		return nil, err
 	}
 
-	// Convert to response format
-	courseResponses := make([]*CourseResponse, 0, len(courses))
-	for _, course := range courses {
-		lessonCount, _ := s.repo.CountLessonsByCourseID(ctx, course.ID)
-		
-		isEnrolled := false
-		if userID > 0 {
-			isEnrolled, _ = s.repo.IsUserEnrolled(ctx, userID, course.ID)
-		}
-
-		courseResponses = append(courseResponses, course.ToResponse(lessonCount, isEnrolled))
+	// Convert to response format (metadata already included)
+	courseResponses := make([]*CourseResponse, 0, len(coursesWithMeta))
+	for _, courseWithMeta := range coursesWithMeta {
+		courseResponses = append(courseResponses, courseWithMeta.ToResponse())
 	}
 
 	// Calculate pagination

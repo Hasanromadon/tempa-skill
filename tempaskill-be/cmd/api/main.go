@@ -12,8 +12,10 @@ import (
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/progress"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/user"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/database"
+	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/logger"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/response"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 func main() {
@@ -23,9 +25,20 @@ func main() {
 		log.Fatalf("❌ Failed to load config: %v", err)
 	}
 
+	// Initialize structured logger
+	if err := logger.InitLogger(cfg.Server.AppEnv); err != nil {
+		log.Fatalf("❌ Failed to initialize logger: %v", err)
+	}
+	defer logger.Sync()
+
+	logger.Info("Application starting",
+		zap.String("environment", cfg.Server.AppEnv),
+		zap.String("port", cfg.Server.Port),
+	)
+
 	// Connect to database
 	if err := database.ConnectDB(cfg); err != nil {
-		log.Fatalf("❌ Failed to connect to database: %v", err)
+		logger.Fatal("Failed to connect to database", zap.Error(err))
 	}
 
 	// Auto-migrate database models
@@ -37,17 +50,21 @@ func main() {
 		&course.Enrollment{},
 		&progress.LessonProgress{},
 	); err != nil {
-		log.Fatalf("❌ Failed to migrate database: %v", err)
+		logger.Fatal("Failed to migrate database", zap.Error(err))
 	}
-	log.Println("✅ Database migrations completed")
+	logger.Info("Database migrations completed")
 
 	// Set Gin mode based on environment
 	if cfg.Server.AppEnv == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	// Initialize Gin router
-	router := gin.Default()
+	// Initialize Gin router with custom logger
+	router := gin.New()
+	router.Use(middleware.Recovery()) // Custom panic recovery with request ID
+
+	// Structured Logging Middleware (logs all HTTP requests)
+	router.Use(middleware.Logger())
 
 	// Security Middleware (Applied to all routes)
 	// 1. Security Headers - Prevent XSS, clickjacking, etc.
@@ -56,7 +73,10 @@ func main() {
 	// 2. Request Size Limit - Prevent DoS via large payloads (10MB max)
 	router.Use(middleware.RequestSizeLimit(10 * 1024 * 1024))
 
-	// 3. General API Rate Limiting - 100 requests per minute per IP
+	// 3. Request ID - Add unique ID to each request for tracing
+	router.Use(middleware.RequestID())
+
+	// 4. General API Rate Limiting - 100 requests per minute per IP
 	apiRateLimiter := middleware.NewRateLimitMiddleware("100-M")
 	router.Use(apiRateLimiter.Limit())
 
@@ -142,16 +162,23 @@ func main() {
 		keyFile := getEnv("TLS_KEY_FILE", "./certs/key.pem")
 		
 		if err := router.RunTLS(serverAddr, certFile, keyFile); err != nil {
-			log.Fatalf("❌ Failed to start TLS server: %v\nMake sure certificates exist at %s and %s", err, certFile, keyFile)
+		logger.Fatal("Failed to start TLS server",
+			zap.Error(err),
+			zap.String("cert_file", certFile),
+			zap.String("key_file", keyFile),
+		)
 		}
 	} else {
 		// Development mode - HTTP only
-		log.Printf("🚀 Server starting on http://localhost%s", serverAddr)
-		log.Printf("📝 API Documentation: http://localhost%s/api/v1/health", serverAddr)
-		log.Printf("⚠️  Running in %s mode (HTTP only - not secure for production)", cfg.Server.AppEnv)
+		logger.Info("Server starting",
+			zap.String("address", "http://localhost"+serverAddr),
+			zap.String("mode", cfg.Server.AppEnv),
+			zap.String("protocol", "HTTP"),
+		)
+		logger.Warn("Running in development mode - HTTP only (not secure for production)")
 		
 		if err := router.Run(serverAddr); err != nil {
-			log.Fatalf("❌ Failed to start server: %v", err)
+			logger.Fatal("Failed to start server", zap.Error(err))
 		}
 	}
 }

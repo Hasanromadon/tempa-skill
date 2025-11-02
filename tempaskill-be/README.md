@@ -309,6 +309,144 @@ JWT_SECRET=your-generated-secret-here
 
 **⚠️ IMPORTANT**: Never commit `.env` files to version control!
 
+## 🔍 Request ID Tracing
+
+Every API request is automatically assigned a unique Request ID (UUID v4) for complete request tracing across logs, responses, and error tracking.
+
+### Features
+
+- **Auto-generation**: UUID created for every request
+- **Client Support**: Accept custom `X-Request-ID` from clients
+- **Full Propagation**: Request ID flows through headers → context → logs → response
+- **Production Ready**: Stack traces, error tracking, and audit trails include request_id
+
+### Usage
+
+#### Client-Side Request Tracing
+
+Send a custom Request ID from your client:
+
+```bash
+curl -H "X-Request-ID: my-custom-id-123" \
+  http://localhost:8080/api/v1/health
+```
+
+**Response includes the same ID**:
+
+```json
+{
+  "success": true,
+  "message": "TempaSKill API is running",
+  "data": { ... },
+  "request_id": "my-custom-id-123"
+}
+```
+
+**Response headers**:
+
+```
+X-Request-ID: my-custom-id-123
+```
+
+#### Server-Side Request Tracing
+
+**All logs include request_id**:
+
+```json
+{
+  "level": "info",
+  "msg": "HTTP Request",
+  "request_id": "a54518d4-cf7b-4019-9ef9-89d7c671e5a6",
+  "method": "GET",
+  "path": "/api/v1/health",
+  "status": 200,
+  "latency": "787.1µs"
+}
+```
+
+**Authentication logs**:
+
+```json
+{
+  "level": "info",
+  "msg": "User logged in successfully",
+  "request_id": "b12345c6-d789-0123-4567-89abcdef0123",
+  "email": "user@example.com",
+  "user_id": 42,
+  "role": "student"
+}
+```
+
+**Error logs with stack traces**:
+
+```json
+{
+  "level": "error",
+  "msg": "Panic recovered",
+  "request_id": "c98765d4-e321-0987-6543-21fedcba9876",
+  "method": "POST",
+  "path": "/api/v1/courses",
+  "error": "runtime error: invalid memory address",
+  "stack": "goroutine 123 [running]:\n..."
+}
+```
+
+### Use Cases
+
+#### 1. Debug Production Issues
+
+When users report errors, ask for the `request_id` from the API response:
+
+```bash
+# Search logs for specific request
+grep "a54518d4-cf7b-4019-9ef9-89d7c671e5a6" app.log
+```
+
+#### 2. Trace Request Flow
+
+Follow a single request through the entire system:
+
+1. **Client** sends request with `X-Request-ID`
+2. **Middleware** logs HTTP request with request_id
+3. **Service** logs business logic operations with request_id
+4. **Repository** logs database queries with request_id
+5. **Response** includes request_id in body and header
+
+#### 3. Correlate Distributed Logs
+
+Use the same Request ID across microservices for distributed tracing:
+
+```javascript
+// Frontend
+const requestId = uuid.v4();
+axios.get("/api/v1/users", {
+  headers: { "X-Request-ID": requestId },
+});
+
+// Backend automatically uses the same ID
+// All logs will have matching request_id
+```
+
+### Implementation Details
+
+**Files Modified**:
+
+- `pkg/response/response.go` - Added request_id to all responses
+- `pkg/logger/logger.go` - Added WithRequestID() helper
+- `internal/middleware/requestid.go` - Request ID middleware
+- `internal/middleware/recovery.go` - Panic recovery with request_id
+- `internal/middleware/ratelimit.go` - Rate limit logs with request_id
+- `internal/auth/service.go` - Auth operations logged with request_id
+
+**Testing**:
+
+```bash
+# Run Request ID propagation tests
+.\test-request-id.ps1
+```
+
+**⚠️ IMPORTANT**: Never commit `.env` files to version control!
+
 ## 📊 Database Schema
 
 Lihat `DATABASE.md` di root project untuk detail schema lengkap.
