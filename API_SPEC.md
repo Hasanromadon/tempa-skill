@@ -163,11 +163,10 @@ Response (200 OK):
 
 ## 👤 User Management
 
-### Get User Profile
+### Get User by ID (Public)
 
 ```http
-GET /users/me
-Authorization: Bearer <token>
+GET /users/:id
 
 Response (200 OK):
 {
@@ -176,27 +175,36 @@ Response (200 OK):
     "id": 1,
     "name": "John Doe",
     "email": "john@example.com",
+    "role": "student",
     "bio": "Passionate learner",
     "avatar_url": "https://...",
-    "enrolled_courses_count": 5,
-    "completed_courses_count": 2
-  }
+    "created_at": "2025-11-02T10:00:00Z",
+    "updated_at": "2025-11-02T10:00:00Z"
+  },
+  "message": "User retrieved successfully"
 }
 ```
+
+**Authentication Required**: ❌ No (Public endpoint)
+
+**Error Responses:**
+
+- `400` - Invalid user ID format
+- `404` - User not found
 
 ---
 
 ### Update User Profile
 
 ```http
-PUT /users/me
+PATCH /users/me
 Authorization: Bearer <token>
 Content-Type: application/json
 
 {
   "name": "John Updated",
   "bio": "Learning every day",
-  "avatar_url": "https://..."
+  "avatar_url": "https://example.com/avatar.jpg"
 }
 
 Response (200 OK):
@@ -205,12 +213,65 @@ Response (200 OK):
   "data": {
     "id": 1,
     "name": "John Updated",
+    "email": "john@example.com",
+    "role": "student",
     "bio": "Learning every day",
-    "avatar_url": "https://..."
+    "avatar_url": "https://example.com/avatar.jpg",
+    "created_at": "2025-11-02T10:00:00Z",
+    "updated_at": "2025-11-02T11:30:00Z"
   },
   "message": "Profile updated successfully"
 }
 ```
+
+**Authentication Required**: ✅ Yes
+
+**Validation Rules:**
+
+- `name`: Optional, min 2 chars, max 100 chars
+- `bio`: Optional, max 500 chars
+- `avatar_url`: Optional, must be valid URL, max 255 chars
+
+**Notes:**
+
+- All fields are optional (partial update supported)
+- Only the authenticated user can update their own profile
+
+---
+
+### Change Password
+
+```http
+PATCH /users/me/password
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "current_password": "OldPassword123!",
+  "new_password": "NewPassword456!"
+}
+
+Response (200 OK):
+{
+  "success": true,
+  "data": null,
+  "message": "Password changed successfully"
+}
+```
+
+**Authentication Required**: ✅ Yes
+
+**Validation Rules:**
+
+- `current_password`: Required
+- `new_password`: Required, min 6 chars, max 100 chars
+
+**Error Responses:**
+
+- `400` - Current password is incorrect
+- `400` - Validation error (password too short)
+- `401` - Unauthorized (invalid/missing token)
+- `404` - User not found
 
 ---
 

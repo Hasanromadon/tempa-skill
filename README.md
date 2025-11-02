@@ -30,11 +30,12 @@
 
 ### Fitur Inti
 
-- ✅ Autentikasi pengguna (Register/Login dengan JWT)
-- ✅ Course catalog dengan search & filter
-- ✅ Halaman pembelajaran berbasis MDX (teks terstruktur)
-- ✅ Progress tracking (tandai lesson sebagai selesai)
-- ✅ Dashboard untuk melihat jadwal sesi online
+- ✅ **Autentikasi pengguna** - Register/Login dengan JWT, middleware protection
+- ✅ **User Management** - Get profile, update profile, change password
+- 🚧 **Course catalog** - Search & filter (coming soon)
+- 🚧 **Halaman pembelajaran** - Berbasis MDX (teks terstruktur) (coming soon)
+- 🚧 **Progress tracking** - Tandai lesson sebagai selesai (coming soon)
+- 🚧 **Dashboard** - Jadwal sesi online (coming soon)
 
 ---
 
@@ -160,19 +161,21 @@ colors: {
 
 ## 📐 Development Roadmap
 
-### Phase 1: Foundation (Week 1-2)
+### Phase 1: Foundation (Week 1-2) - ✅ COMPLETED
 
-- [x] Setup Monorepo structure
-- [ ] **Backend**: Initialize Go project + database
-- [ ] **Frontend**: Initialize Next.js project + UI components
-- [ ] Authentication system (Backend + Frontend)
+- [x] ✅ Setup Monorepo structure
+- [x] ✅ **Backend**: Initialize Go project + database
+- [x] ✅ **Backend**: Authentication system (JWT + middleware)
+- [x] ✅ **Backend**: User Management (profile CRUD + password change)
+- [x] ✅ **Testing**: Comprehensive test suite (11 unit + integration tests)
+- [ ] 🚧 **Frontend**: Initialize Next.js project + UI components
 
-### Phase 2: Core Features (Week 3-4)
+### Phase 2: Core Features (Week 3-4) - 🚧 IN PROGRESS
 
-- [ ] User management (profile, settings)
-- [ ] Course CRUD & enrollment
+- [ ] Course CRUD & enrollment system
 - [ ] Lesson content dengan MDX
 - [ ] Progress tracking system
+- [ ] Frontend authentication pages
 
 ### Phase 3: Enhancement (Week 5-6)
 
@@ -206,6 +209,24 @@ colors: {
 
 ### Backend Setup
 
+**Quick Start with Makefile**:
+
+```bash
+cd tempaskill-be
+
+# Install dependencies
+make setup
+
+# Create database (requires MySQL installed)
+make db-create
+
+# Start server (auto-migration on startup)
+$env:GOTOOLCHAIN="auto"; go run cmd/api/main.go
+# Server runs on http://localhost:8080
+```
+
+**Manual Setup**:
+
 ```bash
 cd tempaskill-be
 
@@ -214,17 +235,26 @@ go mod download
 
 # Setup database
 mysql -u root -p
-CREATE DATABASE tempaskill;
+CREATE DATABASE tempaskill CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 # Copy environment variables
 cp .env.example .env
+# Edit .env with your database credentials
 
-# Run migrations (akan dibuat)
-go run cmd/api/main.go migrate
+# Start server (auto-migration on startup)
+$env:GOTOOLCHAIN="auto"; go run cmd/api/main.go
+```
 
-# Start server
-go run cmd/api/main.go
-# Server runs on http://localhost:8080
+**Available Make Commands**:
+
+```bash
+make help              # Show all available commands
+make test              # Run all tests (11 tests passing)
+make test-unit         # Run unit tests only
+make test-integration  # Run integration tests only
+make test-coverage     # Generate test coverage report
+make db-status         # Show database tables and data
+make db-reset          # Reset database (drop & recreate)
 ```
 
 ### Frontend Setup
@@ -250,21 +280,29 @@ npm run dev
 ### Authentication
 
 ```
-POST   /api/v1/register       # Register user
-POST   /api/v1/login          # Login user
-GET    /api/v1/auth/me        # Get current user (protected)
+POST   /api/v1/auth/register       # Register user
+POST   /api/v1/auth/login          # Login user
+GET    /api/v1/auth/me             # Get current user (protected)
 ```
 
-### Courses
+### User Management
+
+```
+GET    /api/v1/users/:id           # Get user profile (public)
+PATCH  /api/v1/users/me            # Update profile (protected)
+PATCH  /api/v1/users/me/password   # Change password (protected)
+```
+
+### Courses (Coming Soon)
 
 ```
 GET    /api/v1/courses        # List courses
 GET    /api/v1/courses/:id    # Course detail
-POST   /api/v1/courses        # Create course (admin)
+POST   /api/v1/courses        # Create course (instructor)
 POST   /api/v1/courses/:id/enroll  # Enroll to course
 ```
 
-### Lessons
+### Lessons (Coming Soon)
 
 ```
 GET    /api/v1/courses/:id/lessons      # List lessons
@@ -272,7 +310,7 @@ GET    /api/v1/lessons/:id              # Lesson detail
 POST   /api/v1/lessons/:id/complete     # Mark as completed
 ```
 
-### Progress
+### Progress (Coming Soon)
 
 ```
 GET    /api/v1/courses/:id/progress     # Get course progress

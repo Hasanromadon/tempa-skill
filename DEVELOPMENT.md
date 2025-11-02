@@ -507,26 +507,135 @@ function LoginForm() {
 
 ### Backend Tests
 
+TempaSKill uses **testify** for assertions and mocking. We follow a comprehensive testing approach:
+
+#### Test Types
+
+1. **Unit Tests** - Service layer with mocked repositories
+2. **Integration Tests** - Handler layer with mock services
+3. **Table-Driven Tests** - Multiple test scenarios in one function
+
+#### Example: Unit Test (Service Layer)
+
 ```go
-// Use testify for assertions
+// internal/user/service_test.go
 import (
+    "context"
     "testing"
+    "github.com/stretchr/testify/assert"
+    "github.com/stretchr/testify/mock"
+)
+
+// Mock repository
+type MockRepository struct {
+    mock.Mock
+}
+
+func (m *MockRepository) FindByID(ctx context.Context, id uint) (*User, error) {
+    args := m.Called(ctx, id)
+    if args.Get(0) == nil {
+        return nil, args.Error(1)
+    }
+    return args.Get(0).(*User), args.Error(1)
+}
+
+// Table-driven test
+func TestService_GetUserByID(t *testing.T) {
+    tests := []struct {
+        name        string
+        userID      uint
+        mockReturn  *User
+        mockError   error
+        expectError error
+    }{
+        {
+            name:   "Success - User Found",
+            userID: 1,
+            mockReturn: &User{Name: "John", Email: "john@test.com"},
+            mockError: nil,
+            expectError: nil,
+        },
+        {
+            name:        "Error - User Not Found",
+            userID:      999,
+            mockReturn:  nil,
+            mockError:   errors.New("not found"),
+            expectError: ErrUserNotFound,
+        },
+    }
+
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            mockRepo := new(MockRepository)
+            mockRepo.On("FindByID", mock.Anything, tt.userID).Return(tt.mockReturn, tt.mockError)
+
+            service := NewService(mockRepo)
+            user, err := service.GetUserByID(context.Background(), tt.userID)
+
+            if tt.expectError != nil {
+                assert.Error(t, err)
+                assert.Equal(t, tt.expectError, err)
+            } else {
+                assert.NoError(t, err)
+                assert.NotNil(t, user)
+            }
+
+            mockRepo.AssertExpectations(t)
+        })
+    }
+}
+```
+
+#### Example: Integration Test (Handler Layer)
+
+```go
+// internal/user/handler_test.go
+import (
+    "net/http"
+    "net/http/httptest"
+    "testing"
+    "github.com/gin-gonic/gin"
     "github.com/stretchr/testify/assert"
 )
 
-func TestUserService_Register(t *testing.T) {
-    // Setup
-    service := NewUserService(mockRepo)
+func TestHandler_GetUserByID_Success(t *testing.T) {
+    gin.SetMode(gin.TestMode)
 
-    // Execute
-    user, err := service.Register(validInput)
+    mockService := new(MockService)
+    handler := NewHandler(mockService)
 
-    // Assert
-    assert.NoError(t, err)
-    assert.NotNil(t, user)
-    assert.NotEmpty(t, user.ID)
+    testUser := &User{ID: 1, Name: "Test User"}
+    mockService.On("GetUserByID", mock.Anything, uint(1)).Return(testUser, nil)
+
+    router := gin.New()
+    router.GET("/users/:id", handler.GetUserByID)
+
+    w := httptest.NewRecorder()
+    req, _ := http.NewRequest("GET", "/users/1", nil)
+    router.ServeHTTP(w, req)
+
+    assert.Equal(t, http.StatusOK, w.Code)
+    mockService.AssertExpectations(t)
 }
 ```
+
+#### Running Tests
+
+```bash
+# Run all tests
+make test
+
+# Run unit tests only
+make test-unit
+
+# Run integration tests only
+make test-integration
+
+# Generate coverage report
+make test-coverage
+```
+
+**Current Test Coverage**: 11 tests passing (7 unit + 4 integration)
 
 ### Frontend Tests
 

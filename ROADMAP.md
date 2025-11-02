@@ -22,34 +22,34 @@
 ### Backend Tasks
 
 ```
-□ Task 1.1: Project Setup (2 hours)
-  ├─ Initialize Go module
-  ├─ Setup folder structure (internal/, pkg/, cmd/)
-  ├─ Install dependencies (Gin, GORM, JWT)
-  ├─ Create .env configuration
-  └─ Setup MySQL connection
+✅ Task 1.1: Project Setup (2 hours) - COMPLETED
+  ✓ Initialize Go module
+  ✓ Setup folder structure (internal/, pkg/, cmd/)
+  ✓ Install dependencies (Gin, GORM, JWT)
+  ✓ Create .env configuration
+  ✓ Setup MySQL connection
 
-□ Task 1.2: Database Schema (2 hours)
-  ├─ Create users table
-  ├─ Create GORM models
-  ├─ Setup auto migration
-  └─ Test database connection
+✅ Task 1.2: Database Schema (2 hours) - COMPLETED
+  ✓ Create users table
+  ✓ Create GORM models
+  ✓ Setup auto migration
+  ✓ Test database connection
 
-□ Task 1.3: Authentication Module (4 hours)
-  ├─ auth_model.go (User model)
-  ├─ auth_dto.go (RegisterRequest, LoginRequest)
-  ├─ auth_repository.go (Create, FindByEmail)
-  ├─ auth_service.go (Register, Login, GenerateJWT)
-  ├─ auth_handler.go (POST /register, POST /login)
-  └─ middleware/auth.go (JWT validation)
+✅ Task 1.3: Authentication Module (4 hours) - COMPLETED
+  ✓ auth_model.go (User model)
+  ✓ auth_dto.go (RegisterRequest, LoginRequest)
+  ✓ auth_repository.go (Create, FindByEmail)
+  ✓ auth_service.go (Register, Login, GenerateJWT)
+  ✓ auth_handler.go (POST /register, POST /login)
+  ✓ middleware/auth.go (JWT validation)
 
-□ Task 1.4: Testing (1 hour)
-  ├─ Test register endpoint
-  ├─ Test login endpoint
-  └─ Test protected route with JWT
+✅ Task 1.4: Testing (1 hour) - COMPLETED
+  ✓ Test register endpoint
+  ✓ Test login endpoint
+  ✓ Test protected route with JWT
 ```
 
-**Total Backend: ~9 hours**
+**Total Backend: ~9 hours** ✅ COMPLETED
 
 ### Frontend Tasks
 
@@ -101,10 +101,12 @@
 ### Backend Tasks
 
 ```
-□ Task 2.1: User Profile (2 hours)
-  ├─ user_handler.go (GET /users/me, PUT /users/me)
-  ├─ user_service.go (GetProfile, UpdateProfile)
-  └─ user_repository.go (FindByID, Update)
+✅ Task 2.1: User Profile (3 hours) - COMPLETED
+  ✓ user_dto.go (UpdateProfileRequest, ChangePasswordRequest)
+  ✓ user_repository.go (FindByID, Update, UpdatePassword)
+  ✓ user_service.go (GetUserByID, UpdateProfile, ChangePassword)
+  ✓ user_handler.go (GET /users/:id, PATCH /users/me, PATCH /users/me/password)
+  ✓ Comprehensive testing (11 unit + integration tests)
 
 □ Task 2.2: Course Module (4 hours)
   ├─ course_model.go (Course, Lesson models)
@@ -134,7 +136,7 @@
   └─ Calculate course progress percentage
 ```
 
-**Total Backend: ~14 hours**
+**Total Backend: ~15 hours** (Task 2.1 ✅ COMPLETED, 3/15 hours done)
 
 ### Frontend Tasks
 
