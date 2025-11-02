@@ -111,6 +111,7 @@ cd ..
 ```
 
 **Test Coverage**: 10/10 tests passing ✅
+
 - Health check
 - List courses with pagination
 - Unauthorized access prevention
@@ -222,38 +223,38 @@ Lihat `DATABASE.md` di root project untuk detail schema lengkap.
 
 ### Authentication & Users
 
-| Method  | Endpoint                | Description          | Auth |
-| ------- | ----------------------- | -------------------- | ---- |
-| `GET`   | `/api/v1/health`        | Health check         | ❌   |
-| `POST`  | `/api/v1/auth/register` | Register user        | ❌   |
-| `POST`  | `/api/v1/auth/login`    | Login user           | ❌   |
-| `GET`   | `/api/v1/auth/me`       | Get current user     | ✅   |
-| `GET`   | `/api/v1/users/:id`     | Get user profile     | ❌   |
-| `PATCH` | `/api/v1/users/me`      | Update profile       | ✅   |
-| `PATCH` | `/api/v1/users/me/password` | Change password | ✅   |
+| Method  | Endpoint                    | Description      | Auth |
+| ------- | --------------------------- | ---------------- | ---- |
+| `GET`   | `/api/v1/health`            | Health check     | ❌   |
+| `POST`  | `/api/v1/auth/register`     | Register user    | ❌   |
+| `POST`  | `/api/v1/auth/login`        | Login user       | ❌   |
+| `GET`   | `/api/v1/auth/me`           | Get current user | ✅   |
+| `GET`   | `/api/v1/users/:id`         | Get user profile | ❌   |
+| `PATCH` | `/api/v1/users/me`          | Update profile   | ✅   |
+| `PATCH` | `/api/v1/users/me/password` | Change password  | ✅   |
 
 ### Courses
 
-| Method   | Endpoint                    | Description          | Auth |
-| -------- | --------------------------- | -------------------- | ---- |
-| `GET`    | `/api/v1/courses`           | List courses         | ❌   |
-| `GET`    | `/api/v1/courses/:id`       | Get course by ID     | ❌   |
-| `GET`    | `/api/v1/courses/slug/:slug`| Get course by slug   | ❌   |
-| `POST`   | `/api/v1/courses`           | Create course        | ✅   |
-| `PATCH`  | `/api/v1/courses/:id`       | Update course        | ✅   |
-| `DELETE` | `/api/v1/courses/:id`       | Delete course        | ✅   |
-| `POST`   | `/api/v1/courses/:id/enroll`| Enroll in course     | ✅   |
-| `DELETE` | `/api/v1/courses/:id/unenroll`| Unenroll from course | ✅   |
+| Method   | Endpoint                       | Description          | Auth |
+| -------- | ------------------------------ | -------------------- | ---- |
+| `GET`    | `/api/v1/courses`              | List courses         | ❌   |
+| `GET`    | `/api/v1/courses/:id`          | Get course by ID     | ❌   |
+| `GET`    | `/api/v1/courses/slug/:slug`   | Get course by slug   | ❌   |
+| `POST`   | `/api/v1/courses`              | Create course        | ✅   |
+| `PATCH`  | `/api/v1/courses/:id`          | Update course        | ✅   |
+| `DELETE` | `/api/v1/courses/:id`          | Delete course        | ✅   |
+| `POST`   | `/api/v1/courses/:id/enroll`   | Enroll in course     | ✅   |
+| `DELETE` | `/api/v1/courses/:id/unenroll` | Unenroll from course | ✅   |
 
 ### Lessons
 
-| Method   | Endpoint                          | Description        | Auth |
-| -------- | --------------------------------- | ------------------ | ---- |
-| `GET`    | `/api/v1/courses/:courseId/lessons` | List lessons     | ❌   |
-| `GET`    | `/api/v1/lessons/:id`             | Get lesson detail  | ❌   |
-| `POST`   | `/api/v1/courses/:courseId/lessons` | Create lesson    | ✅   |
-| `PATCH`  | `/api/v1/lessons/:id`             | Update lesson      | ✅   |
-| `DELETE` | `/api/v1/lessons/:id`             | Delete lesson      | ✅   |
+| Method   | Endpoint                            | Description       | Auth |
+| -------- | ----------------------------------- | ----------------- | ---- |
+| `GET`    | `/api/v1/courses/:courseId/lessons` | List lessons      | ❌   |
+| `GET`    | `/api/v1/lessons/:id`               | Get lesson detail | ❌   |
+| `POST`   | `/api/v1/courses/:courseId/lessons` | Create lesson     | ✅   |
+| `PATCH`  | `/api/v1/lessons/:id`               | Update lesson     | ✅   |
+| `DELETE` | `/api/v1/lessons/:id`               | Delete lesson     | ✅   |
 
 Lihat `API_SPEC.md` untuk dokumentasi lengkap.
 

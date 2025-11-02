@@ -8,6 +8,7 @@ import (
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/auth"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/course"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/middleware"
+	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/progress"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/user"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/database"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/response"
@@ -33,6 +34,7 @@ func main() {
 		&course.Course{},
 		&course.Lesson{},
 		&course.Enrollment{},
+		&progress.LessonProgress{},
 	); err != nil {
 		log.Fatalf("❌ Failed to migrate database: %v", err)
 	}
@@ -102,6 +104,15 @@ func main() {
 
 		// Register course routes
 		course.RegisterRoutes(v1, db, authMiddleware)
+
+		// Initialize progress module
+		courseRepo := course.NewRepository(db)
+		progressRepo := progress.NewRepository(db)
+		progressService := progress.NewService(progressRepo, courseRepo)
+		progressHandler := progress.NewHandler(progressService)
+
+		// Register progress routes
+		progress.RegisterRoutes(v1, progressHandler, authMiddleware)
 	}
 
 	// Start server
