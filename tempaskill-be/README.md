@@ -226,6 +226,78 @@ golangci-lint run
 2. User login → Validate credentials → Generate JWT
 3. Protected routes → Verify JWT → Extract user data
 
+## 🔒 Security Features
+
+### Phase 1: Critical Security (✅ Implemented)
+
+All critical security vulnerabilities have been addressed and tested:
+
+#### 1. Rate Limiting
+- **Auth Endpoints**: 5 attempts per 15 minutes per IP
+- **API Endpoints**: 100 requests per minute
+- **Headers**: X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset
+- **Implementation**: `internal/middleware/ratelimit.go`
+
+#### 2. Request Size Limits
+- **Max Size**: 10MB per request
+- **Protection**: Prevents DoS attacks via large payloads
+- **Response**: 413 Request Entity Too Large for oversized requests
+
+#### 3. JWT Secret Validation
+- **Minimum Length**: 32 characters enforced
+- **Current Secret**: 64 characters (strong)
+- **Generation**: `openssl rand -base64 64` or PowerShell equivalent
+
+#### 4. Security Headers
+All responses include protective headers:
+- `X-Content-Type-Options: nosniff` - Prevents MIME sniffing
+- `X-Frame-Options: DENY` - Prevents clickjacking
+- `X-XSS-Protection: 1; mode=block` - XSS protection
+- `Strict-Transport-Security` - Forces HTTPS (production)
+- `Content-Security-Policy` - Restricts resource loading
+- `Referrer-Policy: strict-origin-when-cross-origin` - Privacy protection
+- `Cache-Control: no-store, no-cache` - Prevents sensitive data caching
+
+#### 5. HTTPS/TLS Support
+- **Production**: Automatic TLS with cert.pem/key.pem
+- **Development**: HTTP for local testing
+- **Environment Detection**: Based on APP_ENV variable
+
+### Security Testing
+
+Run automated security tests:
+```bash
+# From project root
+.\test-security-phase1.ps1
+```
+
+**Test Coverage**: 5/5 tests passing ✅
+- Security headers validation
+- Rate limiting enforcement
+- JWT secret strength
+- Request size limits
+
+### Generating Strong JWT Secret
+
+**Windows PowerShell**:
+```powershell
+# Generate 64-character random string
+-join ((48..57) + (65..90) + (97..122) + (33..47) + (58..64) | Get-Random -Count 64 | ForEach-Object {[char]$_})
+```
+
+**Linux/Mac**:
+```bash
+# Generate base64 encoded secret
+openssl rand -base64 64
+```
+
+Update your `.env` file:
+```env
+JWT_SECRET=your-generated-secret-here
+```
+
+**⚠️ IMPORTANT**: Never commit `.env` files to version control!
+
 ## 📊 Database Schema
 
 Lihat `DATABASE.md` di root project untuk detail schema lengkap.

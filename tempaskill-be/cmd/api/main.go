@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 	"strings"
 
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/config"
@@ -47,6 +48,17 @@ func main() {
 
 	// Initialize Gin router
 	router := gin.Default()
+
+	// Security Middleware (Applied to all routes)
+	// 1. Security Headers - Prevent XSS, clickjacking, etc.
+	router.Use(middleware.SecurityHeaders(cfg))
+
+	// 2. Request Size Limit - Prevent DoS via large payloads (10MB max)
+	router.Use(middleware.RequestSizeLimit(10 * 1024 * 1024))
+
+	// 3. General API Rate Limiting - 100 requests per minute per IP
+	apiRateLimiter := middleware.NewRateLimitMiddleware("100-M")
+	router.Use(apiRateLimiter.Limit())
 
 	// CORS Middleware
 	router.Use(func(c *gin.Context) {
@@ -117,10 +129,37 @@ func main() {
 
 	// Start server
 	serverAddr := ":" + cfg.Server.Port
-	log.Printf("🚀 Server starting on http://localhost%s", serverAddr)
-	log.Printf("📝 API Documentation: http://localhost%s/api/v1/health", serverAddr)
 	
-	if err := router.Run(serverAddr); err != nil {
-		log.Fatalf("❌ Failed to start server: %v", err)
+	// TLS/HTTPS Configuration for Production
+	if cfg.Server.AppEnv == "production" {
+		log.Printf("🚀 Server starting on https://localhost%s (TLS enabled)", serverAddr)
+		log.Printf("📝 API Documentation: https://localhost%s/api/v1/health", serverAddr)
+		log.Printf("⚠️  Ensure TLS certificates are configured: cert.pem and key.pem")
+		
+		// In production, use TLS certificates
+		// Certificates should be placed in a secure location
+		certFile := getEnv("TLS_CERT_FILE", "./certs/cert.pem")
+		keyFile := getEnv("TLS_KEY_FILE", "./certs/key.pem")
+		
+		if err := router.RunTLS(serverAddr, certFile, keyFile); err != nil {
+			log.Fatalf("❌ Failed to start TLS server: %v\nMake sure certificates exist at %s and %s", err, certFile, keyFile)
+		}
+	} else {
+		// Development mode - HTTP only
+		log.Printf("🚀 Server starting on http://localhost%s", serverAddr)
+		log.Printf("📝 API Documentation: http://localhost%s/api/v1/health", serverAddr)
+		log.Printf("⚠️  Running in %s mode (HTTP only - not secure for production)", cfg.Server.AppEnv)
+		
+		if err := router.Run(serverAddr); err != nil {
+			log.Fatalf("❌ Failed to start server: %v", err)
+		}
 	}
+}
+
+// getEnv gets environment variable with fallback (helper function)
+func getEnv(key, fallback string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return fallback
 }

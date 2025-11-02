@@ -76,6 +76,11 @@ func LoadConfig() (*Config, error) {
 		return nil, fmt.Errorf("JWT_SECRET is required")
 	}
 
+	// Enforce minimum JWT secret length for security
+	if len(config.JWT.Secret) < 32 {
+		return nil, fmt.Errorf("JWT_SECRET must be at least 32 characters long for security. Current length: %d. Generate a strong secret with: openssl rand -base64 64", len(config.JWT.Secret))
+	}
+
 	return config, nil
 }
 
