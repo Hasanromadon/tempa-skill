@@ -28,39 +28,39 @@ make run
 
 ### SETUP Commands
 
-| Command | Description |
-|---------|-------------|
-| `make help` | Show all available commands |
+| Command      | Description                                      |
+| ------------ | ------------------------------------------------ |
+| `make help`  | Show all available commands                      |
 | `make setup` | Install Go dependencies (go mod download & tidy) |
-| `make start` | Create database + start server (one-step setup) |
+| `make start` | Create database + start server (one-step setup)  |
 
 ### DATABASE Commands
 
-| Command | Description |
-|---------|-------------|
-| `make db-create` | Create `tempaskill` database |
-| `make db-drop` | ⚠️ Drop database (deletes all data!) |
-| `make db-reset` | Drop and recreate database |
-| `make db-status` | Show tables and users data |
+| Command          | Description                          |
+| ---------------- | ------------------------------------ |
+| `make db-create` | Create `tempaskill` database         |
+| `make db-drop`   | ⚠️ Drop database (deletes all data!) |
+| `make db-reset`  | Drop and recreate database           |
+| `make db-status` | Show tables and users data           |
 
 ### DEVELOPMENT Commands
 
-| Command | Description |
-|---------|-------------|
-| `make run` | Run server in development mode |
-| `make dev` | Alias for `make run` |
-| `make build` | Build Windows binary (`bin/tempaskill.exe`) |
-| `make build-linux` | Build Linux binary for deployment |
-| `make test` | Run all Go tests |
-| `make test-auth` | Test authentication endpoints (PowerShell) |
-| `make format` | Format code with `gofmt` |
+| Command            | Description                                 |
+| ------------------ | ------------------------------------------- |
+| `make run`         | Run server in development mode              |
+| `make dev`         | Alias for `make run`                        |
+| `make build`       | Build Windows binary (`bin/tempaskill.exe`) |
+| `make build-linux` | Build Linux binary for deployment           |
+| `make test`        | Run all Go tests                            |
+| `make test-auth`   | Test authentication endpoints (PowerShell)  |
+| `make format`      | Format code with `gofmt`                    |
 
 ### UTILITY Commands
 
-| Command | Description |
-|---------|-------------|
-| `make clean` | Clean build artifacts (bin/, coverage files) |
-| `make git-status` | Show git status |
+| Command           | Description                                  |
+| ----------------- | -------------------------------------------- |
+| `make clean`      | Clean build artifacts (bin/, coverage files) |
+| `make git-status` | Show git status                              |
 
 ## 💡 Usage Examples
 
@@ -214,6 +214,7 @@ Then run: `make my-command`
 ### "make: command not found"
 
 **Windows:**
+
 ```powershell
 # Install via Chocolatey
 choco install make
@@ -251,6 +252,7 @@ taskkill /PID <PID> /F
 ---
 
 **Quick Reference:**
+
 ```bash
 make help        # Show all commands
 make start       # Quick start

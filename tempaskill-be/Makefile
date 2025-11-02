@@ -33,8 +33,11 @@ help: ## Show this help message
 	@echo   make run            - Run server
 	@echo   make dev            - Run server (alias)
 	@echo   make build          - Build binary
-	@echo   make test           - Run tests
-	@echo   make test-auth      - Test authentication
+	@echo   make test           - Run all tests
+	@echo   make test-unit      - Run unit tests only
+	@echo   make test-integration - Run integration tests only
+	@echo   make test-coverage  - Run tests with coverage
+	@echo   make test-auth      - Test authentication (PowerShell)
 	@echo   make format         - Format code
 	@echo.
 	@echo UTILS:
@@ -99,9 +102,21 @@ build-linux: ## Build for Linux (production)
 
 .PHONY: test
 test: ## Run all tests
-	@echo Running tests...
+	@echo Running all tests...
 	@go test -v ./...
 	@echo Done! Tests completed
+
+.PHONY: test-unit
+test-unit: ## Run only unit tests (service layer)
+	@echo Running unit tests...
+	@go test -v -run "TestService" ./...
+	@echo Done! Unit tests completed
+
+.PHONY: test-integration
+test-integration: ## Run only integration tests (handler layer)
+	@echo Running integration tests...
+	@go test -v -run "TestHandler" ./...
+	@echo Done! Integration tests completed
 
 .PHONY: test-coverage
 test-coverage: ## Run tests with coverage report
@@ -109,6 +124,7 @@ test-coverage: ## Run tests with coverage report
 	@go test -v -coverprofile=coverage.out ./...
 	@go tool cover -html=coverage.out -o coverage.html
 	@echo Done! Coverage report: coverage.html
+	@echo Open coverage.html in browser to view results
 
 .PHONY: test-auth
 test-auth: ## Test authentication endpoints (requires server running)

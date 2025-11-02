@@ -66,8 +66,28 @@ func GenerateToken(userID uint, email, role string, cfg *config.Config) (string,
 	return tokenString, nil
 }
 
-// AuthMiddleware validates JWT token from Authorization header
-func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
+// AuthMiddleware struct holds configuration for authentication
+type AuthMiddleware struct {
+	cfg *config.Config
+}
+
+// NewAuthMiddleware creates a new AuthMiddleware instance
+func NewAuthMiddleware(cfg *config.Config) *AuthMiddleware {
+	return &AuthMiddleware{cfg: cfg}
+}
+
+// GenerateToken creates a new JWT token for a user
+func (am *AuthMiddleware) GenerateToken(userID uint, email, role string) (string, error) {
+	return GenerateToken(userID, email, role, am.cfg)
+}
+
+// ValidateToken validates and parses a JWT token
+func (am *AuthMiddleware) ValidateToken(tokenString string) (*Claims, error) {
+	return ValidateToken(tokenString, am.cfg)
+}
+
+// RequireAuth validates JWT token from Authorization header
+func (am *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Get Authorization header
 		authHeader := c.GetHeader("Authorization")
@@ -88,7 +108,7 @@ func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 		tokenString := parts[1]
 
 		// Validate token
-		claims, err := ValidateToken(tokenString, cfg)
+		claims, err := am.ValidateToken(tokenString)
 		if err != nil {
 			response.Unauthorized(c, "Invalid or expired token")
 			c.Abort()
@@ -104,8 +124,8 @@ func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 	}
 }
 
-// RoleMiddleware checks if user has required role
-func RoleMiddleware(allowedRoles ...string) gin.HandlerFunc {
+// RequireRole checks if user has required role
+func (am *AuthMiddleware) RequireRole(allowedRoles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userRole, exists := c.Get("userRole")
 		if !exists {
@@ -129,8 +149,8 @@ func RoleMiddleware(allowedRoles ...string) gin.HandlerFunc {
 	}
 }
 
-// OptionalAuthMiddleware validates JWT but doesn't require it
-func OptionalAuthMiddleware(cfg *config.Config) gin.HandlerFunc {
+// OptionalAuth validates JWT but doesn't require it
+func (am *AuthMiddleware) OptionalAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
@@ -145,7 +165,7 @@ func OptionalAuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 		}
 
 		tokenString := parts[1]
-		claims, err := ValidateToken(tokenString, cfg)
+		claims, err := am.ValidateToken(tokenString)
 		if err != nil {
 			c.Next()
 			return

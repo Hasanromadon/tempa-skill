@@ -6,6 +6,8 @@ import (
 
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/config"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/auth"
+	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/middleware"
+	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/user"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/database"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/response"
 	"github.com/gin-gonic/gin"
@@ -79,9 +81,18 @@ func main() {
 		authRepo := auth.NewRepository(db)
 		authService := auth.NewService(authRepo, cfg)
 		authHandler := auth.NewHandler(authService)
+		authMiddleware := middleware.NewAuthMiddleware(cfg)
 		
 		// Register auth routes
-		auth.RegisterRoutes(v1, authHandler, cfg)
+		auth.RegisterRoutes(v1, authHandler, authMiddleware)
+
+		// Initialize user module
+		userRepo := user.NewRepository(db)
+		userService := user.NewService(userRepo)
+		userHandler := user.NewHandler(userService)
+
+		// Register user routes
+		user.RegisterRoutes(v1, userHandler, authMiddleware)
 	}
 
 	// Start server

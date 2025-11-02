@@ -50,7 +50,12 @@ func ConnectDB(cfg *config.Config) error {
 	return nil
 }
 
-// GetDB returns the database instance
+// GetDB returns the global database instance
 func GetDB() *gorm.DB {
 	return DB
+}
+
+// SetDB sets the global database instance (for testing)
+func SetDB(db *gorm.DB) {
+	DB = db
 }
