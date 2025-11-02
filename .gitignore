@@ -1,0 +1,109 @@
+# TempaSKill - Monorepo .gitignore
+
+# ============================================
+# BACKEND (Go)
+# ============================================
+# Binaries
+tempaskill-be/cmd/api/api
+tempaskill-be/cmd/api/api.exe
+tempaskill-be/*.exe
+tempaskill-be/*.dll
+tempaskill-be/*.so
+tempaskill-be/*.dylib
+tempaskill-be/dist/
+tempaskill-be/build/
+
+# Test files
+tempaskill-be/*.test
+tempaskill-be/*.out
+
+# Go workspace file
+tempaskill-be/go.work
+
+# Environment
+tempaskill-be/.env
+tempaskill-be/.env.local
+tempaskill-be/.env.production
+
+# IDE
+tempaskill-be/.idea/
+tempaskill-be/.vscode/
+
+# ============================================
+# FRONTEND (Next.js)
+# ============================================
+# Dependencies
+tempaskill-fe/node_modules/
+tempaskill-fe/.pnp
+tempaskill-fe/.pnp.js
+
+# Testing
+tempaskill-fe/coverage
+
+# Next.js
+tempaskill-fe/.next/
+tempaskill-fe/out/
+tempaskill-fe/build
+
+# Production
+tempaskill-fe/dist
+
+# Environment
+tempaskill-fe/.env
+tempaskill-fe/.env*.local
+tempaskill-fe/.env.production
+
+# Vercel
+tempaskill-fe/.vercel
+
+# TypeScript
+tempaskill-fe/*.tsbuildinfo
+tempaskill-fe/next-env.d.ts
+
+# IDE
+tempaskill-fe/.idea/
+tempaskill-fe/.vscode/
+
+# ============================================
+# GENERAL
+# ============================================
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Editor
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Certificates
+*.pem
+*.key
+*.crt

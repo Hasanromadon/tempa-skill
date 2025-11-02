@@ -1,0 +1,646 @@
+# 📖 Development Guide - TempaSKill
+
+> Panduan lengkap untuk development consistency & best practices
+
+---
+
+## 🎯 Aturan Konteks Utama
+
+### ⚖️ Deteksi Workspace Otomatis
+
+**CRITICAL**: Selalu deteksi workspace aktif sebelum coding!
+
+#### Jika bekerja di `tempaskill-be/`:
+
+```
+✅ Role: Senior Backend Developer
+✅ Stack: Go + Gin + GORM + MySQL + JWT
+✅ Port: 8080
+✅ Output: JSON API endpoints
+❌ TIDAK menulis: React, HTML, CSS, UI components
+```
+
+#### Jika bekerja di `tempaskill-fe/`:
+
+```
+✅ Role: Senior Frontend Developer
+✅ Stack: Next.js + TypeScript + Tailwind + Shadcn/ui + MDX
+✅ Port: 3000
+✅ Output: UI components, pages, user interactions
+❌ TIDAK menulis: Database queries, business logic API
+```
+
+---
+
+## 🗂️ Struktur Folder Detail
+
+### Backend (`tempaskill-be`)
+
+```
+tempaskill-be/
+├── cmd/
+│   └── api/
+│       └── main.go                 # Entry point, server initialization
+│
+├── internal/                       # Private application code
+│   ├── auth/
+│   │   ├── auth_handler.go         # HTTP handlers (endpoints)
+│   │   ├── auth_service.go         # Business logic
+│   │   ├── auth_repository.go      # Database operations
+│   │   └── auth_dto.go             # Request/Response DTOs
+│   │
+│   ├── user/
+│   │   ├── user_handler.go
+│   │   ├── user_service.go
+│   │   ├── user_repository.go
+│   │   └── user_model.go           # GORM model
+│   │
+│   ├── course/
+│   │   ├── course_handler.go
+│   │   ├── course_service.go
+│   │   ├── course_repository.go
+│   │   └── course_model.go
+│   │
+│   ├── lesson/
+│   │   └── ...
+│   │
+│   ├── progress/
+│   │   └── ...
+│   │
+│   └── middleware/
+│       ├── auth.go                 # JWT validation middleware
+│       └── cors.go                 # CORS middleware
+│
+├── pkg/                            # Public reusable packages
+│   ├── database/
+│   │   └── mysql.go                # DB connection & migration
+│   ├── response/
+│   │   └── response.go             # Standardized API response
+│   └── validator/
+│       └── validator.go            # Custom validators
+│
+├── config/
+│   └── config.go                   # Environment configuration
+│
+├── migrations/                     # SQL migrations (optional)
+│   ├── 001_create_users.sql
+│   └── 002_create_courses.sql
+│
+├── .env.example
+├── .gitignore
+├── go.mod
+├── go.sum
+└── Makefile                        # Build & deployment scripts
+```
+
+#### Backend Layering Pattern
+
+```go
+// Handler Layer (HTTP)
+func (h *AuthHandler) Register(c *gin.Context) {
+    var req RegisterRequest
+    if err := c.ShouldBindJSON(&req); err != nil {
+        c.JSON(400, gin.H{"error": err.Error()})
+        return
+    }
+
+    user, err := h.authService.Register(req)
+    // ... handle response
+}
+
+// Service Layer (Business Logic)
+func (s *AuthService) Register(req RegisterRequest) (*User, error) {
+    // Validate business rules
+    // Hash password
+    // Call repository
+    return s.authRepo.Create(user)
+}
+
+// Repository Layer (Database)
+func (r *AuthRepository) Create(user *User) error {
+    return r.db.Create(user).Error
+}
+```
+
+---
+
+### Frontend (`tempaskill-fe`)
+
+```
+tempaskill-fe/
+├── src/
+│   ├── app/
+│   │   ├── (auth)/                 # Route group (tidak muncul di URL)
+│   │   │   ├── login/
+│   │   │   │   └── page.tsx
+│   │   │   └── register/
+│   │   │       └── page.tsx
+│   │   │
+│   │   ├── (dashboard)/            # Protected routes
+│   │   │   ├── dashboard/
+│   │   │   │   └── page.tsx
+│   │   │   └── profile/
+│   │   │       └── page.tsx
+│   │   │
+│   │   ├── courses/
+│   │   │   ├── page.tsx            # Course catalog
+│   │   │   └── [id]/
+│   │   │       ├── page.tsx        # Course detail
+│   │   │       └── lessons/
+│   │   │           └── [lessonId]/
+│   │   │               └── page.tsx
+│   │   │
+│   │   ├── layout.tsx              # Root layout
+│   │   ├── page.tsx                # Homepage
+│   │   └── globals.css
+│   │
+│   ├── components/
+│   │   ├── ui/                     # Shadcn components
+│   │   │   ├── button.tsx
+│   │   │   ├── card.tsx
+│   │   │   ├── input.tsx
+│   │   │   ├── form.tsx
+│   │   │   └── ...
+│   │   │
+│   │   ├── shared/                 # Reusable app components
+│   │   │   ├── navbar.tsx
+│   │   │   ├── footer.tsx
+│   │   │   ├── course-card.tsx
+│   │   │   └── lesson-sidebar.tsx
+│   │   │
+│   │   └── layout/                 # Layout components
+│   │       ├── auth-layout.tsx
+│   │       └── dashboard-layout.tsx
+│   │
+│   ├── lib/
+│   │   ├── api.ts                  # Axios/Fetch client setup
+│   │   ├── utils.ts                # cn(), formatters, etc.
+│   │   ├── constants.ts            # App constants
+│   │   └── hooks/
+│   │       ├── use-auth.ts
+│   │       └── use-media-query.ts
+│   │
+│   ├── queries/                    # TanStack Query hooks
+│   │   ├── auth.queries.ts
+│   │   ├── course.queries.ts
+│   │   ├── lesson.queries.ts
+│   │   └── user.queries.ts
+│   │
+│   ├── store/                      # Zustand stores
+│   │   ├── auth.store.ts
+│   │   └── ui.store.ts
+│   │
+│   ├── types/
+│   │   ├── api.types.ts            # API response types
+│   │   ├── course.types.ts
+│   │   └── user.types.ts
+│   │
+│   └── schemas/                    # Zod validation schemas
+│       ├── auth.schema.ts
+│       └── course.schema.ts
+│
+├── content/                        # MDX course content
+│   ├── courses/
+│   │   ├── golang-basics/
+│   │   │   ├── metadata.json
+│   │   │   ├── 01-introduction.mdx
+│   │   │   └── 02-variables.mdx
+│   │   └── nextjs-mastery/
+│   │       └── ...
+│   └── velite.config.ts
+│
+├── public/
+│   ├── images/
+│   └── icons/
+│
+├── .env.example
+├── .env.local
+├── .gitignore
+├── next.config.js
+├── tailwind.config.ts
+├── tsconfig.json
+├── package.json
+└── components.json                 # Shadcn config
+```
+
+---
+
+## 🎨 Design System
+
+### Tailwind Configuration
+
+```typescript
+// tailwind.config.ts
+import type { Config } from "tailwindcss";
+
+const config: Config = {
+  content: [
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        // Brand Colors
+        brand: {
+          primary: "#ea580c", // orange-600
+          secondary: "#1e293b", // slate-800
+          accent: "#3b82f6", // blue-500
+        },
+
+        // Semantic Colors
+        success: "#10b981", // green-500
+        warning: "#f59e0b", // amber-500
+        error: "#ef4444", // red-500
+        info: "#3b82f6", // blue-500
+      },
+
+      fontFamily: {
+        sans: ["var(--font-inter)", "sans-serif"],
+        mono: ["var(--font-jetbrains-mono)", "monospace"],
+      },
+    },
+  },
+  plugins: [require("tailwindcss-animate")],
+};
+
+export default config;
+```
+
+### Component Pattern (Shadcn)
+
+```tsx
+// Example: Button component dengan brand styling
+import { Button } from '@/components/ui/button'
+
+// Primary CTA (Orange)
+<Button className="bg-brand-primary hover:bg-orange-700">
+  Daftar Sekarang
+</Button>
+
+// Secondary action (Slate)
+<Button variant="outline" className="border-slate-300">
+  Lihat Detail
+</Button>
+
+// Accent action (Blue)
+<Button className="bg-brand-accent hover:bg-blue-600">
+  Mulai Belajar
+</Button>
+```
+
+---
+
+## 🔐 Authentication Flow
+
+### Backend (JWT)
+
+```go
+// Register Flow
+POST /api/v1/register
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "securePassword123"
+}
+
+Response:
+{
+  "success": true,
+  "data": {
+    "user": {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john@example.com"
+    },
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }
+}
+
+// Login Flow
+POST /api/v1/login
+{
+  "email": "john@example.com",
+  "password": "securePassword123"
+}
+
+// Protected Endpoint
+GET /api/v1/users/me
+Headers: {
+  "Authorization": "Bearer <token>"
+}
+```
+
+### Frontend (TanStack Query + Zustand)
+
+```typescript
+// queries/auth.queries.ts
+import { useMutation, useQuery } from "@tanstack/react-query";
+
+export const useLogin = () => {
+  return useMutation({
+    mutationFn: async (credentials: LoginInput) => {
+      const res = await api.post("/auth/login", credentials);
+      return res.data;
+    },
+    onSuccess: (data) => {
+      // Save token to store
+      useAuthStore.getState().setToken(data.token);
+      useAuthStore.getState().setUser(data.user);
+    },
+  });
+};
+
+// store/auth.store.ts
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+
+interface AuthState {
+  token: string | null;
+  user: User | null;
+  setToken: (token: string) => void;
+  setUser: (user: User) => void;
+  logout: () => void;
+}
+
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      token: null,
+      user: null,
+      setToken: (token) => set({ token }),
+      setUser: (user) => set({ user }),
+      logout: () => set({ token: null, user: null }),
+    }),
+    { name: "auth-storage" }
+  )
+);
+```
+
+---
+
+## 📝 Coding Standards
+
+### Backend (Go)
+
+#### ✅ DO
+
+```go
+// Good: Clear error handling
+func (s *CourseService) GetByID(id uint) (*Course, error) {
+    course, err := s.courseRepo.FindByID(id)
+    if err != nil {
+        if errors.Is(err, gorm.ErrRecordNotFound) {
+            return nil, errors.New("course not found")
+        }
+        return nil, fmt.Errorf("failed to get course: %w", err)
+    }
+    return course, nil
+}
+
+// Good: Proper struct tags
+type User struct {
+    ID        uint      `gorm:"primaryKey" json:"id"`
+    Name      string    `gorm:"size:100;not null" json:"name"`
+    Email     string    `gorm:"uniqueIndex;not null" json:"email"`
+    Password  string    `gorm:"not null" json:"-"` // Exclude from JSON
+    CreatedAt time.Time `json:"created_at"`
+}
+```
+
+#### ❌ DON'T
+
+```go
+// Bad: Ignoring errors
+user, _ := s.userRepo.FindByID(id)
+
+// Bad: Magic strings
+if user.Role == "admin" { } // Use constants instead
+
+// Bad: No validation
+func (h *Handler) Create(c *gin.Context) {
+    var req Request
+    c.BindJSON(&req) // No error check!
+}
+```
+
+### Frontend (TypeScript/React)
+
+#### ✅ DO
+
+```tsx
+// Good: Type-safe component with proper validation
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+const loginSchema = z.object({
+  email: z.string().email("Email tidak valid"),
+  password: z.string().min(8, "Password minimal 8 karakter"),
+});
+
+type LoginInput = z.infer<typeof loginSchema>;
+
+export function LoginForm() {
+  const form = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
+  });
+
+  const { mutate: login, isPending } = useLogin();
+
+  const onSubmit = (data: LoginInput) => {
+    login(data);
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>{/* Form fields */}</form>
+    </Form>
+  );
+}
+
+// Good: Server state with TanStack Query
+export function CourseList() {
+  const {
+    data: courses,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["courses"],
+    queryFn: () => api.get("/courses"),
+  });
+
+  if (isLoading) return <Skeleton />;
+  if (error) return <ErrorMessage error={error} />;
+
+  return <div>{/* Render courses */}</div>;
+}
+```
+
+#### ❌ DON'T
+
+```tsx
+// Bad: No type safety
+function LoginForm() {
+  const [email, setEmail] = useState('') // No type
+  const [password, setPassword] = useState('')
+
+  const handleSubmit = () => {
+    fetch('/api/login', { // Direct fetch, no error handling
+      method: 'POST',
+      body: JSON.stringify({ email, password })
+    })
+  }
+}
+
+// Bad: Inline styles (use Tailwind)
+<div style={{ color: 'orange' }}>Text</div>
+
+// Bad: Hardcoded values
+<Button className="bg-orange-600"> // Use bg-brand-primary
+```
+
+---
+
+## 🧪 Testing Guidelines
+
+### Backend Tests
+
+```go
+// Use testify for assertions
+import (
+    "testing"
+    "github.com/stretchr/testify/assert"
+)
+
+func TestUserService_Register(t *testing.T) {
+    // Setup
+    service := NewUserService(mockRepo)
+
+    // Execute
+    user, err := service.Register(validInput)
+
+    // Assert
+    assert.NoError(t, err)
+    assert.NotNil(t, user)
+    assert.NotEmpty(t, user.ID)
+}
+```
+
+### Frontend Tests
+
+```typescript
+// Use Vitest + React Testing Library
+import { render, screen } from "@testing-library/react";
+import { describe, it, expect } from "vitest";
+
+describe("LoginForm", () => {
+  it("should show validation error for invalid email", async () => {
+    render(<LoginForm />);
+
+    const emailInput = screen.getByLabelText(/email/i);
+    await userEvent.type(emailInput, "invalid-email");
+
+    expect(screen.getByText(/email tidak valid/i)).toBeInTheDocument();
+  });
+});
+```
+
+---
+
+## 🚀 Deployment Checklist
+
+### Backend (VPS)
+
+- [ ] Build Go binary: `go build -o tempaskill-api cmd/api/main.go`
+- [ ] Setup systemd service
+- [ ] Configure Nginx reverse proxy (port 8080 → 80/443)
+- [ ] SSL certificate (Let's Encrypt)
+- [ ] Environment variables configured
+- [ ] Database migrations run
+- [ ] Health check endpoint working
+
+### Frontend (Vercel)
+
+- [ ] Push to GitHub repository
+- [ ] Connect Vercel to repo
+- [ ] Set environment variables (`NEXT_PUBLIC_API_URL`)
+- [ ] Custom domain configured
+- [ ] Production build successful
+- [ ] API connectivity verified
+
+---
+
+## 📞 Troubleshooting
+
+### Common Issues
+
+#### Backend
+
+```bash
+# CORS error
+# Fix: Update ALLOWED_ORIGINS in .env
+
+# Database connection failed
+# Check: MySQL running, credentials correct
+
+# JWT invalid
+# Check: JWT_SECRET matches, token not expired
+```
+
+#### Frontend
+
+```bash
+# API calls failing
+# Check: NEXT_PUBLIC_API_URL correct, backend running
+
+# Shadcn component not found
+# Run: npx shadcn-ui@latest add <component-name>
+
+# Tailwind classes not working
+# Check: Class name in content config, restart dev server
+```
+
+---
+
+## 📚 Quick Reference
+
+### Useful Commands
+
+**Backend:**
+
+```bash
+# Run server
+go run cmd/api/main.go
+
+# Run tests
+go test ./...
+
+# Format code
+go fmt ./...
+
+# Update dependencies
+go mod tidy
+```
+
+**Frontend:**
+
+```bash
+# Run dev server
+npm run dev
+
+# Build production
+npm run build
+
+# Add Shadcn component
+npx shadcn-ui@latest add button
+
+# Type check
+npm run type-check
+```
+
+---
+
+**Last Updated**: November 2, 2025  
+**Maintained by**: TempaSKill Development Team
