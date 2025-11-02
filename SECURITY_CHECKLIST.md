@@ -13,6 +13,7 @@
 - [x] Test with automated tools
 
 **Implementation:** `internal/middleware/ratelimit.go`
+
 - IP-based rate limiting with in-memory store
 - Configurable rates: "5-15M" for auth, "100-M" for API
 - Custom headers: X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset
@@ -24,6 +25,7 @@
 - [x] Add appropriate error messages
 
 **Implementation:** `internal/middleware/security.go`
+
 - RequestSizeLimit() with configurable max size (default 10MB)
 - Proper error handling with 413 Request Entity Too Large
 
@@ -35,6 +37,7 @@
 - [x] Verify production uses strong secret
 
 **Implementation:** `config/config.go`
+
 - Validation enforces minimum 32-character secret
 - Helpful error message with generation command
 - Strong 64-character secret configured in `.env`
@@ -51,6 +54,7 @@
 - [x] Test headers in responses
 
 **Implementation:** `internal/middleware/security.go`
+
 - SecurityHeaders() middleware with 6 critical headers
 - Applied before CORS in middleware chain
 - All headers verified via automated tests
@@ -63,6 +67,7 @@
 - [x] Test HTTPS enforcement
 
 **Implementation:** `cmd/api/main.go`
+
 - Conditional TLS based on APP_ENV=production
 - Uses cert.pem and key.pem files
 - HTTP fallback for development
