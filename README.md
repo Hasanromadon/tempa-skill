@@ -384,11 +384,33 @@ NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1
 
 ## 📚 Resources
 
+- [API Specification](API_SPEC.md) - Complete API documentation
+- [Database Schema](DATABASE.md) - Database design & relationships
+- [Development Guide](DEVELOPMENT.md) - Coding standards & best practices
+- [Security Audit](SECURITY_AUDIT.md) - **⚠️ Security & performance audit report**
+- [Security Checklist](SECURITY_CHECKLIST.md) - Implementation checklist
+- [Roadmap](ROADMAP.md) - Development timeline & progress
 - [Gin Documentation](https://gin-gonic.com/docs/)
 - [GORM Documentation](https://gorm.io/docs/)
 - [Next.js Documentation](https://nextjs.org/docs)
 - [Shadcn/ui Components](https://ui.shadcn.com/)
 - [TanStack Query](https://tanstack.com/query/latest)
+
+---
+
+## ⚠️ Security Notice
+
+**This application is NOT production-ready**. A comprehensive security audit has identified critical issues that must be addressed before deployment:
+
+- 🔴 **CRITICAL**: Missing rate limiting (brute force vulnerability)
+- 🔴 **CRITICAL**: No request size limits (DoS vulnerability)
+- 🔴 **CRITICAL**: Weak JWT secret enforcement
+- 🟠 **HIGH**: Missing security headers
+- 🟠 **HIGH**: N+1 query performance issues
+
+**See [SECURITY_AUDIT.md](SECURITY_AUDIT.md) for full report and remediation plan.**
+
+**Estimated time to production-ready**: 1-2 weeks of security hardening.
 
 ---
 
