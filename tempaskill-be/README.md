@@ -35,6 +35,20 @@ tempaskill-be/
 
 ## 🚀 Quick Start
 
+### Option 1: Using Makefile (Recommended)
+
+```bash
+# Install dependencies
+make setup
+
+# Create database and start server
+make start
+```
+
+See [MAKEFILE_GUIDE.md](MAKEFILE_GUIDE.md) for all available commands.
+
+### Option 2: Manual Setup
+
 ### 1. Clone & Install Dependencies
 
 ```bash

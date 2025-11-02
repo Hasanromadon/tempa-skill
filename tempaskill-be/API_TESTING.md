@@ -3,6 +3,7 @@
 ## 🧪 Authentication Endpoints Testing
 
 ### Base URL
+
 ```
 http://localhost:8080/api/v1
 ```
@@ -16,6 +17,7 @@ curl http://localhost:8080/api/v1/health
 ```
 
 **Expected Response:**
+
 ```json
 {
   "success": true,
@@ -49,6 +51,7 @@ curl -X POST http://localhost:8080/api/v1/auth/register \
 ```
 
 **Expected Response (201):**
+
 ```json
 {
   "success": true,
@@ -66,6 +69,7 @@ curl -X POST http://localhost:8080/api/v1/auth/register \
 ```
 
 **Validation Errors (400):**
+
 ```json
 {
   "success": false,
@@ -75,6 +79,7 @@ curl -X POST http://localhost:8080/api/v1/auth/register \
 ```
 
 **Email Already Exists (400):**
+
 ```json
 {
   "success": false,
@@ -93,6 +98,7 @@ curl -X POST http://localhost:8080/api/v1/auth/login \
 ```
 
 **Expected Response (200):**
+
 ```json
 {
   "success": true,
@@ -113,6 +119,7 @@ curl -X POST http://localhost:8080/api/v1/auth/login \
 ```
 
 **Invalid Credentials (401):**
+
 ```json
 {
   "success": false,
@@ -132,6 +139,7 @@ curl http://localhost:8080/api/v1/auth/me \
 ```
 
 **Expected Response (200):**
+
 ```json
 {
   "success": true,
@@ -149,6 +157,7 @@ curl http://localhost:8080/api/v1/auth/me \
 ```
 
 **No Token (401):**
+
 ```json
 {
   "success": false,
@@ -157,6 +166,7 @@ curl http://localhost:8080/api/v1/auth/me \
 ```
 
 **Invalid Token (401):**
+
 ```json
 {
   "success": false,
@@ -225,6 +235,7 @@ Invoke-RestMethod -Method Get -Uri "http://localhost:8080/api/v1/auth/me" -Heade
 ## 🐛 Common Issues
 
 ### Server Not Running
+
 ```bash
 # Check if port 8080 is in use
 netstat -ano | findstr :8080
@@ -234,6 +245,7 @@ PORT=8081
 ```
 
 ### Database Connection Error
+
 ```bash
 # Verify MySQL is running
 # Check .env credentials match your MySQL setup
@@ -243,6 +255,7 @@ DB_NAME=tempaskill
 ```
 
 ### JWT Secret Error
+
 ```bash
 # Ensure JWT_SECRET is set in .env
 JWT_SECRET=tempaskill-dev-secret-key-please-change-in-production-2025
@@ -253,6 +266,7 @@ JWT_SECRET=tempaskill-dev-secret-key-please-change-in-production-2025
 ## 🚀 Next Steps
 
 After authentication works:
+
 1. Test user management endpoints (Task 3)
 2. Test course CRUD operations (Task 4)
 3. Test progress tracking (Task 5)

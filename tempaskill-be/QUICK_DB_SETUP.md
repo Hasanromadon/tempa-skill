@@ -3,8 +3,8 @@
 Buka MySQL Workbench atau command line, lalu jalankan:
 
 ```sql
-CREATE DATABASE IF NOT EXISTS tempaskill 
-CHARACTER SET utf8mb4 
+CREATE DATABASE IF NOT EXISTS tempaskill
+CHARACTER SET utf8mb4
 COLLATE utf8mb4_unicode_ci;
 ```
 
