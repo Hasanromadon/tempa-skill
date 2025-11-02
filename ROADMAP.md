@@ -131,15 +131,17 @@
   ✓ enrollment_repository.go (with duplicate prevention)
   ✓ Published course validation
 
-□ Task 2.5: Progress Tracking (3 hours)
-  ├─ progress_model.go
-  ├─ progress_handler.go (POST /lessons/:id/complete)
-  ├─ progress_service.go (MarkComplete, GetProgress)
-  ├─ progress_repository.go
-  └─ Calculate course progress percentage
+✅ Task 2.5: Progress Tracking (3 hours) - COMPLETED
+  ✓ progress_model.go (LessonProgress with indexes)
+  ✓ progress_handler.go (POST /lessons/:id/complete, GET /courses/:id/progress, GET /users/me/progress)
+  ✓ progress_service.go (MarkComplete, GetProgress, percentage calculation)
+  ✓ progress_repository.go (idempotent completion, progress queries)
+  ✓ progress_dto.go (CourseProgressResponse, UserProgressSummary)
+  ✓ Comprehensive testing (10/10 tests passing)
+  ✓ Course completion detection (100%)
 ```
 
-**Total Backend: ~15 hours** ✅ COMPLETED (12/15 hours done, Task 2.5 remaining)
+**Total Backend: ~15 hours** ✅ COMPLETED
 
 ### Frontend Tasks
 

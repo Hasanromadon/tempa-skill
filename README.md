@@ -33,9 +33,9 @@
 - ✅ **Autentikasi pengguna** - Register/Login dengan JWT, middleware protection
 - ✅ **User Management** - Get profile, update profile, change password
 - ✅ **Course Management** - CRUD operations, enrollment, lessons, slug-based retrieval
+- ✅ **Progress Tracking** - Mark lessons complete, track progress percentage, course completion
 - 🚧 **Course catalog** - Search & filter (completed, frontend UI pending)
 - 🚧 **Halaman pembelajaran** - Berbasis MDX (backend ready, frontend pending)
-- 🚧 **Progress tracking** - Tandai lesson sebagai selesai (backend pending)
 - 🚧 **Dashboard** - Jadwal sesi online (coming soon)
 
 ---
@@ -176,8 +176,8 @@ colors: {
 - [x] ✅ **Backend**: Course CRUD & enrollment system (10/10 API tests passing)
 - [x] ✅ **Backend**: Lesson management with MDX content storage
 - [x] ✅ **Backend**: Enrollment/Unenrollment functionality
-- [x] ✅ **Testing**: PowerShell API test suite (test-course-quick.ps1)
-- [ ] 🚧 **Backend**: Progress tracking system
+- [x] ✅ **Backend**: Progress tracking system (10/10 tests passing)
+- [x] ✅ **Testing**: PowerShell API test suite (test-course-quick.ps1, test-progress.ps1)
 - [ ] 🚧 **Frontend**: Authentication pages
 - [ ] 🚧 **Frontend**: Course catalog UI
 
@@ -320,11 +320,12 @@ PATCH  /api/v1/lessons/:id                # Update lesson (instructor/admin)
 DELETE /api/v1/lessons/:id                # Delete lesson (instructor/admin)
 ```
 
-### Progress (Coming Soon)
+### Progress Tracking
 
 ```
-GET    /api/v1/courses/:id/progress     # Get course progress
-GET    /api/v1/users/me/progress        # Get all user progress
+POST   /api/v1/lessons/:id/complete     # Mark lesson as completed (protected)
+GET    /api/v1/courses/:id/progress     # Get course progress (protected)
+GET    /api/v1/users/me/progress        # Get all user progress (protected)
 ```
 
 ---

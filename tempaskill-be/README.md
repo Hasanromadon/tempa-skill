@@ -100,17 +100,24 @@ Server akan berjalan di `http://localhost:8080`
 
 ## 🧪 Test API
 
-### Quick Test Suite
+### Quick Test Suites
 
-Run the comprehensive API test suite:
+Run the comprehensive API test suites:
 
 ```bash
 # From project root
 cd ..
+
+# Test course management (10/10 tests)
 .\test-course-quick.ps1
+
+# Test progress tracking (10/10 tests)
+.\test-progress.ps1
 ```
 
-**Test Coverage**: 10/10 tests passing ✅
+**Test Coverage**: 20/20 tests passing ✅
+
+**Course Management** (10/10):
 
 - Health check
 - List courses with pagination
@@ -121,6 +128,18 @@ cd ..
 - Course update
 - Enrollment/Unenrollment
 - Lesson creation
+
+**Progress Tracking** (10/10):
+
+- Setup course with lessons
+- Student enrollment
+- Mark lessons as complete
+- Progress percentage calculation
+- Idempotent completion
+- Course completion (100%)
+- User progress summary
+- Enrollment validation
+- Authentication requirements
 
 ### Manual API Testing
 
@@ -217,7 +236,7 @@ Lihat `DATABASE.md` di root project untuk detail schema lengkap.
 - [x] **Task 2**: Implement Authentication (Register, Login, JWT Middleware) ✅
 - [x] **Task 3**: Implement User Management (Profile, Update) ✅
 - [x] **Task 4**: Implement Course Management (CRUD, Enrollment, Lessons) ✅
-- [ ] **Task 5**: Implement Progress Tracking (In Progress)
+- [x] **Task 5**: Implement Progress Tracking ✅
 
 ## 📚 API Endpoints
 
@@ -255,6 +274,14 @@ Lihat `DATABASE.md` di root project untuk detail schema lengkap.
 | `POST`   | `/api/v1/courses/:courseId/lessons` | Create lesson     | ✅   |
 | `PATCH`  | `/api/v1/lessons/:id`               | Update lesson     | ✅   |
 | `DELETE` | `/api/v1/lessons/:id`               | Delete lesson     | ✅   |
+
+### Progress Tracking
+
+| Method | Endpoint                       | Description          | Auth |
+| ------ | ------------------------------ | -------------------- | ---- |
+| `POST` | `/api/v1/lessons/:id/complete` | Mark lesson complete | ✅   |
+| `GET`  | `/api/v1/courses/:id/progress` | Get course progress  | ✅   |
+| `GET`  | `/api/v1/users/me/progress`    | Get user progress    | ✅   |
 
 Lihat `API_SPEC.md` untuk dokumentasi lengkap.
 
@@ -302,5 +329,5 @@ MIT License - lihat [LICENSE](../LICENSE)
 
 ---
 
-**Status**: ✅ Course Management Complete (10/10 API tests passing)  
-**Next**: Task 5 - Implement Progress Tracking
+**Status**: ✅ Backend Core Complete (20/20 API tests passing)  
+**Phase**: Backend development complete, ready for frontend integration
