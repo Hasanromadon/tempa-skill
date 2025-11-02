@@ -4,7 +4,142 @@
 
 ---
 
-## 🎯 Aturan Konteks Utama
+## �🇩 BAHASA INDONESIA WAJIB (MANDATORY)
+
+### ⚠️ CRITICAL RESTRICTION - TIDAK BOLEH DILANGGAR
+
+**Semua text yang terlihat oleh user HARUS dalam Bahasa Indonesia!**
+
+Ini BUKAN preferensi, ini adalah **REQUIREMENT WAJIB** untuk platform TempaSKill yang menargetkan pengguna Indonesia.
+
+### ✅ DO (Contoh Benar)
+
+```tsx
+// Form Labels
+<Label>Email</Label>              // OK - universal term
+<Label>Kata Sandi</Label>         // ✅ Correct
+
+// Buttons
+<Button>Masuk</Button>
+<Button>Daftar</Button>
+<Button>Mulai Belajar</Button>
+<Button disabled={isLoading}>
+  {isLoading ? "Sedang memuat..." : "Simpan"}
+</Button>
+
+// Error Messages
+setError("Email wajib diisi")
+setError("Kata sandi minimal 6 karakter")
+toast.error("Login gagal. Silakan coba lagi.")
+
+// Success Messages
+toast.success("Pendaftaran berhasil!")
+toast.success("Profil berhasil diperbarui")
+
+// Descriptions
+<CardDescription>
+  Masuk ke akun TempaSKill Anda untuk melanjutkan belajar
+</CardDescription>
+
+// Headings
+<CardTitle>Selamat Datang Kembali</CardTitle>
+<h1>Jelajahi Kursus</h1>
+```
+
+### ❌ DON'T (Contoh Salah)
+
+```tsx
+// ❌ English text - TIDAK BOLEH!
+<Button>Sign In</Button>
+<Label>Password</Label>
+setError("Email is required")
+<h1>Welcome Back</h1>
+<CardDescription>Join TempaSKill to start learning</CardDescription>
+
+// ❌ Mixed language - TIDAK KONSISTEN!
+<Button>Login</Button>  // Gunakan "Masuk" atau "Daftar"
+<Label>Password</Label> // Gunakan "Kata Sandi"
+```
+
+### 📚 Translation Quick Reference
+
+| English | Indonesian | Context |
+|---------|------------|---------|
+| Sign In / Login | Masuk | Button, link |
+| Sign Up / Register | Daftar | Button, link |
+| Create Account | Buat Akun | Title, button |
+| Password | Kata Sandi | Label, placeholder |
+| Confirm Password | Konfirmasi Kata Sandi | Label |
+| Welcome Back | Selamat Datang Kembali | Title, greeting |
+| Browse Courses | Jelajahi Kursus | Link, CTA |
+| Enroll | Daftar / Ikuti | Button for courses |
+| Continue Learning | Lanjutkan Belajar | Button, link |
+| Start Learning | Mulai Belajar | Button, CTA |
+| Get Started | Mulai | CTA button |
+| Mark as Complete | Tandai Selesai | Button |
+| Dashboard | Dasbor | Navigation |
+| Profile | Profil | Navigation |
+| Settings | Pengaturan | Navigation |
+| Search | Cari | Placeholder, button |
+| Filter | Filter | Button, label |
+| Category | Kategori | Label |
+| Difficulty | Tingkat Kesulitan | Label |
+| Price | Harga | Label |
+| Free | Gratis | Tag, label |
+| Lessons | Pelajaran | Counter, label |
+| Students | Siswa | Counter, label |
+| Enrolled | Terdaftar | Status |
+| Progress | Kemajuan | Label |
+| Learn More | Pelajari Lebih Lanjut | Link |
+| Back | Kembali | Button |
+| Next | Selanjutnya | Button |
+| Previous | Sebelumnya | Button |
+| Cancel | Batal | Button |
+| Submit | Kirim | Button |
+| Save | Simpan | Button |
+| Edit | Ubah / Edit | Button |
+| Delete | Hapus | Button |
+| Update | Perbarui | Button |
+| Create | Buat | Button |
+| Add | Tambah | Button |
+| Remove | Hapus | Button |
+| Loading... | Sedang memuat... | Loading state |
+| Please wait... | Mohon tunggu... | Loading state |
+| Try again | Coba lagi | Error action |
+| Error | Kesalahan | Error title |
+| Success | Berhasil | Success title |
+| Warning | Peringatan | Warning title |
+
+### Common Error Messages
+
+```tsx
+// ❌ English
+"Email is required" → "Email wajib diisi"
+"Password is required" → "Kata sandi wajib diisi"
+"Invalid email format" → "Format email tidak valid"
+"Passwords do not match" → "Kata sandi tidak cocok"
+"Login failed. Please try again." → "Login gagal. Silakan coba lagi."
+"Registration failed" → "Pendaftaran gagal"
+"Something went wrong" → "Terjadi kesalahan"
+
+// ✅ Indonesian
+setError("Email wajib diisi")
+setError("Kata sandi wajib diisi")
+setError("Format email tidak valid")
+setError("Kata sandi tidak cocok")
+toast.error("Login gagal. Silakan coba lagi.")
+```
+
+### Enforcement
+
+- **Pre-commit**: Check untuk English text di komponen UI
+- **Code Review**: Reject PR yang mengandung English labels/messages
+- **Testing**: Verify semua text user-facing dalam Bahasa Indonesia
+- **Exception**: Hanya code comments, variable names, dan technical terms yang boleh English
+
+---
+
+## �🎯 Aturan Konteks Utama
 
 ### ⚖️ Deteksi Workspace Otomatis
 

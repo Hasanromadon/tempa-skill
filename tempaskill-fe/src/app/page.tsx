@@ -16,12 +16,12 @@ export default function Home() {
         <div className="container mx-auto max-w-6xl">
           <div className="text-center">
             <h1 className="text-5xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-              Learn Skills Through
-              <span className="text-orange-600"> Text-Based Courses</span>
+              Belajar Keterampilan Melalui
+              <span className="text-orange-600"> Kursus Berbasis Teks</span>
             </h1>
             <p className="mt-6 text-lg leading-8 text-gray-600 max-w-2xl mx-auto">
-              TempaSKill offers efficient learning through text-based materials
-              combined with bi-weekly live sessions for interactive Q&A and live
+              TempaSKill menawarkan pembelajaran efisien melalui materi berbasis teks
+              yang dikombinasikan dengan sesi langsung dua minggu sekali untuk Q&A interaktif dan live
               coding.
             </p>
             <div className="mt-10 flex items-center justify-center gap-4">
@@ -30,7 +30,7 @@ export default function Home() {
                   size="lg"
                   className="bg-orange-600 hover:bg-orange-700 text-white text-lg px-8"
                 >
-                  Browse Courses
+                  Jelajahi Kursus
                 </Button>
               </Link>
               <Link href="/register">
@@ -39,7 +39,7 @@ export default function Home() {
                   variant="outline"
                   className="border-orange-600 text-orange-600 hover:bg-orange-50 text-lg px-8"
                 >
-                  Get Started Free
+                  Mulai Gratis
                 </Button>
               </Link>
             </div>
@@ -52,48 +52,48 @@ export default function Home() {
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900">
-              Why TempaSKill?
+              Mengapa TempaSKill?
             </h2>
             <p className="mt-4 text-lg text-gray-600">
-              A hybrid approach to online learning
+              Pendekatan hybrid untuk pembelajaran online
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card>
               <CardHeader>
                 <BookOpen className="h-10 w-10 text-orange-600 mb-2" />
-                <CardTitle>Text-Based Learning</CardTitle>
+                <CardTitle>Pembelajaran Berbasis Teks</CardTitle>
                 <CardDescription>
-                  Efficient, bandwidth-friendly courses you can read at your own
-                  pace
+                  Kursus efisien dan hemat bandwidth yang dapat Anda baca sesuai
+                  kecepatan Anda sendiri
                 </CardDescription>
               </CardHeader>
             </Card>
             <Card>
               <CardHeader>
                 <Users className="h-10 w-10 text-orange-600 mb-2" />
-                <CardTitle>Live Sessions</CardTitle>
+                <CardTitle>Sesi Langsung</CardTitle>
                 <CardDescription>
-                  Bi-weekly Zoom/Meet sessions for Q&A and interactive learning
+                  Sesi Zoom/Meet dua minggu sekali untuk Q&A dan pembelajaran interaktif
                 </CardDescription>
               </CardHeader>
             </Card>
             <Card>
               <CardHeader>
                 <Zap className="h-10 w-10 text-orange-600 mb-2" />
-                <CardTitle>Fast & Accessible</CardTitle>
+                <CardTitle>Cepat & Mudah Diakses</CardTitle>
                 <CardDescription>
-                  Learn anywhere, even with limited internet bandwidth
+                  Belajar di mana saja, bahkan dengan bandwidth internet terbatas
                 </CardDescription>
               </CardHeader>
             </Card>
             <Card>
               <CardHeader>
                 <TrendingUp className="h-10 w-10 text-orange-600 mb-2" />
-                <CardTitle>Track Progress</CardTitle>
+                <CardTitle>Lacak Kemajuan</CardTitle>
                 <CardDescription>
-                  Monitor your learning journey and complete courses at your
-                  pace
+                  Pantau perjalanan belajar Anda dan selesaikan kursus sesuai
+                  kecepatan Anda
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -105,10 +105,10 @@ export default function Home() {
       <section className="bg-orange-600 py-16 px-4">
         <div className="container mx-auto max-w-4xl text-center">
           <h2 className="text-3xl font-bold text-white">
-            Ready to Start Learning?
+            Siap Mulai Belajar?
           </h2>
           <p className="mt-4 text-lg text-orange-100">
-            Join thousands of students learning efficiently with TempaSKill
+            Bergabung dengan ribuan siswa yang belajar efisien dengan TempaSKill
           </p>
           <div className="mt-8">
             <Link href="/register">
@@ -117,7 +117,7 @@ export default function Home() {
                 variant="secondary"
                 className="bg-white text-orange-600 hover:bg-gray-100 text-lg px-8"
               >
-                Create Free Account
+                Buat Akun Gratis
               </Button>
             </Link>
           </div>

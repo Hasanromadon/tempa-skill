@@ -35,7 +35,7 @@ export default function LoginPage() {
     } catch (err) {
       const errorMessage =
         (err as any).response?.data?.error?.message ||
-        "Login failed. Please try again.";
+        "Login gagal. Silakan coba lagi.";
       setError(errorMessage);
     }
   };
@@ -45,10 +45,10 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
-            Welcome Back
+            Selamat Datang Kembali
           </CardTitle>
           <CardDescription className="text-center">
-            Sign in to your TempaSKill account
+            Masuk ke akun TempaSKill Anda
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -71,7 +71,7 @@ export default function LoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Kata Sandi</Label>
               <Input
                 id="password"
                 type="password"
@@ -92,19 +92,19 @@ export default function LoginPage() {
               {login.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
+                  Sedang masuk...
                 </>
               ) : (
-                "Sign In"
+                "Masuk"
               )}
             </Button>
             <p className="text-center text-sm text-gray-600">
-              Don&apos;t have an account?{" "}
+              Belum punya akun?{" "}
               <Link
                 href="/register"
                 className="font-medium text-orange-600 hover:text-orange-700"
               >
-                Sign up
+                Daftar
               </Link>
             </p>
           </CardFooter>

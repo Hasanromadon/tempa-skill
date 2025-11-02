@@ -43,8 +43,21 @@ export default function CoursesPage() {
     }
   };
 
+  const getDifficultyText = (difficulty: string) => {
+    switch (difficulty) {
+      case "beginner":
+        return "Pemula";
+      case "intermediate":
+        return "Menengah";
+      case "advanced":
+        return "Lanjutan";
+      default:
+        return difficulty;
+    }
+  };
+
   const formatPrice = (price: number) => {
-    if (price === 0) return "Free";
+    if (price === 0) return "Gratis";
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
       currency: "IDR",
@@ -60,10 +73,10 @@ export default function CoursesPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
-                Explore Courses
+                Jelajahi Kursus
               </h1>
               <p className="text-gray-600 mt-1">
-                Discover text-based courses with live sessions
+                Temukan kursus berbasis teks dengan sesi langsung
               </p>
             </div>
             {!isAuthenticated && (
@@ -73,12 +86,12 @@ export default function CoursesPage() {
                     variant="outline"
                     className="border-orange-600 text-orange-600 hover:bg-orange-50"
                   >
-                    Sign In
+                    Masuk
                   </Button>
                 </Link>
                 <Link href="/register">
                   <Button className="bg-orange-600 hover:bg-orange-700 text-white">
-                    Get Started
+                    Mulai
                   </Button>
                 </Link>
               </div>
@@ -90,7 +103,7 @@ export default function CoursesPage() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input
               type="text"
-              placeholder="Search courses..."
+              placeholder="Cari kursus..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-10"
@@ -118,7 +131,7 @@ export default function CoursesPage() {
         ) : error ? (
           <div className="text-center py-12">
             <p className="text-red-600">
-              Failed to load courses. Please try again.
+              Gagal memuat kursus. Silakan coba lagi.
             </p>
           </div>
         ) : data && data.courses.length > 0 ? (
@@ -132,10 +145,10 @@ export default function CoursesPage() {
                         <Badge
                           className={getDifficultyColor(course.difficulty)}
                         >
-                          {course.difficulty}
+                          {getDifficultyText(course.difficulty)}
                         </Badge>
                         {course.is_enrolled && (
-                          <Badge variant="outline">Enrolled</Badge>
+                          <Badge variant="outline">Terdaftar</Badge>
                         )}
                       </div>
                       <CardTitle className="text-xl line-clamp-2">
@@ -149,11 +162,11 @@ export default function CoursesPage() {
                       <div className="flex items-center gap-4 text-sm text-gray-600">
                         <div className="flex items-center gap-1">
                           <BookOpen className="h-4 w-4" />
-                          <span>{course.lesson_count} lessons</span>
+                          <span>{course.lesson_count} pelajaran</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Users className="h-4 w-4" />
-                          <span>{course.enrolled_count} students</span>
+                          <span>{course.enrolled_count} siswa</span>
                         </div>
                       </div>
                       <div className="mt-4 flex items-center justify-between">
@@ -175,8 +188,8 @@ export default function CoursesPage() {
                         variant={course.is_enrolled ? "outline" : "default"}
                       >
                         {course.is_enrolled
-                          ? "Continue Learning"
-                          : "View Course"}
+                          ? "Lanjutkan Belajar"
+                          : "Lihat Kursus"}
                       </Button>
                     </CardFooter>
                   </Card>
@@ -192,17 +205,17 @@ export default function CoursesPage() {
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
                 >
-                  Previous
+                  Sebelumnya
                 </Button>
                 <span className="text-sm text-gray-600">
-                  Page {page} of {Math.ceil(data.total / limit)}
+                  Halaman {page} dari {Math.ceil(data.total / limit)}
                 </span>
                 <Button
                   variant="outline"
                   onClick={() => setPage((p) => p + 1)}
                   disabled={page >= Math.ceil(data.total / limit)}
                 >
-                  Next
+                  Selanjutnya
                 </Button>
               </div>
             )}
@@ -210,7 +223,7 @@ export default function CoursesPage() {
         ) : (
           <div className="text-center py-12">
             <p className="text-gray-600">
-              No courses found. Try adjusting your search.
+              Tidak ada kursus ditemukan. Coba sesuaikan pencarian Anda.
             </p>
           </div>
         )}

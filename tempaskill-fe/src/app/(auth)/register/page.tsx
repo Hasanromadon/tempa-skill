@@ -42,7 +42,7 @@ export default function RegisterPage() {
 
     // Validate passwords match
     if (formData.password !== formData.password_confirmation) {
-      setError("Passwords do not match");
+      setError("Kata sandi tidak cocok");
       return;
     }
 
@@ -53,7 +53,7 @@ export default function RegisterPage() {
       const errorMessage =
         (err as { response?: { data?: { error?: { message?: string } } } })
           .response?.data?.error?.message ||
-        "Registration failed. Please try again.";
+        "Pendaftaran gagal. Silakan coba lagi.";
       setError(errorMessage);
     }
   };
@@ -63,10 +63,10 @@ export default function RegisterPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
-            Create Account
+            Buat Akun
           </CardTitle>
           <CardDescription className="text-center">
-            Join TempaSKill to start learning
+            Bergabung dengan TempaSKill untuk mulai belajar
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -77,7 +77,7 @@ export default function RegisterPage() {
               </Alert>
             )}
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
+              <Label htmlFor="name">Nama Lengkap</Label>
               <Input
                 id="name"
                 name="name"
@@ -103,7 +103,7 @@ export default function RegisterPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Kata Sandi</Label>
               <Input
                 id="password"
                 name="password"
@@ -115,10 +115,10 @@ export default function RegisterPage() {
                 minLength={8}
                 disabled={register.isPending}
               />
-              <p className="text-xs text-gray-500">Minimum 8 characters</p>
+              <p className="text-xs text-gray-500">Minimal 8 karakter</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password_confirmation">Confirm Password</Label>
+              <Label htmlFor="password_confirmation">Konfirmasi Kata Sandi</Label>
               <Input
                 id="password_confirmation"
                 name="password_confirmation"
@@ -140,19 +140,19 @@ export default function RegisterPage() {
               {register.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating account...
+                  Membuat akun...
                 </>
               ) : (
-                "Create Account"
+                "Buat Akun"
               )}
             </Button>
             <p className="text-center text-sm text-gray-600">
-              Already have an account?{" "}
+              Sudah punya akun?{" "}
               <Link
                 href="/login"
                 className="font-medium text-orange-600 hover:text-orange-700"
               >
-                Sign in
+                Masuk
               </Link>
             </p>
           </CardFooter>

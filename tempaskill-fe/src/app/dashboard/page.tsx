@@ -65,10 +65,10 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
-                Welcome back, {user.name}!
+                Selamat datang kembali, {user.name}!
               </h1>
               <p className="text-gray-600 mt-1">
-                Continue your learning journey
+                Lanjutkan perjalanan belajar Anda
               </p>
             </div>
             <div className="flex gap-2">
@@ -77,12 +77,12 @@ export default function DashboardPage() {
                   variant="outline"
                   className="border-orange-600 text-orange-600 hover:bg-orange-50"
                 >
-                  Browse Courses
+                  Jelajahi Kursus
                 </Button>
               </Link>
               <Button variant="ghost" onClick={handleLogout}>
                 <LogOut className="h-4 w-4 mr-2" />
-                Logout
+                Keluar
               </Button>
             </div>
           </div>
@@ -107,7 +107,7 @@ export default function DashboardPage() {
           </div>
         ) : progress && progress.length > 0 ? (
           <>
-            <h2 className="text-2xl font-bold mb-6">Your Enrolled Courses</h2>
+            <h2 className="text-2xl font-bold mb-6">Kursus yang Anda Ikuti</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {progress.map((item) => (
                 <Link
@@ -121,14 +121,14 @@ export default function DashboardPage() {
                         {item.course_title}
                       </CardTitle>
                       <CardDescription>
-                        {item.completed_lessons} of {item.total_lessons} lessons
-                        completed
+                        {item.completed_lessons} dari {item.total_lessons} pelajaran
+                        selesai
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600">Progress</span>
+                          <span className="text-gray-600">Kemajuan</span>
                           <span className="font-medium">
                             {item.progress_percentage}%
                           </span>
@@ -136,7 +136,7 @@ export default function DashboardPage() {
                         <Progress value={item.progress_percentage} />
                         {item.is_completed && (
                           <p className="text-sm text-green-600 font-medium mt-2">
-                            ✓ Completed
+                            ✓ Selesai
                           </p>
                         )}
                       </div>
@@ -150,17 +150,17 @@ export default function DashboardPage() {
           <div className="text-center py-12">
             <BookOpen className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-              No Enrolled Courses Yet
+              Belum Ada Kursus yang Diikuti
             </h2>
             <p className="text-gray-600 mb-6">
-              Start learning by enrolling in a course
+              Mulai belajar dengan mendaftar kursus
             </p>
             <Link href="/courses">
               <Button
                 size="lg"
                 className="bg-orange-600 hover:bg-orange-700 text-white"
               >
-                Browse Courses
+                Jelajahi Kursus
               </Button>
             </Link>
           </div>

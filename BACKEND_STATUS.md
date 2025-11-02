@@ -14,6 +14,7 @@
 **Result**: ✅ **PASSING**
 
 ### Endpoints Tested
+
 - ✅ Health check - Database connected, version 1.0.0
 - ✅ User registration - Created user ID 39
 - ✅ User login - JWT token generated successfully
@@ -23,6 +24,7 @@
 - ✅ User progress - Progress tracking operational
 
 ### Performance Validation
+
 - ✅ N+1 Query Fix: Single query for course listing with counts
 - ✅ Response time: <50ms for 10 courses with metadata
 - ✅ Request ID present in all responses
@@ -35,6 +37,7 @@
 ## ✅ Completed Features (100%)
 
 ### 1. Authentication & Authorization
+
 - ✅ User registration with validation
 - ✅ User login with JWT tokens
 - ✅ Get current user endpoint
@@ -43,6 +46,7 @@
 - ✅ Request ID tracing
 
 ### 2. User Management
+
 - ✅ Get user by ID (public endpoint)
 - ✅ Update user profile (name, bio, avatar_url)
 - ✅ Change password with validation
@@ -50,6 +54,7 @@
 - ✅ Request ID in all logs
 
 ### 3. Course Management
+
 - ✅ Create course (admin only)
 - ✅ Get course by ID
 - ✅ Get course by slug
@@ -64,6 +69,7 @@
 - ✅ Conditional enrollment status (guest vs authenticated)
 
 ### 4. Lesson Management
+
 - ✅ Create lesson (admin only)
 - ✅ Get lesson by ID
 - ✅ Get all lessons for a course
@@ -74,6 +80,7 @@
 - ✅ Duration tracking (reading time)
 
 ### 5. Progress Tracking
+
 - ✅ Mark lesson as complete
 - ✅ Get course progress (with percentage)
 - ✅ Get all user progress
@@ -82,6 +89,7 @@
 - ✅ Last activity tracking
 
 ### 6. Security & Observability
+
 - ✅ Request ID tracing (UUID per request)
 - ✅ Structured logging with Zap
 - ✅ Repository layer error logging
@@ -98,6 +106,7 @@
 - ✅ Error filtering (excludes not-found errors)
 
 ### 7. Performance Optimizations
+
 - ✅ N+1 query problem solved
 - ✅ Single optimized query for course listings
 - ✅ Conditional JOINs based on authentication
@@ -111,16 +120,19 @@
 ### Total: 22 Endpoints
 
 #### Authentication (3)
+
 - `POST /api/v1/auth/register` - Register new user
 - `POST /api/v1/auth/login` - Login user
 - `GET /api/v1/auth/me` - Get current user (auth required)
 
 #### Users (3)
+
 - `GET /api/v1/users/:id` - Get user by ID (public)
 - `PATCH /api/v1/users/me` - Update profile (auth required)
 - `PUT /api/v1/users/me/password` - Change password (auth required)
 
 #### Courses (8)
+
 - `POST /api/v1/courses` - Create course (admin)
 - `GET /api/v1/courses` - List courses with filters
 - `GET /api/v1/courses/:id` - Get course by ID
@@ -131,6 +143,7 @@
 - `DELETE /api/v1/courses/:id/enroll` - Unenroll from course (auth required)
 
 #### Lessons (5)
+
 - `POST /api/v1/courses/:id/lessons` - Create lesson (admin)
 - `GET /api/v1/courses/:id/lessons` - Get course lessons
 - `GET /api/v1/courses/:courseId/lessons/:id` - Get lesson by ID
@@ -138,6 +151,7 @@
 - `DELETE /api/v1/courses/:courseId/lessons/:id` - Delete lesson (admin)
 
 #### Progress (3)
+
 - `POST /api/v1/progress/lessons/:lessonId/complete` - Mark lesson complete (auth required)
 - `GET /api/v1/progress/courses/:courseId` - Get course progress (auth required)
 - `GET /api/v1/progress/me` - Get all user progress (auth required)
@@ -146,27 +160,29 @@
 
 ## 🔧 Technical Stack
 
-| Component          | Technology                    | Version |
-| ------------------ | ----------------------------- | ------- |
-| Language           | Go                            | 1.23+   |
-| Web Framework      | Gin                           | 1.11.0  |
-| ORM                | GORM                          | Latest  |
-| Database           | MySQL                         | 8.0+    |
-| Authentication     | JWT (golang-jwt)              | Latest  |
-| Logging            | Zap (uber)                    | Latest  |
-| Validation         | go-playground/validator       | Latest  |
-| Password Hashing   | bcrypt                        | Latest  |
-| UUID Generation    | google/uuid                   | Latest  |
+| Component        | Technology              | Version |
+| ---------------- | ----------------------- | ------- |
+| Language         | Go                      | 1.23+   |
+| Web Framework    | Gin                     | 1.11.0  |
+| ORM              | GORM                    | Latest  |
+| Database         | MySQL                   | 8.0+    |
+| Authentication   | JWT (golang-jwt)        | Latest  |
+| Logging          | Zap (uber)              | Latest  |
+| Validation       | go-playground/validator | Latest  |
+| Password Hashing | bcrypt                  | Latest  |
+| UUID Generation  | google/uuid             | Latest  |
 
 ---
 
 ## 📁 Database Models
 
 ### Users
+
 - `id`, `name`, `email`, `password`, `role`, `bio`, `avatar_url`
 - Soft deletes, timestamps
 
 ### Courses
+
 - `id`, `title`, `slug`, `description`, `thumbnail_url`
 - `category`, `difficulty`, `instructor_id`, `price`
 - `is_published`, `enrolled_count`
@@ -174,16 +190,19 @@
 - Relations: lessons, enrollments
 
 ### Lessons
+
 - `id`, `course_id`, `title`, `slug`, `content` (MDX)
 - `order_index`, `duration`, `is_published`
 - Soft deletes, timestamps
 
 ### Enrollments
+
 - `id`, `user_id`, `course_id`, `progress` (0-100)
 - `enrolled_at`, timestamps
 - Soft deletes
 
 ### Lesson Progress
+
 - `id`, `user_id`, `lesson_id`, `course_id`
 - `completed_at`, timestamps
 - Unique index on (user_id, lesson_id)
@@ -193,6 +212,7 @@
 ## 🎯 Response Format
 
 ### Success Response
+
 ```json
 {
   "success": true,
@@ -203,6 +223,7 @@
 ```
 
 ### Error Response
+
 ```json
 {
   "success": false,
@@ -224,10 +245,12 @@
 ### Optimization Results
 
 **Before (N+1 Queries)**:
+
 - Course listing: 101 queries (1 + 100 subqueries)
 - Response time: ~500ms for 100 courses
 
 **After (Optimized)**:
+
 - Course listing: 1 query with LEFT JOINs
 - Response time: ~5ms for 100 courses
 - **Improvement: 100x faster** ⚡
@@ -235,11 +258,13 @@
 ### Key Optimizations
 
 1. **Single Query with LEFT JOINs**
+
    - Lesson count via subquery JOIN
    - Enrollment status via conditional JOIN
    - All in one database roundtrip
 
 2. **Conditional JOINs**
+
    - `is_enrolled` = 0 for guests (no JOIN needed)
    - `is_enrolled` = actual status for authenticated users (with JOIN)
    - Prevents SQL errors for missing columns
@@ -256,27 +281,32 @@
 ### Implemented
 
 1. **Authentication**
+
    - JWT-based authentication
    - Secure password hashing (bcrypt)
    - Token expiration (24 hours)
 
 2. **Authorization**
+
    - Role-based access control
    - Admin-only endpoints
    - User-specific data access
 
 3. **Rate Limiting**
+
    - IP-based rate limiting
    - Configurable limits per endpoint
    - Redis-backed (production ready)
 
 4. **Security Headers**
+
    - X-Content-Type-Options: nosniff
    - X-Frame-Options: DENY
    - X-XSS-Protection: 1; mode=block
    - Content-Security-Policy configured
 
 5. **Input Validation**
+
    - Comprehensive validation rules
    - SQL injection prevention (GORM)
    - XSS prevention via sanitization
@@ -317,6 +347,7 @@
 ## 📝 Recent Changes
 
 ### Commit: 737fbb0 (Nov 2, 2025)
+
 **fix: Resolve course listing SQL error for guest users**
 
 - Fixed SQL error for unauthenticated course listings
@@ -325,6 +356,7 @@
 - Maintains N+1 query optimization
 
 ### Commit: e47eb68 (Nov 2, 2025)
+
 **feat: Add request ID logging to repository layer**
 
 - Added structured error logging to 4 repositories
@@ -339,6 +371,7 @@
 ### Documentation Available
 
 1. **FRONTEND_API_GUIDE.md** - Complete integration guide
+
    - Response structure
    - Authentication flow
    - All endpoint details
@@ -348,6 +381,7 @@
    - Best practices
 
 2. **API_QUICK_REFERENCE.md** - Quick reference cheatsheet
+
    - All endpoints at a glance
    - Request/response examples
    - Common error codes
@@ -375,29 +409,34 @@
 ## 🚦 Next Steps for Frontend
 
 1. **Project Setup**
+
    - Initialize Next.js 14+ with TypeScript
    - Install dependencies (TanStack Query, Axios, Shadcn UI)
    - Setup Tailwind CSS
 
 2. **Authentication**
+
    - Create login page
    - Create registration page
    - Implement token management
    - Create protected route wrapper
 
 3. **Course Catalog**
+
    - Course listing page with filters
    - Course card component
    - Pagination component
    - Search functionality
 
 4. **Course Details**
+
    - Course detail page
    - Enrollment button
    - Lesson list
    - Instructor information
 
 5. **Learning Experience**
+
    - Lesson viewer with MDX rendering
    - Progress tracking UI
    - Mark lesson complete functionality

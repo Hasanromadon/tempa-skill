@@ -68,8 +68,21 @@ export default function CourseDetailPage({ params }: PageProps) {
     }
   };
 
+  const getDifficultyText = (difficulty: string) => {
+    switch (difficulty) {
+      case "beginner":
+        return "Pemula";
+      case "intermediate":
+        return "Menengah";
+      case "advanced":
+        return "Lanjutan";
+      default:
+        return difficulty;
+    }
+  };
+
   const formatPrice = (price: number) => {
-    if (price === 0) return "Free";
+    if (price === 0) return "Gratis";
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
       currency: "IDR",
@@ -92,7 +105,7 @@ export default function CourseDetailPage({ params }: PageProps) {
       const errorMessage =
         (err as { response?: { data?: { error?: { message?: string } } } })
           .response?.data?.error?.message ||
-        "Failed to enroll. Please try again.";
+        "Gagal mendaftar. Silakan coba lagi.";
       setEnrollError(errorMessage);
     }
   };
@@ -137,17 +150,16 @@ export default function CourseDetailPage({ params }: PageProps) {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Card className="max-w-md w-full">
           <CardHeader>
-            <CardTitle>Course Not Found</CardTitle>
+            <CardTitle>Kursus Tidak Ditemukan</CardTitle>
             <CardDescription>
-              The course you&apos;re looking for doesn&apos;t exist or has been
-              removed.
+              Kursus yang Anda cari tidak ada atau telah dihapus.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Link href="/courses">
               <Button className="w-full">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Courses
+                Kembali ke Kursus
               </Button>
             </Link>
           </CardContent>
@@ -166,14 +178,14 @@ export default function CourseDetailPage({ params }: PageProps) {
             className="inline-flex items-center text-orange-100 hover:text-white mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Courses
+            Kembali ke Kursus
           </Link>
 
           <div className="flex items-start justify-between gap-6">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-3">
                 <Badge className={getDifficultyColor(course.difficulty)}>
-                  {course.difficulty}
+                  {getDifficultyText(course.difficulty)}
                 </Badge>
                 <Badge
                   variant="outline"
@@ -182,7 +194,7 @@ export default function CourseDetailPage({ params }: PageProps) {
                   {course.category}
                 </Badge>
                 {course.is_enrolled && (
-                  <Badge className="bg-green-500 text-white">Enrolled</Badge>
+                  <Badge className="bg-green-500 text-white">Terdaftar</Badge>
                 )}
               </div>
 
@@ -194,11 +206,11 @@ export default function CourseDetailPage({ params }: PageProps) {
               <div className="flex items-center gap-6 text-sm">
                 <div className="flex items-center gap-2">
                   <BookOpen className="h-5 w-5" />
-                  <span>{course.lesson_count} Lessons</span>
+                  <span>{course.lesson_count} Pelajaran</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Users className="h-5 w-5" />
-                  <span>{course.enrolled_count} Students</span>
+                  <span>{course.enrolled_count} Siswa</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5" />
@@ -223,15 +235,15 @@ export default function CourseDetailPage({ params }: PageProps) {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <TrendingUp className="h-5 w-5 text-orange-600" />
-                    Your Progress
+                    Kemajuan Anda
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm text-gray-600">
-                        {progress.completed_lessons} of {progress.total_lessons}{" "}
-                        lessons completed
+                        {progress.completed_lessons} dari {progress.total_lessons}{" "}
+                        pelajaran selesai
                       </span>
                       <span className="text-sm font-medium">
                         {progress.progress_percentage}%
@@ -243,7 +255,7 @@ export default function CourseDetailPage({ params }: PageProps) {
                     <Alert className="bg-green-50 border-green-200">
                       <CheckCircle2 className="h-4 w-4 text-green-600" />
                       <AlertDescription className="text-green-800">
-                        Congratulations! You&apos;ve completed this course!
+                        Selamat! Anda telah menyelesaikan kursus ini!
                       </AlertDescription>
                     </Alert>
                   )}
@@ -254,41 +266,36 @@ export default function CourseDetailPage({ params }: PageProps) {
             {/* Course Overview */}
             <Card>
               <CardHeader>
-                <CardTitle>Course Overview</CardTitle>
+                <CardTitle>Ringkasan Kursus</CardTitle>
               </CardHeader>
               <CardContent className="prose max-w-none">
-                <h3>What you&apos;ll learn</h3>
+                <h3>Apa yang akan Anda pelajari</h3>
                 <ul>
                   <li>
-                    Master the fundamentals through comprehensive text-based
-                    materials
+                    Menguasai fundamental melalui materi berbasis teks yang komprehensif
                   </li>
-                  <li>Participate in bi-weekly live Q&A and coding sessions</li>
+                  <li>Berpartisipasi dalam sesi Q&A dan coding langsung dua minggu sekali</li>
                   <li>
-                    Build real-world projects and gain practical experience
+                    Membangun proyek nyata dan mendapatkan pengalaman praktis
                   </li>
                   <li>
-                    Get personalized feedback from experienced instructors
+                    Mendapatkan feedback personal dari instruktur berpengalaman
                   </li>
                 </ul>
 
-                <h3>Course Format</h3>
+                <h3>Format Kursus</h3>
                 <p>
-                  This course uses TempaSKill&apos;s unique hybrid learning
-                  approach:
+                  Kursus ini menggunakan pendekatan pembelajaran hybrid unik TempaSKill:
                 </p>
                 <ul>
                   <li>
-                    <strong>Text-Based Lessons:</strong> Read and learn at your
-                    own pace
+                    <strong>Pelajaran Berbasis Teks:</strong> Baca dan belajar sesuai kecepatan Anda
                   </li>
                   <li>
-                    <strong>Live Sessions:</strong> Join interactive sessions
-                    every 2 weeks
+                    <strong>Sesi Langsung:</strong> Ikuti sesi interaktif setiap 2 minggu
                   </li>
                   <li>
-                    <strong>Progress Tracking:</strong> Monitor your advancement
-                    through the course
+                    <strong>Pelacakan Kemajuan:</strong> Pantau perkembangan Anda dalam kursus
                   </li>
                 </ul>
               </CardContent>
@@ -297,9 +304,9 @@ export default function CourseDetailPage({ params }: PageProps) {
             {/* Lessons List */}
             <Card>
               <CardHeader>
-                <CardTitle>Course Content</CardTitle>
+                <CardTitle>Konten Kursus</CardTitle>
                 <CardDescription>
-                  {course.lesson_count} lessons in this course
+                  {course.lesson_count} pelajaran dalam kursus ini
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -353,14 +360,14 @@ export default function CourseDetailPage({ params }: PageProps) {
                               <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
                                 <span className="flex items-center gap-1">
                                   <Clock className="h-3 w-3" />
-                                  {lesson.duration} min
+                                  {lesson.duration} menit
                                 </span>
                                 {isCompleted && (
                                   <Badge
                                     variant="outline"
                                     className="bg-green-50 text-green-700 border-green-200"
                                   >
-                                    Completed
+                                    Selesai
                                   </Badge>
                                 )}
                               </div>
@@ -375,7 +382,7 @@ export default function CourseDetailPage({ params }: PageProps) {
                   </div>
                 ) : (
                   <p className="text-gray-500 text-center py-8">
-                    No lessons available yet. Check back soon!
+                    Belum ada pelajaran tersedia. Periksa kembali nanti!
                   </p>
                 )}
               </CardContent>
@@ -385,7 +392,7 @@ export default function CourseDetailPage({ params }: PageProps) {
             {instructor && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Instructor</CardTitle>
+                  <CardTitle>Instruktur</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-start gap-4">
@@ -432,10 +439,10 @@ export default function CourseDetailPage({ params }: PageProps) {
                     disabled={enrollCourse.isPending}
                   >
                     {enrollCourse.isPending
-                      ? "Enrolling..."
+                      ? "Mendaftar..."
                       : course.price === 0
-                      ? "Enroll for Free"
-                      : "Enroll Now"}
+                      ? "Daftar Gratis"
+                      : "Daftar Sekarang"}
                   </Button>
                 ) : (
                   <div className="space-y-3">
@@ -456,8 +463,8 @@ export default function CourseDetailPage({ params }: PageProps) {
                       }}
                     >
                       {progress && progress.completed_lessons > 0
-                        ? "Continue Learning"
-                        : "Start Learning"}
+                        ? "Lanjutkan Belajar"
+                        : "Mulai Belajar"}
                     </Button>
                     <Button
                       variant="outline"
@@ -465,28 +472,28 @@ export default function CourseDetailPage({ params }: PageProps) {
                       onClick={handleUnenroll}
                       disabled={unenrollCourse.isPending}
                     >
-                      {unenrollCourse.isPending ? "Unenrolling..." : "Unenroll"}
+                      {unenrollCourse.isPending ? "Membatalkan..." : "Batalkan Pendaftaran"}
                     </Button>
                   </div>
                 )}
 
                 <div className="border-t pt-4 space-y-3 text-sm">
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Lessons</span>
+                    <span className="text-gray-600">Pelajaran</span>
                     <span className="font-medium">{course.lesson_count}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Students</span>
+                    <span className="text-gray-600">Siswa</span>
                     <span className="font-medium">{course.enrolled_count}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Difficulty</span>
+                    <span className="text-gray-600">Tingkat Kesulitan</span>
                     <Badge className={getDifficultyColor(course.difficulty)}>
-                      {course.difficulty}
+                      {getDifficultyText(course.difficulty)}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Category</span>
+                    <span className="text-gray-600">Kategori</span>
                     <span className="font-medium capitalize">
                       {course.category}
                     </span>
@@ -500,16 +507,16 @@ export default function CourseDetailPage({ params }: PageProps) {
                         href="/login"
                         className="text-blue-600 hover:underline"
                       >
-                        Sign in
+                        Masuk
                       </Link>{" "}
-                      or{" "}
+                      atau{" "}
                       <Link
                         href="/register"
                         className="text-blue-600 hover:underline"
                       >
-                        create an account
+                        buat akun
                       </Link>{" "}
-                      to enroll
+                      untuk mendaftar
                     </AlertDescription>
                   </Alert>
                 )}
