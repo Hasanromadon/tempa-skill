@@ -177,26 +177,63 @@ export default config;
 
 ## 🏃 Running Development
 
-### Terminal 1: Backend
+### ⚡ Quick Start (Pilih Salah Satu)
+
+**Opsi 1: PowerShell Scripts (Recommended - Windows)**
 
 ```powershell
-cd d:\non-bri\tempa-skill\tempaskill-be
+# Dari root folder (d:\non-bri\tempa-skill)
 
-# Run server
-go run cmd/api/main.go
+# Jalankan KEDUANYA (Backend + Frontend sekaligus)
+.\start-dev.ps1
 
-# Output:
-# Server running on http://localhost:8080
-# Database connected successfully
+# Atau jalankan terpisah di 2 terminal:
+.\start-backend.ps1   # Terminal 1 - Backend only
+.\start-frontend.ps1  # Terminal 2 - Frontend only
 ```
 
-### Terminal 2: Frontend
+**Opsi 2: NPM/Yarn Scripts**
 
+```bash
+# Dari root folder
+# (Install concurrently terlebih dahulu dengan: yarn install)
+
+yarn dev              # Keduanya sekaligus
+yarn dev:backend      # Backend only
+yarn dev:frontend     # Frontend only
+```
+
+**Opsi 3: Makefile (Jika punya Make installed)**
+
+```bash
+# Dari root folder
+
+make dev       # Keduanya sekaligus
+make backend   # Backend only
+make frontend  # Frontend only
+make help      # Lihat semua commands
+```
+
+**Opsi 4: Manual (Cara Lama)**
+
+Terminal 1 - Backend:
 ```powershell
-cd d:\non-bri\tempa-skill\tempaskill-fe
+cd tempaskill-be
+$env:GOTOOLCHAIN="auto"; go run cmd/api/main.go
+```
 
-# Run dev server
-npm run dev
+Terminal 2 - Frontend:
+```powershell
+cd tempaskill-fe
+yarn dev
+```
+
+### 🌐 Akses Aplikasi
+
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8080/api/v1
+- **Swagger Docs**: http://localhost:8080/swagger/index.html
+- **Health Check**: http://localhost:8080/api/v1/health
 
 # Output:
 # ▲ Next.js 14.x.x

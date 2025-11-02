@@ -1,6 +1,14 @@
 # TempaSKill - Monorepo .gitignore
 
 # ============================================
+# ROOT FOLDER
+# ============================================
+# Node modules (for root package.json)
+/node_modules/
+/yarn.lock
+/package-lock.json
+
+# ============================================
 # BACKEND (Go)
 # ============================================
 # Binaries

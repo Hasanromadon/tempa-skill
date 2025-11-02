@@ -254,32 +254,65 @@ colors: {
 
 # Frontend
 - Node.js 18+
-- npm/pnpm/yarn
+- yarn (recommended)
 ```
 
-### Quick Start (Both Services)
+### ⚡ Quick Start (Recommended)
 
-1. **Start Backend** (Terminal 1):
+**Metode 1: PowerShell Scripts (Windows)**
+
+```powershell
+# Dari root folder project
+
+# Jalankan KEDUANYA (Backend + Frontend)
+.\start-dev.ps1
+
+# Atau jalankan TERPISAH:
+.\start-backend.ps1   # Backend only (port 8080)
+.\start-frontend.ps1  # Frontend only (port 3000)
+```
+
+**Metode 2: NPM/Yarn Scripts**
 
 ```bash
+# Install concurrently (sekali saja)
+yarn install
+
+# Jalankan keduanya
+yarn dev
+
+# Atau jalankan terpisah
+yarn dev:backend   # Backend only
+yarn dev:frontend  # Frontend only
+```
+
+**Metode 3: Makefile (Linux/Mac/Windows with Make)**
+
+```bash
+make dev       # Jalankan keduanya
+make backend   # Backend only
+make frontend  # Frontend only
+make help      # Lihat semua commands
+```
+
+**Metode 4: Manual (2 Terminal)**
+
+```bash
+# Terminal 1 - Backend
 cd tempaskill-be
 $env:GOTOOLCHAIN="auto"; go run cmd/api/main.go
-# Server runs on http://localhost:8080
-```
 
-2. **Start Frontend** (Terminal 2):
-
-```bash
+# Terminal 2 - Frontend
 cd tempaskill-fe
-npm run dev
-# Server runs on http://localhost:3000
+yarn dev
 ```
 
-3. **Access the Application**:
+### 🌐 Access URLs
 
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8080/api/v1
-- Health Check: http://localhost:8080/api/v1/health
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8080/api/v1
+- **Swagger Docs**: http://localhost:8080/swagger/index.html
+- **Health Check**: http://localhost:8080/api/v1/health
 
 ### Backend Setup
 

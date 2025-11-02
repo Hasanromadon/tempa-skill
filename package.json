@@ -1,0 +1,33 @@
+{
+  "name": "tempaskill",
+  "version": "1.0.0",
+  "description": "TempaSKill - Platform pembelajaran berbasis teks dengan sesi langsung",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n \"BE,FE\" -c \"blue,magenta\" \"cd tempaskill-be && go run cmd/api/main.go\" \"cd tempaskill-fe && yarn dev\"",
+    "dev:backend": "cd tempaskill-be && go run cmd/api/main.go",
+    "dev:frontend": "cd tempaskill-fe && yarn dev",
+    "build:frontend": "cd tempaskill-fe && yarn build",
+    "start:frontend": "cd tempaskill-fe && yarn start",
+    "install:frontend": "cd tempaskill-fe && yarn install",
+    "test:backend": "cd tempaskill-be && go test ./...",
+    "test:frontend": "cd tempaskill-fe && yarn test",
+    "lint:frontend": "cd tempaskill-fe && yarn lint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Hasanromadon/tempa-skill.git"
+  },
+  "keywords": [
+    "e-learning",
+    "golang",
+    "nextjs",
+    "education",
+    "indonesia"
+  ],
+  "author": "Hasanromadon",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
