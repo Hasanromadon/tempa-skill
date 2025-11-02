@@ -18,16 +18,16 @@ export const useCourseLessons = (courseId: number) => {
 };
 
 // Get single lesson
-export const useLesson = (courseId: number, lessonId: number) => {
+export const useLesson = (lessonId: number) => {
   return useQuery({
-    queryKey: ["lesson", courseId, lessonId],
+    queryKey: ["lesson", lessonId],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<Lesson>>(
-        `/courses/${courseId}/lessons/${lessonId}`
+        `/lessons/${lessonId}`
       );
       return response.data.data;
     },
-    enabled: !!courseId && !!lessonId,
+    enabled: !!lessonId,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
