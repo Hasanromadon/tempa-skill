@@ -8,6 +8,12 @@
 /yarn.lock
 /package-lock.json
 
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/
+/screenshots/
+
 # ============================================
 # BACKEND (Go)
 # ============================================
