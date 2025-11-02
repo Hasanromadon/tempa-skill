@@ -28,14 +28,17 @@
 - **Interaksi Langsung**: Sesi online via Zoom/Meet setiap 2 minggu untuk Q&A dan live coding
 - **Target**: Menghemat biaya produksi sambil tetap memberikan pengalaman belajar interaktif
 
-### Fitur Inti
+### Fitur Inti (Backend Ready ✅)
 
 - ✅ **Autentikasi pengguna** - Register/Login dengan JWT, middleware protection
 - ✅ **User Management** - Get profile, update profile, change password
 - ✅ **Course Management** - CRUD operations, enrollment, lessons, slug-based retrieval
 - ✅ **Progress Tracking** - Mark lessons complete, track progress percentage, course completion
-- 🚧 **Course catalog** - Search & filter (completed, frontend UI pending)
-- 🚧 **Halaman pembelajaran** - Berbasis MDX (backend ready, frontend pending)
+- ✅ **Course Catalog** - Search & filter, pagination, optimized queries (100x faster)
+- ✅ **Request ID Tracing** - Unique ID per request untuk debugging
+- ✅ **Rate Limiting** - Perlindungan terhadap abuse (100 req/min umum, 10 req/min auth)
+- ✅ **Security Headers** - XSS protection, clickjacking prevention
+- 🚧 **Frontend UI** - Next.js development (siap untuk dimulai)
 - 🚧 **Dashboard** - Jadwal sesi online (coming soon)
 
 ---
