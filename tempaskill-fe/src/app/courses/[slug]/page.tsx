@@ -159,11 +159,11 @@ export default function CourseDetailPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
+      <div className="bg-gradient-to-r from-orange-600 to-orange-700 text-white">
         <div className="container mx-auto px-4 py-8">
           <Link
             href="/courses"
-            className="inline-flex items-center text-blue-100 hover:text-white mb-4"
+            className="inline-flex items-center text-orange-100 hover:text-white mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Courses
@@ -187,7 +187,7 @@ export default function CourseDetailPage({ params }: PageProps) {
               </div>
 
               <h1 className="text-4xl font-bold mb-4">{course.title}</h1>
-              <p className="text-xl text-blue-100 mb-6 max-w-3xl">
+              <p className="text-xl text-orange-100 mb-6 max-w-3xl">
                 {course.description}
               </p>
 
@@ -222,7 +222,7 @@ export default function CourseDetailPage({ params }: PageProps) {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-blue-600" />
+                    <TrendingUp className="h-5 w-5 text-orange-600" />
                     Your Progress
                   </CardTitle>
                 </CardHeader>
@@ -267,7 +267,9 @@ export default function CourseDetailPage({ params }: PageProps) {
                   <li>
                     Build real-world projects and gain practical experience
                   </li>
-                  <li>Get personalized feedback from experienced instructors</li>
+                  <li>
+                    Get personalized feedback from experienced instructors
+                  </li>
                 </ul>
 
                 <h3>Course Format</h3>
@@ -310,9 +312,8 @@ export default function CourseDetailPage({ params }: PageProps) {
                 ) : lessons && lessons.length > 0 ? (
                   <div className="space-y-2">
                     {lessons.map((lesson, index) => {
-                      const isCompleted = progress?.completed_lesson_ids.includes(
-                        lesson.id
-                      );
+                      const isCompleted =
+                        progress?.completed_lesson_ids.includes(lesson.id);
                       const canAccess = course.is_enrolled;
 
                       return (
@@ -388,8 +389,8 @@ export default function CourseDetailPage({ params }: PageProps) {
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-start gap-4">
-                    <div className="shrink-0 w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
-                      <User className="h-8 w-8 text-blue-600" />
+                    <div className="shrink-0 w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center">
+                      <User className="h-8 w-8 text-orange-600" />
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold">
@@ -412,7 +413,7 @@ export default function CourseDetailPage({ params }: PageProps) {
           <div>
             <Card className="sticky top-6">
               <CardHeader>
-                <div className="text-3xl font-bold text-blue-600">
+                <div className="text-3xl font-bold text-orange-600">
                   {formatPrice(course.price)}
                 </div>
               </CardHeader>
@@ -425,7 +426,7 @@ export default function CourseDetailPage({ params }: PageProps) {
 
                 {!course.is_enrolled ? (
                   <Button
-                    className="w-full"
+                    className="w-full bg-orange-600 hover:bg-orange-700 text-white"
                     size="lg"
                     onClick={handleEnroll}
                     disabled={enrollCourse.isPending}
@@ -439,7 +440,7 @@ export default function CourseDetailPage({ params }: PageProps) {
                 ) : (
                   <div className="space-y-3">
                     <Button
-                      className="w-full"
+                      className="w-full bg-orange-600 hover:bg-orange-700 text-white"
                       size="lg"
                       onClick={() => {
                         if (lessons && lessons.length > 0) {
@@ -460,13 +461,11 @@ export default function CourseDetailPage({ params }: PageProps) {
                     </Button>
                     <Button
                       variant="outline"
-                      className="w-full"
+                      className="w-full border-orange-600 text-orange-600 hover:bg-orange-50"
                       onClick={handleUnenroll}
                       disabled={unenrollCourse.isPending}
                     >
-                      {unenrollCourse.isPending
-                        ? "Unenrolling..."
-                        : "Unenroll"}
+                      {unenrollCourse.isPending ? "Unenrolling..." : "Unenroll"}
                     </Button>
                   </div>
                 )}
@@ -497,7 +496,10 @@ export default function CourseDetailPage({ params }: PageProps) {
                 {!isAuthenticated && (
                   <Alert>
                     <AlertDescription className="text-sm">
-                      <Link href="/login" className="text-blue-600 hover:underline">
+                      <Link
+                        href="/login"
+                        className="text-blue-600 hover:underline"
+                      >
                         Sign in
                       </Link>{" "}
                       or{" "}

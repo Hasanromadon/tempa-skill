@@ -73,7 +73,12 @@ export default function DashboardPage() {
             </div>
             <div className="flex gap-2">
               <Link href="/courses">
-                <Button variant="outline">Browse Courses</Button>
+                <Button
+                  variant="outline"
+                  className="border-orange-600 text-orange-600 hover:bg-orange-50"
+                >
+                  Browse Courses
+                </Button>
               </Link>
               <Button variant="ghost" onClick={handleLogout}>
                 <LogOut className="h-4 w-4 mr-2" />
@@ -151,7 +156,12 @@ export default function DashboardPage() {
               Start learning by enrolling in a course
             </p>
             <Link href="/courses">
-              <Button size="lg">Browse Courses</Button>
+              <Button
+                size="lg"
+                className="bg-orange-600 hover:bg-orange-700 text-white"
+              >
+                Browse Courses
+              </Button>
             </Link>
           </div>
         )}

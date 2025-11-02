@@ -69,10 +69,17 @@ export default function CoursesPage() {
             {!isAuthenticated && (
               <div className="flex gap-2">
                 <Link href="/login">
-                  <Button variant="outline">Sign In</Button>
+                  <Button
+                    variant="outline"
+                    className="border-orange-600 text-orange-600 hover:bg-orange-50"
+                  >
+                    Sign In
+                  </Button>
                 </Link>
                 <Link href="/register">
-                  <Button>Get Started</Button>
+                  <Button className="bg-orange-600 hover:bg-orange-700 text-white">
+                    Get Started
+                  </Button>
                 </Link>
               </div>
             )}
@@ -153,14 +160,18 @@ export default function CoursesPage() {
                         <span className="text-sm text-gray-500 capitalize">
                           {course.category}
                         </span>
-                        <span className="text-lg font-bold text-blue-600">
+                        <span className="text-lg font-bold text-orange-600">
                           {formatPrice(course.price)}
                         </span>
                       </div>
                     </CardContent>
                     <CardFooter>
                       <Button
-                        className="w-full"
+                        className={
+                          course.is_enrolled
+                            ? "w-full border-orange-600 text-orange-600 hover:bg-orange-50"
+                            : "w-full bg-orange-600 hover:bg-orange-700 text-white"
+                        }
                         variant={course.is_enrolled ? "outline" : "default"}
                       >
                         {course.is_enrolled
