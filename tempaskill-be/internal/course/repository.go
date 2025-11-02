@@ -2,8 +2,11 @@ package course
 
 import (
 	"context"
+	"errors"
 	"strings"
 
+	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/logger"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -45,7 +48,16 @@ func NewRepository(db *gorm.DB) Repository {
 // Course operations
 
 func (r *repository) CreateCourse(ctx context.Context, course *Course) error {
-	return r.db.WithContext(ctx).Create(course).Error
+	err := r.db.WithContext(ctx).Create(course).Error
+	if err != nil {
+		logger.Error("Failed to create course in database",
+			zap.Error(err),
+			zap.String("title", course.Title),
+			zap.String("slug", course.Slug),
+		)
+		return err
+	}
+	return nil
 }
 
 func (r *repository) FindCourseByID(ctx context.Context, id uint) (*Course, error) {
@@ -53,6 +65,12 @@ func (r *repository) FindCourseByID(ctx context.Context, id uint) (*Course, erro
 	if err := r.db.WithContext(ctx).Preload("Lessons", func(db *gorm.DB) *gorm.DB {
 		return db.Where("is_published = ?", true).Order("order_index ASC")
 	}).First(&course, id).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			logger.Error("Database error finding course by ID",
+				zap.Error(err),
+				zap.Uint("course_id", id),
+			)
+		}
 		return nil, err
 	}
 	return &course, nil
@@ -63,6 +81,12 @@ func (r *repository) FindCourseBySlug(ctx context.Context, slug string) (*Course
 	if err := r.db.WithContext(ctx).Preload("Lessons", func(db *gorm.DB) *gorm.DB {
 		return db.Where("is_published = ?", true).Order("order_index ASC")
 	}).Where("slug = ?", slug).First(&course).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			logger.Error("Database error finding course by slug",
+				zap.Error(err),
+				zap.String("slug", slug),
+			)
+		}
 		return nil, err
 	}
 	return &course, nil
@@ -94,6 +118,11 @@ func (r *repository) FindAllCourses(ctx context.Context, query *CourseListQuery)
 
 	// Count total
 	if err := db.Count(&total).Error; err != nil {
+		logger.Error("Database error counting courses",
+			zap.Error(err),
+			zap.String("search", query.Search),
+			zap.String("category", query.Category),
+		)
 		return nil, 0, err
 	}
 
@@ -110,6 +139,11 @@ func (r *repository) FindAllCourses(ctx context.Context, query *CourseListQuery)
 
 	// Fetch courses
 	if err := db.Order("created_at DESC").Limit(limit).Offset(offset).Find(&courses).Error; err != nil {
+		logger.Error("Database error fetching courses",
+			zap.Error(err),
+			zap.Int("limit", limit),
+			zap.Int("offset", offset),
+		)
 		return nil, 0, err
 	}
 
@@ -208,6 +242,12 @@ func (r *repository) FindAllCoursesWithMeta(ctx context.Context, userID uint, qu
 
 	// Fetch courses with metadata
 	if err := db.Order("courses.created_at DESC").Limit(limit).Offset(offset).Scan(&coursesWithMeta).Error; err != nil {
+		logger.Error("Database error fetching courses with metadata",
+			zap.Error(err),
+			zap.Uint("user_id", userID),
+			zap.Int("limit", limit),
+			zap.Int("offset", offset),
+		)
 		return nil, 0, err
 	}
 
@@ -235,12 +275,27 @@ func (r *repository) DecrementEnrolledCount(ctx context.Context, courseID uint) 
 // Lesson operations
 
 func (r *repository) CreateLesson(ctx context.Context, lesson *Lesson) error {
-	return r.db.WithContext(ctx).Create(lesson).Error
+	err := r.db.WithContext(ctx).Create(lesson).Error
+	if err != nil {
+		logger.Error("Failed to create lesson in database",
+			zap.Error(err),
+			zap.Uint("course_id", lesson.CourseID),
+			zap.String("title", lesson.Title),
+		)
+		return err
+	}
+	return nil
 }
 
 func (r *repository) FindLessonByID(ctx context.Context, id uint) (*Lesson, error) {
 	var lesson Lesson
 	if err := r.db.WithContext(ctx).First(&lesson, id).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			logger.Error("Database error finding lesson by ID",
+				zap.Error(err),
+				zap.Uint("lesson_id", id),
+			)
+		}
 		return nil, err
 	}
 	return &lesson, nil

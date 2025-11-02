@@ -3,6 +3,8 @@ package auth
 import (
 	"errors"
 
+	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/logger"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -24,7 +26,15 @@ func NewRepository(db *gorm.DB) Repository {
 
 // Create inserts a new user into the database
 func (r *repository) Create(user *User) error {
-	return r.db.Create(user).Error
+	err := r.db.Create(user).Error
+	if err != nil {
+		logger.Error("Failed to create user in database",
+			zap.Error(err),
+			zap.String("email", user.Email),
+		)
+		return err
+	}
+	return nil
 }
 
 // FindByEmail retrieves a user by email
@@ -35,6 +45,10 @@ func (r *repository) FindByEmail(email string) (*User, error) {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("user not found")
 		}
+		logger.Error("Database error finding user by email",
+			zap.Error(err),
+			zap.String("email", email),
+		)
 		return nil, err
 	}
 	return &user, nil
@@ -48,6 +62,10 @@ func (r *repository) FindByID(id uint) (*User, error) {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("user not found")
 		}
+		logger.Error("Database error finding user by ID",
+			zap.Error(err),
+			zap.Uint("user_id", id),
+		)
 		return nil, err
 	}
 	return &user, nil

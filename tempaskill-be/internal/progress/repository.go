@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/logger"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -43,6 +45,12 @@ func (r *repository) MarkLessonComplete(ctx context.Context, userID, lessonID, c
 		Create(progress)
 
 	if result.Error != nil {
+		logger.Error("Failed to mark lesson as complete",
+			zap.Error(result.Error),
+			zap.Uint("user_id", userID),
+			zap.Uint("lesson_id", lessonID),
+			zap.Uint("course_id", courseID),
+		)
 		return nil, result.Error
 	}
 
