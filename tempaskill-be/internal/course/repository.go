@@ -194,13 +194,22 @@ func (r *repository) FindAllCoursesWithMeta(ctx context.Context, userID uint, qu
 
 	// Build optimized query with LEFT JOINs
 	// This reduces N+1 queries to just 1 query
+	// Build SELECT clause based on whether user is logged in
+	selectClause := `
+		courses.*,
+		COALESCE(lesson_counts.count, 0) as lesson_count`
+	
+	if userID > 0 {
+		selectClause += `,
+		CASE WHEN enrollments.id IS NOT NULL THEN 1 ELSE 0 END as is_enrolled`
+	} else {
+		selectClause += `,
+		0 as is_enrolled`
+	}
+	
 	db = r.db.WithContext(ctx).
 		Table("courses").
-		Select(`
-			courses.*,
-			COALESCE(lesson_counts.count, 0) as lesson_count,
-			CASE WHEN enrollments.id IS NOT NULL THEN 1 ELSE 0 END as is_enrolled
-		`).
+		Select(selectClause).
 		Joins(`
 			LEFT JOIN (
 				SELECT course_id, COUNT(*) as count 
