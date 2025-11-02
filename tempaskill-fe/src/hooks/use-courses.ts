@@ -1,19 +1,19 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import apiClient from '@/lib/api-client';
-import type { 
-  ApiResponse, 
-  Course, 
-  CourseListQuery, 
-  CourseListResponse 
-} from '@/types/api';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import apiClient from "@/lib/api-client";
+import type {
+  ApiResponse,
+  Course,
+  CourseListQuery,
+  CourseListResponse,
+} from "@/types/api";
 
 // List courses with filters
 export const useCourses = (params?: CourseListQuery) => {
   return useQuery({
-    queryKey: ['courses', params],
+    queryKey: ["courses", params],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<CourseListResponse>>(
-        '/courses',
+        "/courses",
         { params }
       );
       return response.data.data;
@@ -25,7 +25,7 @@ export const useCourses = (params?: CourseListQuery) => {
 // Get course by slug
 export const useCourse = (slug: string) => {
   return useQuery({
-    queryKey: ['course', slug],
+    queryKey: ["course", slug],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<Course>>(
         `/courses/slug/${slug}`
@@ -39,7 +39,7 @@ export const useCourse = (slug: string) => {
 // Get course by ID
 export const useCourseById = (id: number) => {
   return useQuery({
-    queryKey: ['course', id],
+    queryKey: ["course", id],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<Course>>(
         `/courses/${id}`
@@ -53,19 +53,19 @@ export const useCourseById = (id: number) => {
 // Enroll in course
 export const useEnrollCourse = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (courseId: number) => {
-      const response = await apiClient.post<ApiResponse<{ enrollment: unknown }>>(
-        `/courses/${courseId}/enroll`
-      );
+      const response = await apiClient.post<
+        ApiResponse<{ enrollment: unknown }>
+      >(`/courses/${courseId}/enroll`);
       return response.data;
     },
     onSuccess: () => {
       // Invalidate courses to refresh enrollment status
-      queryClient.invalidateQueries({ queryKey: ['courses'] });
-      queryClient.invalidateQueries({ queryKey: ['course'] });
-      queryClient.invalidateQueries({ queryKey: ['progress'] });
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      queryClient.invalidateQueries({ queryKey: ["course"] });
+      queryClient.invalidateQueries({ queryKey: ["progress"] });
     },
   });
 };
@@ -73,7 +73,7 @@ export const useEnrollCourse = () => {
 // Unenroll from course
 export const useUnenrollCourse = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (courseId: number) => {
       const response = await apiClient.delete<ApiResponse<{ message: string }>>(
@@ -82,9 +82,9 @@ export const useUnenrollCourse = () => {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['courses'] });
-      queryClient.invalidateQueries({ queryKey: ['course'] });
-      queryClient.invalidateQueries({ queryKey: ['progress'] });
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      queryClient.invalidateQueries({ queryKey: ["course"] });
+      queryClient.invalidateQueries({ queryKey: ["progress"] });
     },
   });
 };

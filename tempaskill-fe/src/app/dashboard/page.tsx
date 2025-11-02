@@ -1,14 +1,20 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { useIsAuthenticated, useUserProgress } from '@/hooks';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Skeleton } from '@/components/ui/skeleton';
-import { BookOpen, LogOut } from 'lucide-react';
-import { useEffect } from 'react';
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useIsAuthenticated, useUserProgress } from "@/hooks";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
+import { BookOpen, LogOut } from "lucide-react";
+import { useEffect } from "react";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -17,13 +23,13 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.push('/login');
+      router.push("/login");
     }
   }, [isAuthenticated, isLoading, router]);
 
   const handleLogout = () => {
-    localStorage.removeItem('auth_token');
-    router.push('/');
+    localStorage.removeItem("auth_token");
+    router.push("/");
   };
 
   if (isLoading) {
@@ -61,7 +67,9 @@ export default function DashboardPage() {
               <h1 className="text-3xl font-bold text-gray-900">
                 Welcome back, {user.name}!
               </h1>
-              <p className="text-gray-600 mt-1">Continue your learning journey</p>
+              <p className="text-gray-600 mt-1">
+                Continue your learning journey
+              </p>
             </div>
             <div className="flex gap-2">
               <Link href="/courses">
@@ -97,7 +105,10 @@ export default function DashboardPage() {
             <h2 className="text-2xl font-bold mb-6">Your Enrolled Courses</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {progress.map((item) => (
-                <Link key={item.course_id} href={`/courses/${item.course_slug}`}>
+                <Link
+                  key={item.course_id}
+                  href={`/courses/${item.course_slug}`}
+                >
                   <Card className="hover:shadow-lg transition-shadow cursor-pointer">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
@@ -105,14 +116,17 @@ export default function DashboardPage() {
                         {item.course_title}
                       </CardTitle>
                       <CardDescription>
-                        {item.completed_lessons} of {item.total_lessons} lessons completed
+                        {item.completed_lessons} of {item.total_lessons} lessons
+                        completed
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-gray-600">Progress</span>
-                          <span className="font-medium">{item.progress_percentage}%</span>
+                          <span className="font-medium">
+                            {item.progress_percentage}%
+                          </span>
                         </div>
                         <Progress value={item.progress_percentage} />
                         {item.is_completed && (

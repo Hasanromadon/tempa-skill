@@ -1,12 +1,13 @@
-import axios, { AxiosError } from 'axios';
-import type { ApiResponse } from '@/types/api';
+import axios, { AxiosError } from "axios";
+import type { ApiResponse } from "@/types/api";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
   timeout: 30000, // 30 seconds
 });
@@ -14,8 +15,8 @@ export const apiClient = axios.create({
 // Request interceptor - Add auth token
 apiClient.interceptors.request.use(
   (config) => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('auth_token');
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("auth_token");
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -33,15 +34,15 @@ apiClient.interceptors.response.use(
   (error: AxiosError<ApiResponse<never>>) => {
     // Handle unauthorized
     if (error.response?.status === 401) {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('auth_token');
-        window.location.href = '/login';
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("auth_token");
+        window.location.href = "/login";
       }
     }
 
     // Handle rate limiting
     if (error.response?.status === 429) {
-      console.error('Rate limit exceeded. Please try again later.');
+      console.error("Rate limit exceeded. Please try again later.");
     }
 
     return Promise.reject(error);

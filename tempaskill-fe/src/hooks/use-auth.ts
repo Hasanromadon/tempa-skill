@@ -1,29 +1,29 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import apiClient from '@/lib/api-client';
-import type { 
-  ApiResponse, 
-  AuthResponse, 
-  LoginRequest, 
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import apiClient from "@/lib/api-client";
+import type {
+  ApiResponse,
+  AuthResponse,
+  LoginRequest,
   RegisterRequest,
-  User 
-} from '@/types/api';
+  User,
+} from "@/types/api";
 
 // Register mutation
 export const useRegister = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (data: RegisterRequest) => {
       const response = await apiClient.post<ApiResponse<AuthResponse>>(
-        '/auth/register',
+        "/auth/register",
         data
       );
       return response.data;
     },
     onSuccess: (data) => {
       if (data.data?.token) {
-        localStorage.setItem('auth_token', data.data.token);
-        queryClient.setQueryData(['currentUser'], data.data.user);
+        localStorage.setItem("auth_token", data.data.token);
+        queryClient.setQueryData(["currentUser"], data.data.user);
       }
     },
   });
@@ -32,19 +32,19 @@ export const useRegister = () => {
 // Login mutation
 export const useLogin = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (data: LoginRequest) => {
       const response = await apiClient.post<ApiResponse<AuthResponse>>(
-        '/auth/login',
+        "/auth/login",
         data
       );
       return response.data;
     },
     onSuccess: (data) => {
       if (data.data?.token) {
-        localStorage.setItem('auth_token', data.data.token);
-        queryClient.setQueryData(['currentUser'], data.data.user);
+        localStorage.setItem("auth_token", data.data.token);
+        queryClient.setQueryData(["currentUser"], data.data.user);
       }
     },
   });
@@ -53,24 +53,24 @@ export const useLogin = () => {
 // Logout function
 export const useLogout = () => {
   const queryClient = useQueryClient();
-  
+
   return () => {
-    localStorage.removeItem('auth_token');
-    queryClient.setQueryData(['currentUser'], null);
+    localStorage.removeItem("auth_token");
+    queryClient.setQueryData(["currentUser"], null);
     queryClient.clear();
-    window.location.href = '/login';
+    window.location.href = "/login";
   };
 };
 
 // Get current user query
 export const useCurrentUser = () => {
   return useQuery({
-    queryKey: ['currentUser'],
+    queryKey: ["currentUser"],
     queryFn: async () => {
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem("auth_token");
       if (!token) return null;
-      
-      const response = await apiClient.get<ApiResponse<User>>('/auth/me');
+
+      const response = await apiClient.get<ApiResponse<User>>("/auth/me");
       return response.data.data || null;
     },
     retry: false,

@@ -28,7 +28,7 @@ export interface User {
   id: number;
   name: string;
   email: string;
-  role: 'student' | 'instructor' | 'admin';
+  role: "student" | "instructor" | "admin";
   bio?: string;
   avatar_url?: string;
   created_at: string;
@@ -72,7 +72,7 @@ export interface Course {
   description: string;
   thumbnail_url: string;
   category: string;
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  difficulty: "beginner" | "intermediate" | "advanced";
   instructor_id: number;
   price: number;
   is_published: boolean;
@@ -88,7 +88,7 @@ export interface CourseListQuery {
   limit?: number;
   search?: string;
   category?: string;
-  difficulty?: 'beginner' | 'intermediate' | 'advanced';
+  difficulty?: "beginner" | "intermediate" | "advanced";
   published?: boolean;
 }
 

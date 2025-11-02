@@ -1,16 +1,16 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import apiClient from '@/lib/api-client';
-import type { 
-  ApiResponse, 
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import apiClient from "@/lib/api-client";
+import type {
+  ApiResponse,
   User,
   UpdateProfileRequest,
-  ChangePasswordRequest
-} from '@/types/api';
+  ChangePasswordRequest,
+} from "@/types/api";
 
 // Get user by ID (public)
 export const useUser = (userId: number) => {
   return useQuery({
-    queryKey: ['user', userId],
+    queryKey: ["user", userId],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<User>>(
         `/users/${userId}`
@@ -24,11 +24,11 @@ export const useUser = (userId: number) => {
 // Update profile
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (data: UpdateProfileRequest) => {
       const response = await apiClient.patch<ApiResponse<User>>(
-        '/users/me',
+        "/users/me",
         data
       );
       return response.data;
@@ -36,7 +36,7 @@ export const useUpdateProfile = () => {
     onSuccess: (data) => {
       // Update current user cache
       if (data.data) {
-        queryClient.setQueryData(['currentUser'], data.data);
+        queryClient.setQueryData(["currentUser"], data.data);
       }
     },
   });
@@ -47,7 +47,7 @@ export const useChangePassword = () => {
   return useMutation({
     mutationFn: async (data: ChangePasswordRequest) => {
       const response = await apiClient.put<ApiResponse<{ message: string }>>(
-        '/users/me/password',
+        "/users/me/password",
         data
       );
       return response.data;

@@ -1,7 +1,13 @@
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookOpen, Users, Zap, TrendingUp } from 'lucide-react';
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { BookOpen, Users, Zap, TrendingUp } from "lucide-react";
 
 export default function Home() {
   return (
@@ -15,8 +21,9 @@ export default function Home() {
               <span className="text-blue-600"> Text-Based Courses</span>
             </h1>
             <p className="mt-6 text-lg leading-8 text-gray-600 max-w-2xl mx-auto">
-              TempaSKill offers efficient learning through text-based materials combined with 
-              bi-weekly live sessions for interactive Q&A and live coding.
+              TempaSKill offers efficient learning through text-based materials
+              combined with bi-weekly live sessions for interactive Q&A and live
+              coding.
             </p>
             <div className="mt-10 flex items-center justify-center gap-4">
               <Link href="/courses">
@@ -38,7 +45,9 @@ export default function Home() {
       <section className="py-20 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900">Why TempaSKill?</h2>
+            <h2 className="text-3xl font-bold text-gray-900">
+              Why TempaSKill?
+            </h2>
             <p className="mt-4 text-lg text-gray-600">
               A hybrid approach to online learning
             </p>
@@ -49,7 +58,8 @@ export default function Home() {
                 <BookOpen className="h-10 w-10 text-blue-600 mb-2" />
                 <CardTitle>Text-Based Learning</CardTitle>
                 <CardDescription>
-                  Efficient, bandwidth-friendly courses you can read at your own pace
+                  Efficient, bandwidth-friendly courses you can read at your own
+                  pace
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -76,7 +86,8 @@ export default function Home() {
                 <TrendingUp className="h-10 w-10 text-blue-600 mb-2" />
                 <CardTitle>Track Progress</CardTitle>
                 <CardDescription>
-                  Monitor your learning journey and complete courses at your pace
+                  Monitor your learning journey and complete courses at your
+                  pace
                 </CardDescription>
               </CardHeader>
             </Card>
