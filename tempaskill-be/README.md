@@ -4,12 +4,13 @@
 
 ## 📋 Tech Stack
 
-- **Language**: Go 1.24+
+- **Language**: Go 1.23+
 - **Framework**: Gin Gonic
 - **Database**: MySQL 8.0+
 - **ORM**: GORM
 - **Authentication**: JWT (manual)
 - **Password Hashing**: bcrypt
+- **Testing**: testify, PowerShell API tests
 
 ## 🏗️ Arsitektur
 
@@ -98,6 +99,29 @@ go run cmd/api/main.go
 Server akan berjalan di `http://localhost:8080`
 
 ## 🧪 Test API
+
+### Quick Test Suite
+
+Run the comprehensive API test suite:
+
+```bash
+# From project root
+cd ..
+.\test-course-quick.ps1
+```
+
+**Test Coverage**: 10/10 tests passing ✅
+- Health check
+- List courses with pagination
+- Unauthorized access prevention
+- User registration & authentication
+- Course creation
+- Course retrieval (by ID and slug)
+- Course update
+- Enrollment/Unenrollment
+- Lesson creation
+
+### Manual API Testing
 
 ```bash
 # Health check
@@ -189,21 +213,47 @@ Lihat `DATABASE.md` di root project untuk detail schema lengkap.
 ## 🎯 Development Roadmap
 
 - [x] **Task 1**: Setup Backend Infrastructure ✅
-- [ ] **Task 2**: Implement Authentication (Register, Login, JWT Middleware)
-- [ ] **Task 3**: Implement User Management (Profile, Update)
-- [ ] **Task 4**: Implement Course Management (CRUD, Enrollment)
-- [ ] **Task 5**: Implement Progress Tracking
+- [x] **Task 2**: Implement Authentication (Register, Login, JWT Middleware) ✅
+- [x] **Task 3**: Implement User Management (Profile, Update) ✅
+- [x] **Task 4**: Implement Course Management (CRUD, Enrollment, Lessons) ✅
+- [ ] **Task 5**: Implement Progress Tracking (In Progress)
 
 ## 📚 API Endpoints
 
-| Method  | Endpoint                | Description      | Auth |
-| ------- | ----------------------- | ---------------- | ---- |
-| `GET`   | `/api/v1/health`        | Health check     | ❌   |
-| `POST`  | `/api/v1/auth/register` | Register user    | ❌   |
-| `POST`  | `/api/v1/auth/login`    | Login user       | ❌   |
-| `GET`   | `/api/v1/auth/me`       | Get current user | ✅   |
-| `GET`   | `/api/v1/users/:id`     | Get user profile | ❌   |
-| `PATCH` | `/api/v1/users/me`      | Update profile   | ✅   |
+### Authentication & Users
+
+| Method  | Endpoint                | Description          | Auth |
+| ------- | ----------------------- | -------------------- | ---- |
+| `GET`   | `/api/v1/health`        | Health check         | ❌   |
+| `POST`  | `/api/v1/auth/register` | Register user        | ❌   |
+| `POST`  | `/api/v1/auth/login`    | Login user           | ❌   |
+| `GET`   | `/api/v1/auth/me`       | Get current user     | ✅   |
+| `GET`   | `/api/v1/users/:id`     | Get user profile     | ❌   |
+| `PATCH` | `/api/v1/users/me`      | Update profile       | ✅   |
+| `PATCH` | `/api/v1/users/me/password` | Change password | ✅   |
+
+### Courses
+
+| Method   | Endpoint                    | Description          | Auth |
+| -------- | --------------------------- | -------------------- | ---- |
+| `GET`    | `/api/v1/courses`           | List courses         | ❌   |
+| `GET`    | `/api/v1/courses/:id`       | Get course by ID     | ❌   |
+| `GET`    | `/api/v1/courses/slug/:slug`| Get course by slug   | ❌   |
+| `POST`   | `/api/v1/courses`           | Create course        | ✅   |
+| `PATCH`  | `/api/v1/courses/:id`       | Update course        | ✅   |
+| `DELETE` | `/api/v1/courses/:id`       | Delete course        | ✅   |
+| `POST`   | `/api/v1/courses/:id/enroll`| Enroll in course     | ✅   |
+| `DELETE` | `/api/v1/courses/:id/unenroll`| Unenroll from course | ✅   |
+
+### Lessons
+
+| Method   | Endpoint                          | Description        | Auth |
+| -------- | --------------------------------- | ------------------ | ---- |
+| `GET`    | `/api/v1/courses/:courseId/lessons` | List lessons     | ❌   |
+| `GET`    | `/api/v1/lessons/:id`             | Get lesson detail  | ❌   |
+| `POST`   | `/api/v1/courses/:courseId/lessons` | Create lesson    | ✅   |
+| `PATCH`  | `/api/v1/lessons/:id`             | Update lesson      | ✅   |
+| `DELETE` | `/api/v1/lessons/:id`             | Delete lesson      | ✅   |
 
 Lihat `API_SPEC.md` untuk dokumentasi lengkap.
 
@@ -251,5 +301,5 @@ MIT License - lihat [LICENSE](../LICENSE)
 
 ---
 
-**Status**: ✅ Infrastructure Setup Complete  
-**Next**: Task 2 - Implement Authentication
+**Status**: ✅ Course Management Complete (10/10 API tests passing)  
+**Next**: Task 5 - Implement Progress Tracking

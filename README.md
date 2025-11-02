@@ -32,9 +32,10 @@
 
 - ✅ **Autentikasi pengguna** - Register/Login dengan JWT, middleware protection
 - ✅ **User Management** - Get profile, update profile, change password
-- 🚧 **Course catalog** - Search & filter (coming soon)
-- 🚧 **Halaman pembelajaran** - Berbasis MDX (teks terstruktur) (coming soon)
-- 🚧 **Progress tracking** - Tandai lesson sebagai selesai (coming soon)
+- ✅ **Course Management** - CRUD operations, enrollment, lessons, slug-based retrieval
+- 🚧 **Course catalog** - Search & filter (completed, frontend UI pending)
+- 🚧 **Halaman pembelajaran** - Berbasis MDX (backend ready, frontend pending)
+- 🚧 **Progress tracking** - Tandai lesson sebagai selesai (backend pending)
 - 🚧 **Dashboard** - Jadwal sesi online (coming soon)
 
 ---
@@ -170,12 +171,15 @@ colors: {
 - [x] ✅ **Testing**: Comprehensive test suite (11 unit + integration tests)
 - [ ] 🚧 **Frontend**: Initialize Next.js project + UI components
 
-### Phase 2: Core Features (Week 3-4) - 🚧 IN PROGRESS
+### Phase 2: Core Features (Week 3-4) - ✅ BACKEND COMPLETED
 
-- [ ] Course CRUD & enrollment system
-- [ ] Lesson content dengan MDX
-- [ ] Progress tracking system
-- [ ] Frontend authentication pages
+- [x] ✅ **Backend**: Course CRUD & enrollment system (10/10 API tests passing)
+- [x] ✅ **Backend**: Lesson management with MDX content storage
+- [x] ✅ **Backend**: Enrollment/Unenrollment functionality
+- [x] ✅ **Testing**: PowerShell API test suite (test-course-quick.ps1)
+- [ ] 🚧 **Backend**: Progress tracking system
+- [ ] 🚧 **Frontend**: Authentication pages
+- [ ] 🚧 **Frontend**: Course catalog UI
 
 ### Phase 3: Enhancement (Week 5-6)
 
@@ -293,21 +297,27 @@ PATCH  /api/v1/users/me            # Update profile (protected)
 PATCH  /api/v1/users/me/password   # Change password (protected)
 ```
 
-### Courses (Coming Soon)
+### Courses
 
 ```
-GET    /api/v1/courses        # List courses
-GET    /api/v1/courses/:id    # Course detail
-POST   /api/v1/courses        # Create course (instructor)
-POST   /api/v1/courses/:id/enroll  # Enroll to course
+GET    /api/v1/courses                  # List courses (with pagination & filters)
+GET    /api/v1/courses/:id              # Get course by ID
+GET    /api/v1/courses/slug/:slug       # Get course by slug
+POST   /api/v1/courses                  # Create course (instructor/admin)
+PATCH  /api/v1/courses/:id              # Update course (instructor/admin)
+DELETE /api/v1/courses/:id              # Delete course (instructor/admin)
+POST   /api/v1/courses/:id/enroll       # Enroll in course (protected)
+DELETE /api/v1/courses/:id/unenroll     # Unenroll from course (protected)
 ```
 
-### Lessons (Coming Soon)
+### Lessons
 
 ```
-GET    /api/v1/courses/:id/lessons      # List lessons
-GET    /api/v1/lessons/:id              # Lesson detail
-POST   /api/v1/lessons/:id/complete     # Mark as completed
+GET    /api/v1/courses/:courseId/lessons  # List lessons for a course
+GET    /api/v1/lessons/:id                # Get lesson detail
+POST   /api/v1/courses/:courseId/lessons  # Create lesson (instructor/admin)
+PATCH  /api/v1/lessons/:id                # Update lesson (instructor/admin)
+DELETE /api/v1/lessons/:id                # Delete lesson (instructor/admin)
 ```
 
 ### Progress (Coming Soon)

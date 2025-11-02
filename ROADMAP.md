@@ -108,25 +108,28 @@
   ✓ user_handler.go (GET /users/:id, PATCH /users/me, PATCH /users/me/password)
   ✓ Comprehensive testing (11 unit + integration tests)
 
-□ Task 2.2: Course Module (4 hours)
-  ├─ course_model.go (Course, Lesson models)
-  ├─ course_dto.go (CreateCourseRequest, CourseResponse)
-  ├─ course_repository.go (Create, FindAll, FindByID)
-  ├─ course_service.go (Business logic)
-  ├─ course_handler.go (CRUD endpoints)
-  └─ Add pagination & filtering
+✅ Task 2.2: Course Module (4 hours) - COMPLETED
+  ✓ course_model.go (Course, Lesson, Enrollment models)
+  ✓ course_dto.go (CreateCourseRequest, UpdateCourseRequest, CourseResponse)
+  ✓ course_repository.go (Create, FindAll, FindByID, Update, Delete)
+  ✓ course_service.go (Business logic with authorization)
+  ✓ course_handler.go (CRUD endpoints)
+  ✓ Pagination & filtering (search, category, difficulty)
+  ✓ Slug-based retrieval support
 
-□ Task 2.3: Lesson Module (3 hours)
-  ├─ lesson_handler.go (CRUD endpoints)
-  ├─ lesson_service.go (GetLesson, CreateLesson)
-  ├─ lesson_repository.go (DB operations)
-  └─ MDX content storage strategy
+✅ Task 2.3: Lesson Module (3 hours) - COMPLETED
+  ✓ lesson_handler.go (CRUD endpoints)
+  ✓ lesson_service.go (GetLesson, CreateLesson, UpdateLesson, DeleteLesson)
+  ✓ lesson_repository.go (DB operations with ordering)
+  ✓ MDX content storage in database
+  ✓ Free lesson access logic
 
-□ Task 2.4: Enrollment System (2 hours)
-  ├─ enrollment_model.go
-  ├─ enrollment_handler.go (POST /courses/:id/enroll)
-  ├─ enrollment_service.go (Enroll, CheckEnrollment)
-  └─ enrollment_repository.go
+✅ Task 2.4: Enrollment System (2 hours) - COMPLETED
+  ✓ enrollment_model.go (with timestamps)
+  ✓ enrollment_handler.go (POST /courses/:id/enroll, DELETE /courses/:id/unenroll)
+  ✓ enrollment_service.go (Enroll, Unenroll, CheckEnrollment)
+  ✓ enrollment_repository.go (with duplicate prevention)
+  ✓ Published course validation
 
 □ Task 2.5: Progress Tracking (3 hours)
   ├─ progress_model.go
@@ -136,7 +139,7 @@
   └─ Calculate course progress percentage
 ```
 
-**Total Backend: ~15 hours** (Task 2.1 ✅ COMPLETED, 3/15 hours done)
+**Total Backend: ~15 hours** ✅ COMPLETED (12/15 hours done, Task 2.5 remaining)
 
 ### Frontend Tasks
 
