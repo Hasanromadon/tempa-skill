@@ -41,6 +41,7 @@ SHOW TABLES;
 ```
 
 Expected output:
+
 ```
 +---------------------+
 | Tables_in_tempaskill|
@@ -94,10 +95,12 @@ source migrations/001_init_schema.sql
 ### Can't Find MySQL
 
 **Windows:**
+
 - Install MySQL from https://dev.mysql.com/downloads/mysql/
 - Or install XAMPP: https://www.apachefriends.org/
 
 **Add to PATH:**
+
 ```
 C:\Program Files\MySQL\MySQL Server 8.0\bin
 ```
@@ -121,6 +124,7 @@ go run cmd/api/main.go
 ```
 
 Expected output:
+
 ```
 ✅ Database connected successfully
 🚀 Server starting on http://localhost:8080
@@ -133,6 +137,7 @@ curl http://localhost:8080/api/v1/health
 ```
 
 Response:
+
 ```json
 {
   "success": true,

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/config"
+	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/auth"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/database"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/response"
 	"github.com/gin-gonic/gin"
@@ -21,6 +22,13 @@ func main() {
 	if err := database.ConnectDB(cfg); err != nil {
 		log.Fatalf("❌ Failed to connect to database: %v", err)
 	}
+
+	// Auto-migrate database models
+	db := database.GetDB()
+	if err := db.AutoMigrate(&auth.User{}); err != nil {
+		log.Fatalf("❌ Failed to migrate database: %v", err)
+	}
+	log.Println("✅ Database migrations completed")
 
 	// Set Gin mode based on environment
 	if cfg.Server.AppEnv == "production" {
@@ -66,6 +74,14 @@ func main() {
 				"database":    "connected",
 			})
 		})
+
+		// Initialize auth module
+		authRepo := auth.NewRepository(db)
+		authService := auth.NewService(authRepo, cfg)
+		authHandler := auth.NewHandler(authService)
+		
+		// Register auth routes
+		auth.RegisterRoutes(v1, authHandler, cfg)
 	}
 
 	// Start server
