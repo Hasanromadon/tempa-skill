@@ -32,7 +32,12 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterInput) => {
     setApiError("");
     try {
-      const result = await registerMutation.mutateAsync(data);
+      // Transform data to match API expectations
+      const { confirmPassword, ...rest } = data;
+      const result = await registerMutation.mutateAsync({
+        ...rest,
+        password_confirmation: confirmPassword,
+      });
 
       if (result.data?.token) {
         setAuthToken(result.data.token);

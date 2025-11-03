@@ -9,15 +9,19 @@
 ## 📦 Available Components
 
 ### 1. FormField
+
 Input field dengan auto-validation dan error display
 
-### 2. TextareaField  
+### 2. TextareaField
+
 Textarea dengan auto-validation dan error display
 
 ### 3. FormWrapper
+
 Form wrapper dengan FormProvider dan API error handling
 
 ### 4. SubmitButton
+
 Submit button dengan loading state built-in
 
 ---
@@ -27,6 +31,7 @@ Submit button dengan loading state built-in
 ### Installation
 
 Components sudah tersedia di `src/components/common/`:
+
 - `form-field.tsx` - FormField & TextareaField
 - `form-wrapper.tsx` - FormWrapper
 - `submit-button.tsx` - SubmitButton
@@ -49,10 +54,7 @@ export default function MyForm() {
   };
 
   return (
-    <FormWrapper
-      methods={methods}
-      onSubmit={methods.handleSubmit(onSubmit)}
-    >
+    <FormWrapper methods={methods} onSubmit={methods.handleSubmit(onSubmit)}>
       <FormField name="email" label="Email" type="email" />
       <FormField name="password" label="Password" type="password" />
       <SubmitButton fullWidth>Submit</SubmitButton>
@@ -69,15 +71,15 @@ export default function MyForm() {
 
 **Props:**
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `name` | `string` | Required | Field name (must match Zod schema) |
-| `label` | `string` | Required | Label text |
-| `type` | `"text" \| "email" \| "password" \| "number" \| "tel" \| "url"` | `"text"` | Input type |
-| `description` | `string` | - | Helper text below input |
-| `placeholder` | `string` | - | Placeholder text |
-| `disabled` | `boolean` | `false` | Disable input |
-| `className` | `string` | - | Additional CSS classes |
+| Prop          | Type                                                            | Default  | Description                        |
+| ------------- | --------------------------------------------------------------- | -------- | ---------------------------------- |
+| `name`        | `string`                                                        | Required | Field name (must match Zod schema) |
+| `label`       | `string`                                                        | Required | Label text                         |
+| `type`        | `"text" \| "email" \| "password" \| "number" \| "tel" \| "url"` | `"text"` | Input type                         |
+| `description` | `string`                                                        | -        | Helper text below input            |
+| `placeholder` | `string`                                                        | -        | Placeholder text                   |
+| `disabled`    | `boolean`                                                       | `false`  | Disable input                      |
+| `className`   | `string`                                                        | -        | Additional CSS classes             |
 
 **Example:**
 
@@ -93,6 +95,7 @@ export default function MyForm() {
 ```
 
 **Features:**
+
 - ✅ Auto-connects to React Hook Form
 - ✅ Shows validation errors from Zod schema
 - ✅ Red border on error
@@ -105,15 +108,15 @@ export default function MyForm() {
 
 **Props:**
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `name` | `string` | Required | Field name |
-| `label` | `string` | Required | Label text |
-| `description` | `string` | - | Helper text |
-| `placeholder` | `string` | - | Placeholder text |
-| `rows` | `number` | `4` | Number of rows |
-| `disabled` | `boolean` | `false` | Disable textarea |
-| `className` | `string` | - | Additional CSS classes |
+| Prop          | Type      | Default  | Description            |
+| ------------- | --------- | -------- | ---------------------- |
+| `name`        | `string`  | Required | Field name             |
+| `label`       | `string`  | Required | Label text             |
+| `description` | `string`  | -        | Helper text            |
+| `placeholder` | `string`  | -        | Placeholder text       |
+| `rows`        | `number`  | `4`      | Number of rows         |
+| `disabled`    | `boolean` | `false`  | Disable textarea       |
+| `className`   | `string`  | -        | Additional CSS classes |
 
 **Example:**
 
@@ -133,13 +136,13 @@ export default function MyForm() {
 
 **Props:**
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `methods` | `UseFormReturn` | Required | React Hook Form methods from `useForm()` |
-| `onSubmit` | `(e: FormEvent) => void` | Required | Submit handler (use `methods.handleSubmit(fn)`) |
-| `error` | `string` | - | API error message to display |
-| `className` | `string` | - | Additional CSS classes |
-| `children` | `ReactNode` | Required | Form fields |
+| Prop        | Type                     | Default  | Description                                     |
+| ----------- | ------------------------ | -------- | ----------------------------------------------- |
+| `methods`   | `UseFormReturn`          | Required | React Hook Form methods from `useForm()`        |
+| `onSubmit`  | `(e: FormEvent) => void` | Required | Submit handler (use `methods.handleSubmit(fn)`) |
+| `error`     | `string`                 | -        | API error message to display                    |
+| `className` | `string`                 | -        | Additional CSS classes                          |
+| `children`  | `ReactNode`              | Required | Form fields                                     |
 
 **Example:**
 
@@ -153,10 +156,11 @@ const [apiError, setApiError] = useState("");
   error={apiError}
 >
   {/* Form fields here */}
-</FormWrapper>
+</FormWrapper>;
 ```
 
 **Features:**
+
 - ✅ Provides FormProvider context
 - ✅ Displays API errors in Alert component
 - ✅ Handles form submission
@@ -168,29 +172,26 @@ const [apiError, setApiError] = useState("");
 
 **Props:**
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `loading` | `boolean` | `false` | Show loading spinner |
-| `loadingText` | `string` | `"Memproses..."` | Text during loading |
-| `fullWidth` | `boolean` | `false` | Make button full width |
-| `variant` | `ButtonVariant` | `"default"` | Button variant |
-| `size` | `ButtonSize` | `"default"` | Button size |
-| `disabled` | `boolean` | `false` | Disable button |
-| `children` | `ReactNode` | Required | Button text |
+| Prop          | Type            | Default          | Description            |
+| ------------- | --------------- | ---------------- | ---------------------- |
+| `loading`     | `boolean`       | `false`          | Show loading spinner   |
+| `loadingText` | `string`        | `"Memproses..."` | Text during loading    |
+| `fullWidth`   | `boolean`       | `false`          | Make button full width |
+| `variant`     | `ButtonVariant` | `"default"`      | Button variant         |
+| `size`        | `ButtonSize`    | `"default"`      | Button size            |
+| `disabled`    | `boolean`       | `false`          | Disable button         |
+| `children`    | `ReactNode`     | Required         | Button text            |
 
 **Example:**
 
 ```tsx
-<SubmitButton
-  loading={mutation.isPending}
-  loadingText="Menyimpan..."
-  fullWidth
->
+<SubmitButton loading={mutation.isPending} loadingText="Menyimpan..." fullWidth>
   Simpan
 </SubmitButton>
 ```
 
 **Features:**
+
 - ✅ Auto-disabled when loading
 - ✅ Shows spinner during loading
 - ✅ Orange brand color by default
@@ -215,7 +216,14 @@ import { useLogin } from "@/hooks";
 import { loginSchema, type LoginInput } from "@/lib/validators";
 import { ROUTES, MESSAGES } from "@/lib/constants";
 import { FormWrapper, FormField, SubmitButton } from "@/components/common";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -243,7 +251,7 @@ export default function LoginPage() {
           <CardTitle>Selamat Datang</CardTitle>
           <CardDescription>Masuk ke akun Anda</CardDescription>
         </CardHeader>
-        
+
         <FormWrapper
           methods={methods}
           onSubmit={methods.handleSubmit(onSubmit)}
@@ -265,7 +273,7 @@ export default function LoginPage() {
               disabled={login.isPending}
             />
           </CardContent>
-          
+
           <CardFooter>
             <SubmitButton
               loading={login.isPending}
@@ -296,11 +304,7 @@ export default function RegisterPage() {
       onSubmit={methods.handleSubmit(onSubmit)}
       error={apiError}
     >
-      <FormField
-        name="name"
-        label="Nama Lengkap"
-        placeholder="John Doe"
-      />
+      <FormField name="name" label="Nama Lengkap" placeholder="John Doe" />
       <FormField
         name="email"
         label="Email"
@@ -332,11 +336,7 @@ export default function RegisterPage() {
 export default function ProfileForm() {
   return (
     <FormWrapper methods={methods} onSubmit={methods.handleSubmit(onSubmit)}>
-      <FormField
-        name="name"
-        label="Nama"
-        placeholder="John Doe"
-      />
+      <FormField name="name" label="Nama" placeholder="John Doe" />
       <FormField
         name="email"
         label="Email"
@@ -350,9 +350,7 @@ export default function ProfileForm() {
         rows={4}
         description="Max 500 karakter"
       />
-      <SubmitButton loading={isLoading}>
-        Simpan Perubahan
-      </SubmitButton>
+      <SubmitButton loading={isLoading}>Simpan Perubahan</SubmitButton>
     </FormWrapper>
   );
 }
@@ -402,14 +400,16 @@ export const changePasswordSchema = z.object({
 import * as z from "zod";
 
 export const customSchema = z.object({
-  title: z.string()
+  title: z
+    .string()
     .min(5, "Judul minimal 5 karakter")
     .max(100, "Judul maksimal 100 karakter"),
-  
-  price: z.number()
+
+  price: z
+    .number()
     .min(0, "Harga tidak boleh negatif")
     .max(10000000, "Harga terlalu tinggi"),
-  
+
   category: z.enum(["Web", "Mobile", "Data"], {
     message: "Kategori tidak valid",
   }),
@@ -427,7 +427,11 @@ export type CustomInput = z.infer<typeof customSchema>;
 ```tsx
 // 100+ lines of code
 export default function Form() {
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
   const [apiError, setApiError] = useState("");
 
   return (
@@ -437,7 +441,7 @@ export default function Form() {
           <p className="text-red-600">{apiError}</p>
         </div>
       )}
-      
+
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <Input
@@ -495,7 +499,9 @@ export default function Form() {
     >
       <FormField name="email" label="Email" type="email" />
       <FormField name="password" label="Password" type="password" />
-      <SubmitButton loading={isLoading} fullWidth>Submit</SubmitButton>
+      <SubmitButton loading={isLoading} fullWidth>
+        Submit
+      </SubmitButton>
     </FormWrapper>
   );
 }
@@ -509,7 +515,7 @@ export default function Form() {
 ✅ **Consistent styling** across all forms  
 ✅ **Type-safe** with TypeScript  
 ✅ **Built-in loading states**  
-✅ **Maintainable** - change once, apply everywhere  
+✅ **Maintainable** - change once, apply everywhere
 
 ---
 
@@ -518,20 +524,13 @@ export default function Form() {
 ### Custom Styling
 
 ```tsx
-<FormField
-  name="email"
-  label="Email"
-  className="border-2 border-orange-500"
-/>
+<FormField name="email" label="Email" className="border-2 border-orange-500" />
 ```
 
 ### Custom Loading Text
 
 ```tsx
-<SubmitButton
-  loading={isLoading}
-  loadingText="Menyimpan data..."
->
+<SubmitButton loading={isLoading} loadingText="Menyimpan data...">
   Simpan
 </SubmitButton>
 ```
@@ -539,11 +538,7 @@ export default function Form() {
 ### Custom Button Variant
 
 ```tsx
-<SubmitButton
-  loading={isLoading}
-  variant="outline"
-  size="lg"
->
+<SubmitButton loading={isLoading} variant="outline" size="lg">
   Submit
 </SubmitButton>
 ```

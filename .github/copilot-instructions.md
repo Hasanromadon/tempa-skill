@@ -1105,6 +1105,36 @@ const schema = z.object({
 
 ## 📝 Code Quality Standards
 
+### TypeScript Error Checking (CRITICAL!)
+
+```
+✅ ALWAYS after frontend development:
+
+1. Check for TypeScript errors:
+   npm run build
+
+2. Fix ALL errors before committing:
+   - Unused imports
+   - Type mismatches
+   - Missing properties
+   - Any type usage
+
+3. Run type check in development:
+   npm run type-check (if available)
+
+❌ NEVER:
+- Commit code with TypeScript errors
+- Use 'any' type without comment
+- Ignore type warnings
+- Skip error checking
+
+💡 TIPS:
+- Use get_errors tool to check before committing
+- Fix errors immediately when they appear
+- Add proper types instead of using 'any'
+- Use type guards for runtime checks
+```
+
 ### Naming Conventions
 
 ```
@@ -1278,6 +1308,7 @@ func (h *FileHandler) Upload(c *gin.Context) {
 - [ ] Show loading states with Skeleton
 - [ ] Handle errors with Alert components
 - [ ] Use TypeScript strictly
+- [ ] **Run `npm run build` and fix ALL TypeScript errors before committing**
 
 ### Testing Checklist
 
