@@ -12,6 +12,7 @@
 - [Core Principles](#core-principles)
 - [Backend Development (Go)](#backend-development-go)
 - [Frontend Development (Next.js)](#frontend-development-nextjs)
+- [Reusable Components & Clean Code](#reusable-components--clean-code)
 - [Testing Standards](#testing-standards)
 - [Database Guidelines](#database-guidelines)
 - [Security Requirements](#security-requirements)
@@ -652,7 +653,238 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 ---
 
-## 🧪 Testing Standards
+## � Reusable Components & Clean Code
+
+### Principles for Every Development
+
+**ALWAYS consider reusability before creating new components:**
+
+1. **Check Existing Components First**
+   - Look in `components/ui/` (Shadcn components)
+   - Look in `components/common/` (reusable business components)
+   - Look in `components/[domain]/` (domain-specific components)
+   
+2. **DRY Principle** (Don't Repeat Yourself)
+   - If pattern appears 3+ times → create reusable component
+   - If logic is duplicated → extract to utility function
+   - If types are similar → create shared type definition
+
+3. **Single Responsibility**
+   - Each component should have ONE clear purpose
+   - Separate concerns: UI vs Business Logic vs Data Fetching
+   
+4. **Composition Over Configuration**
+   - Prefer `children` props over many boolean flags
+   - Use compound components pattern (Card → CardHeader, CardContent)
+   
+5. **TypeScript First**
+   - Always define proper interfaces/types
+   - Extend HTML attributes when needed
+   - Export types for reusability
+
+### Component Organization Structure
+
+```
+components/
+├── ui/                 # Shadcn atomic components (ALREADY EXISTS)
+│   ├── button.tsx
+│   ├── card.tsx
+│   └── ...
+│
+├── common/             # Reusable business components (CREATE IF NOT EXISTS)
+│   ├── page-header.tsx     # Standard page header with back button
+│   ├── loading-screen.tsx  # Full screen loader
+│   ├── empty-state.tsx     # Empty state component
+│   └── error-boundary.tsx  # Error boundary wrapper
+│
+├── course/             # Domain-specific: Course
+│   ├── course-card.tsx
+│   ├── course-grid.tsx
+│   ├── course-filter.tsx
+│   └── progress-ring.tsx
+│
+├── lesson/             # Domain-specific: Lesson
+│   ├── lesson-list.tsx
+│   ├── lesson-card.tsx
+│   └── lesson-navigation.tsx
+│
+└── mdx/               # MDX rendering (ALREADY EXISTS)
+    ├── mdx-content.tsx
+    └── ...
+```
+
+### Reusable Component Template
+
+```tsx
+// ✅ GOOD: Reusable component pattern
+interface PageHeaderProps {
+  title: string;
+  description?: string;
+  backHref?: string;
+  action?: React.ReactNode;
+}
+
+export function PageHeader({ 
+  title, 
+  description, 
+  backHref, 
+  action 
+}: PageHeaderProps) {
+  return (
+    <div className="bg-white border-b">
+      <div className="container mx-auto px-4 py-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            {backHref && (
+              <Button variant="ghost" size="icon" asChild>
+                <Link href={backHref}>
+                  <ArrowLeft className="h-5 w-5" />
+                </Link>
+              </Button>
+            )}
+            <div>
+              <h1 className="text-3xl font-bold">{title}</h1>
+              {description && <p className="text-gray-600 mt-1">{description}</p>}
+            </div>
+          </div>
+          {action}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Usage across multiple pages
+<PageHeader
+  title="Dashboard"
+  description="Selamat datang kembali!"
+  action={<Button onClick={logout}>Keluar</Button>}
+/>
+```
+
+### Utility Functions (Always Extract Common Logic)
+
+**File**: `src/lib/utils.ts`
+
+```typescript
+// ✅ ALWAYS extract repeated logic to utils
+
+// Date formatting
+export function formatDate(date: string | Date): string {
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(date));
+}
+
+// Duration formatting
+export function formatDuration(minutes: number): string {
+  if (minutes < 60) return `${minutes} menit`;
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return mins > 0 ? `${hours} jam ${mins} menit` : `${hours} jam`;
+}
+
+// Currency formatting
+export function formatCurrency(amount: number): string {
+  if (amount === 0) return "Gratis";
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  }).format(amount);
+}
+
+// Text truncation
+export function truncate(text: string, length: number): string {
+  if (text.length <= length) return text;
+  return text.slice(0, length) + "...";
+}
+```
+
+### Type Definitions (Centralize Common Types)
+
+**File**: `src/types/common.ts`
+
+```typescript
+// ✅ ALWAYS define reusable types
+
+export type Status = "idle" | "loading" | "success" | "error";
+export type Difficulty = "beginner" | "intermediate" | "advanced";
+export type UserRole = "student" | "instructor" | "admin";
+
+export interface Breadcrumb {
+  label: string;
+  href?: string;
+}
+
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  total_pages: number;
+}
+
+export interface SelectOption<T = string> {
+  value: T;
+  label: string;
+}
+```
+
+### Checklist Before Creating New Component
+
+✅ **ALWAYS Ask**:
+1. Does this component already exist?
+2. Is this used in 3+ places? (If no, maybe keep inline)
+3. Can I compose existing components instead?
+4. Does it have a single, clear responsibility?
+5. Are the props interface well-defined?
+6. Can others understand and use it easily?
+
+❌ **AVOID**:
+1. Over-abstraction (too generic, hard to use)
+2. God components (doing too many things)
+3. Premature optimization (one-off components)
+4. Poor naming (vague like `Container`, `Wrapper`)
+
+### Import Organization (ALWAYS Follow)
+
+```tsx
+// 1. External dependencies (React, Next.js)
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+// 2. UI components (Shadcn)
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
+
+// 3. Common components
+import { PageHeader } from "@/components/common/page-header";
+import { LoadingScreen } from "@/components/common/loading-screen";
+
+// 4. Domain components
+import { CourseCard } from "@/components/course/course-card";
+
+// 5. Hooks
+import { useCourses, useAuth } from "@/hooks";
+
+// 6. Utils, types, constants
+import { formatDate, cn } from "@/lib/utils";
+import { ROUTES } from "@/lib/constants";
+import type { Course } from "@/types";
+
+// 7. Icons (last)
+import { BookOpen, User, LogOut } from "lucide-react";
+```
+
+### Documentation Reference
+
+Full guidelines available at: `docs/FRONTEND_ARCHITECTURE.md`
+
+---
+
+## �🧪 Testing Standards
 
 ### E2E Testing (Playwright)
 
