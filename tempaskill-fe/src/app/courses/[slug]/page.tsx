@@ -371,7 +371,8 @@ export default function CourseDetailPage({ params }: PageProps) {
                   <div className="space-y-2">
                     {lessons.map((lesson, index) => {
                       const isCompleted =
-                        progress?.completed_lesson_ids?.includes(lesson.id) ?? false;
+                        progress?.completed_lesson_ids?.includes(lesson.id) ??
+                        false;
                       const canAccess = course.is_enrolled;
 
                       return (
@@ -526,7 +527,7 @@ export default function CourseDetailPage({ params }: PageProps) {
                           const nextLesson =
                             lessons.find(
                               (l) =>
-                                !progress?.completed_lesson_ids.includes(l.id)
+                                !progress?.completed_lesson_ids?.includes(l.id)
                             ) || lessons[0];
                           router.push(
                             `/courses/${slug}/lessons/${nextLesson.id}`
