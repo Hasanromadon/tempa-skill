@@ -10,6 +10,7 @@
 
 - [Project Overview](#project-overview)
 - [Core Principles](#core-principles)
+- [Development Workflow](#development-workflow)
 - [Backend Development (Go)](#backend-development-go)
 - [Frontend Development (Next.js)](#frontend-development-nextjs)
 - [Reusable Components & Clean Code](#reusable-components--clean-code)
@@ -84,7 +85,298 @@ FOLLOW CLEAN ARCHITECTURE:
 
 ---
 
-## 🔧 Backend Development (Go)
+## � Development Workflow
+
+### **ALWAYS Follow This Process for New Features**
+
+When implementing a new feature (e.g., Admin Course Management, User Profile), **ALWAYS** develop Backend and Frontend simultaneously using this workflow:
+
+#### **Phase 1: Plan & Design** (5-10 min)
+
+```bash
+1. Understand the feature requirements
+2. Identify Backend APIs needed
+3. Identify Frontend pages/components needed
+4. Check if database migrations are required
+5. Review existing code for reusable patterns
+```
+
+#### **Phase 2: Backend Development** (30-60 min)
+
+```bash
+# Step 1: Database (if needed)
+- Create migration file (migrations/XXX_add_feature.sql)
+- Run migration: make migrate-up
+
+# Step 2: Backend Implementation
+- Create/update model in internal/[module]/model.go
+- Create DTOs in dto.go
+- Implement repository methods in repository.go
+- Implement business logic in service.go
+- Create HTTP handlers in handler.go
+- Register routes in routes.go
+
+# Step 3: Backend Testing
+cd tempaskill-be
+go test ./internal/[module]/...
+go run cmd/api/main.go  # Manual API testing
+```
+
+#### **Phase 3: Frontend Development** (30-60 min)
+
+```bash
+# Step 1: Types & API Client
+- Add API endpoints to src/lib/constants.ts (API_ENDPOINTS)
+- Add types to src/types/api.ts
+- Create/update hooks in src/hooks/use-[feature].ts
+
+# Step 2: Components
+- Create reusable components in src/components/[domain]/
+- Use existing components (PageHeader, LoadingScreen, etc.)
+- Follow React.memo for performance
+- Add ARIA labels for accessibility
+
+# Step 3: Pages
+- Create pages in src/app/[route]/page.tsx
+- Use React Hook Form + Zod for forms
+- Handle loading, error, and empty states
+- Use Indonesian language for all UI text
+```
+
+#### **Phase 4: Quality Assurance** (10-20 min)
+
+```bash
+# Backend QA
+cd tempaskill-be
+go test ./...              # Run all tests
+golangci-lint run          # Lint check
+go build cmd/api/main.go   # Build check
+
+# Frontend QA
+cd tempaskill-fe
+npm run build              # TypeScript + build check
+npm run lint               # ESLint check
+
+# ✅ CRITICAL: Fix ALL errors before proceeding
+```
+
+#### **Phase 5: Documentation** (5-10 min)
+
+```bash
+# Update relevant docs
+1. API_SPEC.md - Add new API endpoints
+2. DATABASE.md - Update schema if changed
+3. TODO.md - Mark completed tasks
+4. Update copilot todo list
+
+# Example API_SPEC.md entry:
+### POST /api/v1/courses
+Create a new course (Admin/Instructor only)
+
+**Request Body:**
+{
+  "title": "string",
+  "description": "string",
+  ...
+}
+
+**Response:** 201 Created
+{
+  "message": "Course created successfully",
+  "data": { course object }
+}
+```
+
+#### **Phase 6: Commit & Push** (5 min)
+
+```bash
+# Stage all changes (BE + FE + Docs)
+git add .
+
+# Commit with detailed message
+git commit -m "feat: add [feature name]
+
+BACKEND:
+- Add [Model/API/Service] for [feature]
+- Implement [functionality]
+- Add tests for [scenarios]
+
+FRONTEND:
+- Create [Component/Page] for [feature]
+- Add [Hook] for API integration
+- Implement [UI/UX feature]
+
+DOCUMENTATION:
+- Update API_SPEC.md with new endpoints
+- Update DATABASE.md with schema changes
+- Mark TODO.md tasks complete
+
+BUILD STATUS: ✅ Zero errors
+TESTS: ✅ All passing"
+
+# Push to GitHub
+git push origin main
+```
+
+---
+
+### **Complete Workflow Example: Admin Course Creation**
+
+```bash
+# 1. PLAN (5 min)
+Goal: Admin can create courses
+Backend: POST /api/v1/courses API
+Frontend: /admin/courses/new page with form
+Database: No migration needed (table exists)
+
+# 2. BACKEND (45 min)
+cd tempaskill-be
+
+# Add DTO
+# File: internal/course/dto.go
+type CreateCourseRequest struct {
+    Title       string  `json:"title" binding:"required,min=5"`
+    Description string  `json:"description" binding:"required"`
+    Price       float64 `json:"price" binding:"min=0"`
+    // ...
+}
+
+# Add handler
+# File: internal/course/handler.go
+func (h *CourseHandler) Create(c *gin.Context) {
+    // Implementation
+}
+
+# Test backend
+go test ./internal/course/...
+go run cmd/api/main.go
+
+# 3. FRONTEND (45 min)
+cd tempaskill-fe
+
+# Add hook
+# File: src/hooks/use-courses.ts
+export const useCreateCourse = () => {
+  return useMutation({
+    mutationFn: async (data) => {
+      await apiClient.post(API_ENDPOINTS.COURSES.CREATE, data);
+    },
+  });
+};
+
+# Create form component
+# File: src/components/admin/course-form.tsx
+export function CourseForm({ onSubmit }) {
+  // React Hook Form + Zod validation
+}
+
+# Create page
+# File: src/app/admin/courses/new/page.tsx
+export default function NewCoursePage() {
+  const createCourse = useCreateCourse();
+  // Implementation
+}
+
+# 4. QUALITY CHECK (15 min)
+cd tempaskill-be && go test ./... && go build cmd/api/main.go
+cd tempaskill-fe && npm run build  # Fix ALL TypeScript errors!
+
+# 5. DOCUMENTATION (10 min)
+# Update API_SPEC.md, TODO.md
+
+# 6. COMMIT & PUSH (5 min)
+git add .
+git commit -m "feat: implement admin course creation
+
+BACKEND:
+- Add CreateCourseRequest DTO with validation
+- Implement Create handler in CourseHandler
+- Add POST /api/v1/courses route
+- Tests cover validation and success scenarios
+
+FRONTEND:
+- Create CourseForm component with React Hook Form
+- Add useCreateCourse hook for API integration
+- Create /admin/courses/new page
+- Form validates title, description, price, category
+
+DOCUMENTATION:
+- Add POST /courses to API_SPEC.md
+- Mark 'Admin Course Creation' complete in TODO.md
+
+BUILD: ✅ Zero TypeScript errors
+TESTS: ✅ All passing"
+
+git push
+```
+
+---
+
+### **Workflow Best Practices**
+
+#### ✅ **DO:**
+
+1. **Develop BE + FE Together**: Don't finish entire backend then start frontend
+2. **Test Continuously**: Test after each component, not at the end
+3. **Fix Errors Immediately**: Never commit with TypeScript/Go errors
+4. **Document As You Go**: Update API_SPEC.md while writing APIs
+5. **Commit Frequently**: Small, focused commits with clear messages
+6. **Update TODO**: Mark tasks complete to track progress
+7. **Use Reusable Code**: Check for existing components/patterns first
+
+#### ❌ **DON'T:**
+
+1. **Skip Testing**: Never push untested code
+2. **Ignore Build Errors**: "I'll fix it later" = technical debt
+3. **Poor Commit Messages**: "fix stuff" is not helpful
+4. **Skip Documentation**: Future you will thank you
+5. **Work on Too Many Things**: Focus on one feature at a time
+6. **Forget to Update TODO**: Keep progress visible
+
+---
+
+### **Quick Commands Reference**
+
+```bash
+# Backend
+cd tempaskill-be
+go test ./...                    # Run all tests
+go test ./internal/course/...    # Test specific module
+go run cmd/api/main.go           # Start backend server
+make migrate-up                  # Run migrations
+golangci-lint run                # Lint
+
+# Frontend
+cd tempaskill-fe
+npm run dev                      # Start dev server
+npm run build                    # TypeScript + build check
+npm run lint                     # ESLint
+npm run test                     # Run tests
+npx shadcn@latest add [component] # Add Shadcn component
+
+# Git
+git status                       # Check changes
+git add .                        # Stage all
+git commit -m "message"          # Commit
+git push                         # Push to GitHub
+git log --oneline -5             # Recent commits
+```
+
+---
+
+### **When to Skip Steps**
+
+You can **skip** certain steps only when:
+
+- **Documentation**: Trivial UI changes (button color, padding)
+- **Backend Testing**: Fixing frontend-only bugs (typos in UI text)
+- **Frontend Testing**: Backend-only changes (database migration)
+
+**NEVER skip**: Build verification, TypeScript error checking, Git commit
+
+---
+
+## �🔧 Backend Development (Go)
 
 ### Project Structure
 
