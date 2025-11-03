@@ -12,14 +12,15 @@ type LessonProgressResponse struct {
 
 // CourseProgressResponse represents progress for a specific course
 type CourseProgressResponse struct {
-	CourseID         uint                      `json:"course_id"`
-	UserID           uint                      `json:"user_id"`
-	CompletedLessons int                       `json:"completed_lessons"`
-	TotalLessons     int                       `json:"total_lessons"`
-	Percentage       float64                   `json:"percentage"`
-	Lessons          []*LessonProgressResponse `json:"lessons"`
-	StartedAt        *time.Time                `json:"started_at"`
-	LastAccessed     *time.Time                `json:"last_accessed"`
+	CourseID           uint                      `json:"course_id"`
+	UserID             uint                      `json:"user_id"`
+	CompletedLessons   int                       `json:"completed_lessons"`
+	TotalLessons       int                       `json:"total_lessons"`
+	Percentage         float64                   `json:"percentage"`
+	CompletedLessonIDs []uint                    `json:"completed_lesson_ids"` // Frontend compatibility
+	Lessons            []*LessonProgressResponse `json:"lessons"`
+	StartedAt          *time.Time                `json:"started_at"`
+	LastAccessed       *time.Time                `json:"last_accessed"`
 }
 
 // UserProgressSummary represents overall user progress

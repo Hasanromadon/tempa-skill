@@ -97,6 +97,7 @@ func (s *service) GetCourseProgress(ctx context.Context, userID, courseID uint) 
 
 	// Build lesson progress responses
 	lessonResponses := make([]*LessonProgressResponse, 0, len(lessons))
+	completedLessonIDs := make([]uint, 0)
 	completedCount := 0
 
 	for _, lesson := range lessons {
@@ -105,6 +106,7 @@ func (s *service) GetCourseProgress(ctx context.Context, userID, courseID uint) 
 		if completed {
 			completedAt = &progress.CompletedAt
 			completedCount++
+			completedLessonIDs = append(completedLessonIDs, lesson.ID)
 		}
 
 		lessonResponses = append(lessonResponses, &LessonProgressResponse{
@@ -134,14 +136,15 @@ func (s *service) GetCourseProgress(ctx context.Context, userID, courseID uint) 
 	}
 
 	return &CourseProgressResponse{
-		CourseID:         courseID,
-		UserID:           userID,
-		CompletedLessons: completedCount,
-		TotalLessons:     totalLessons,
-		Percentage:       percentage,
-		Lessons:          lessonResponses,
-		StartedAt:        startedAt,
-		LastAccessed:     lastAccessed,
+		CourseID:           courseID,
+		UserID:             userID,
+		CompletedLessons:   completedCount,
+		TotalLessons:       totalLessons,
+		Percentage:         percentage,
+		CompletedLessonIDs: completedLessonIDs,
+		Lessons:            lessonResponses,
+		StartedAt:          startedAt,
+		LastAccessed:       lastAccessed,
 	}, nil
 }
 
