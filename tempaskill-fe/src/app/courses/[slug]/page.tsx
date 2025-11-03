@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingScreen } from "@/components/common";
+import { LessonList } from "@/components/lesson";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   AlertDialog,
@@ -22,10 +24,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { LoadingScreen } from "@/components/common";
-import { LessonList } from "@/components/lesson";
-import { ROUTES, DIFFICULTY_LABELS, DIFFICULTY_COLORS } from "@/lib/constants";
-import { formatCurrency } from "@/lib/utils";
 import {
   useCourse,
   useCourseLessons,
@@ -35,6 +33,8 @@ import {
   useUnenrollCourse,
   useUser,
 } from "@/hooks";
+import { DIFFICULTY_COLORS, DIFFICULTY_LABELS, ROUTES } from "@/lib/constants";
+import { formatCurrency } from "@/lib/utils";
 import {
   ArrowLeft,
   BookOpen,
@@ -154,8 +154,16 @@ export default function CourseDetailPage({ params }: PageProps) {
           <div className="flex items-start justify-between gap-6">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-3 flex-wrap">
-                <Badge className={DIFFICULTY_COLORS[course.difficulty as keyof typeof DIFFICULTY_COLORS] || DIFFICULTY_COLORS.beginner}>
-                  {DIFFICULTY_LABELS[course.difficulty as keyof typeof DIFFICULTY_LABELS] || course.difficulty}
+                <Badge
+                  className={
+                    DIFFICULTY_COLORS[
+                      course.difficulty as keyof typeof DIFFICULTY_COLORS
+                    ] || DIFFICULTY_COLORS.beginner
+                  }
+                >
+                  {DIFFICULTY_LABELS[
+                    course.difficulty as keyof typeof DIFFICULTY_LABELS
+                  ] || course.difficulty}
                 </Badge>
                 <Badge
                   variant="outline"
@@ -463,8 +471,16 @@ export default function CourseDetailPage({ params }: PageProps) {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600">Tingkat Kesulitan</span>
-                    <Badge className={DIFFICULTY_COLORS[course.difficulty as keyof typeof DIFFICULTY_COLORS] || DIFFICULTY_COLORS.beginner}>
-                      {DIFFICULTY_LABELS[course.difficulty as keyof typeof DIFFICULTY_LABELS] || course.difficulty}
+                    <Badge
+                      className={
+                        DIFFICULTY_COLORS[
+                          course.difficulty as keyof typeof DIFFICULTY_COLORS
+                        ] || DIFFICULTY_COLORS.beginner
+                      }
+                    >
+                      {DIFFICULTY_LABELS[
+                        course.difficulty as keyof typeof DIFFICULTY_LABELS
+                      ] || course.difficulty}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">

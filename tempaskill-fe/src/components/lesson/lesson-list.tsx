@@ -46,7 +46,11 @@ export const LessonList = memo(function LessonList({
   }
 
   return (
-    <div className={`space-y-2 ${className}`} role="list" aria-label="Daftar pelajaran">
+    <div
+      className={`space-y-2 ${className}`}
+      role="list"
+      aria-label="Daftar pelajaran"
+    >
       {lessons.map((lesson, index) => {
         const isCompleted = completedLessonIds.includes(lesson.id);
         const isCurrent = lesson.id === currentLessonId;
@@ -63,7 +67,11 @@ export const LessonList = memo(function LessonList({
               }
             }}
             onKeyDown={(e) => {
-              if (canAccess && onLessonClick && (e.key === 'Enter' || e.key === ' ')) {
+              if (
+                canAccess &&
+                onLessonClick &&
+                (e.key === "Enter" || e.key === " ")
+              ) {
                 e.preventDefault();
                 onLessonClick(lesson.id);
               }
@@ -71,9 +79,9 @@ export const LessonList = memo(function LessonList({
             role="listitem"
             tabIndex={canAccess ? 0 : -1}
             aria-label={`Pelajaran ${index + 1}: ${lesson.title}${
-              isCompleted ? ', selesai' : ''
-            }${isCurrent ? ', sedang dipelajari' : ''}${
-              !canAccess ? ', terkunci' : ''
+              isCompleted ? ", selesai" : ""
+            }${isCurrent ? ", sedang dipelajari" : ""}${
+              !canAccess ? ", terkunci" : ""
             }`}
           >
             <div className="flex items-start gap-3 flex-1">

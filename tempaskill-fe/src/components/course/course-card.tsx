@@ -65,7 +65,7 @@ export const CourseCard = memo(function CourseCard({
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         ) : (
-          <div 
+          <div
             className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-400 to-orange-600"
             aria-hidden="true"
           >
@@ -162,12 +162,12 @@ export const CourseCard = memo(function CourseCard({
 
   if (onClick) {
     return (
-      <div 
-        onClick={onClick} 
-        role="button" 
+      <div
+        onClick={onClick}
+        role="button"
         tabIndex={0}
         onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
+          if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
             onClick();
           }
@@ -180,7 +180,7 @@ export const CourseCard = memo(function CourseCard({
   }
 
   return (
-    <Link 
+    <Link
       href={`/courses/${course.slug}`}
       aria-label={`Buka halaman kursus ${course.title}`}
     >

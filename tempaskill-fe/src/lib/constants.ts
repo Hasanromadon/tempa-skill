@@ -15,6 +15,18 @@ export const ROUTES = {
   COURSE_DETAIL: (slug: string) => `/courses/${slug}`,
   LESSON_DETAIL: (courseSlug: string, lessonSlug: string) =>
     `/courses/${courseSlug}/lessons/${lessonSlug}`,
+  ADMIN: {
+    DASHBOARD: "/admin/dashboard",
+    COURSES: "/admin/courses",
+    COURSE_NEW: "/admin/courses/new",
+    COURSE_EDIT: (id: number) => `/admin/courses/${id}/edit`,
+    COURSE_LESSONS: (courseId: number) => `/admin/courses/${courseId}/lessons`,
+    LESSON_NEW: (courseId: number) => `/admin/courses/${courseId}/lessons/new`,
+    LESSON_EDIT: (courseId: number, lessonId: number) =>
+      `/admin/courses/${courseId}/lessons/${lessonId}/edit`,
+    USERS: "/admin/users",
+    SETTINGS: "/admin/settings",
+  },
 } as const;
 
 // API Endpoints
