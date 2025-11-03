@@ -108,27 +108,50 @@ test.describe("Course Browsing", () => {
 
   test.describe("Course Detail", () => {
     test("should display course detail page", async ({ page }) => {
-      // This test requires a course to exist
-      await page.goto("/courses");
+      // Listen for console messages
+      page.on('console', msg => console.log('BROWSER:', msg.text()));
+      
+      // Direct navigation to a known course
+      await page.goto("/courses/pemrograman-web-modern-react-nextjs");
       await page.waitForLoadState("networkidle");
 
-      // Find first course link
-      const firstCourse = page.locator('a[href*="/courses/"]').first();
+      const currentUrl = page.url();
+      console.log('Current URL after navigation:', currentUrl);
 
-      if (await firstCourse.isVisible()) {
-        await firstCourse.click();
-        await page.waitForLoadState("networkidle");
+      // Check what's on the page
+      const bodyText = await page.locator("body").textContent();
+      console.log("Page body first 500 chars:", bodyText?.substring(0, 500));
 
-        // Wait for course content to load - wait for heading first
-        await page.waitForSelector("h1", { timeout: 10000 });
+      // Check for error message
+      const hasError = await page.getByText(/kursus tidak ditemukan/i).isVisible().catch(() => false);
+      console.log("Shows error:", hasError);
 
-        // Should show course title and back button
-        await expect(page.locator("text=/kembali ke kursus/i")).toBeVisible();
-
-        // Should show course difficulty badge - wait for any badge to be visible
-        const difficultyBadge = page.getByText(/pemula|menengah|lanjutan/i);
-        await expect(difficultyBadge).toBeVisible({ timeout: 10000 });
+      if (hasError) {
+        console.log("ERROR: Page shows 'Kursus Tidak Ditemukan' - API call failed");
+        // Let's check if we can manually fetch to see the error
+        const apiResponse = await page.evaluate(async () => {
+          try {
+            const res = await fetch('http://localhost:8080/api/v1/courses/slug/pemrograman-web-modern-react-nextjs');
+            return { status: res.status, ok: res.ok, data: await res.json() };
+          } catch (e) {
+            return { error: String(e) };
+          }
+        });
+        console.log("Manual fetch result:", JSON.stringify(apiResponse));
       }
+
+      // Wait for course content to load
+      await page.waitForSelector("h1", { timeout: 10000 });
+
+      const h1Text = await page.locator("h1").textContent();
+      console.log("H1 title:", h1Text);
+
+      // Should show course title and back button
+      await expect(page.locator("text=/kembali ke kursus/i")).toBeVisible();
+
+      // Should show course difficulty badge (use first() since it appears multiple times)
+      const difficultyBadge = page.getByText(/pemula|menengah|lanjutan/i).first();
+      await expect(difficultyBadge).toBeVisible({ timeout: 10000 });
     });
 
     test("should show enroll button for unenrolled course", async ({
@@ -146,15 +169,18 @@ test.describe("Course Browsing", () => {
         // Wait for page to fully load - wait for heading
         await page.waitForSelector("h1", { timeout: 10000 });
 
-        // For guest users, should show login/register prompt
+        // Wait a bit for the button/alert to render
+        await page.waitForTimeout(1000);
+
+        // For guest users, should show login/register prompt or enroll button
         // For authenticated users, should show enroll button or enrolled status
         const hasLoginPrompt = await page
-          .getByText(/masuk.*atau.*buat akun/i)
+          .getByText(/masuk.*atau.*buat akun.*untuk mendaftar/i)
           .isVisible()
           .catch(() => false);
 
         const hasDaftarButton = await page
-          .getByRole("button", { name: /daftar/i })
+          .getByText(/daftar (gratis|sekarang)/i)
           .isVisible()
           .catch(() => false);
 

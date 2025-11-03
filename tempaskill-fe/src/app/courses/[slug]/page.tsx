@@ -1,5 +1,6 @@
 "use client";
 
+import { use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -49,14 +50,14 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 interface PageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 export default function CourseDetailPage({ params }: PageProps) {
   const router = useRouter();
-  const { slug } = params;
+  const { slug } = use(params); // Unwrap the Promise
   const { isAuthenticated } = useIsAuthenticated();
   const { data: course, isLoading, error } = useCourse(slug);
   const { data: lessons, isLoading: lessonsLoading } = useCourseLessons(
