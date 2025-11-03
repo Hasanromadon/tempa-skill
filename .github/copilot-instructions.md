@@ -663,8 +663,8 @@ import { Skeleton } from '@/components/ui/skeleton';
    - Look in `components/ui/` (Shadcn components)
    - Look in `components/common/` (reusable business components)
    - Look in `components/[domain]/` (domain-specific components)
-   
 2. **DRY Principle** (Don't Repeat Yourself)
+
    - If pattern appears 3+ times → create reusable component
    - If logic is duplicated → extract to utility function
    - If types are similar → create shared type definition
@@ -672,11 +672,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 3. **Single Responsibility**
    - Each component should have ONE clear purpose
    - Separate concerns: UI vs Business Logic vs Data Fetching
-   
 4. **Composition Over Configuration**
    - Prefer `children` props over many boolean flags
    - Use compound components pattern (Card → CardHeader, CardContent)
-   
 5. **TypeScript First**
    - Always define proper interfaces/types
    - Extend HTML attributes when needed
@@ -724,11 +722,11 @@ interface PageHeaderProps {
   action?: React.ReactNode;
 }
 
-export function PageHeader({ 
-  title, 
-  description, 
-  backHref, 
-  action 
+export function PageHeader({
+  title,
+  description,
+  backHref,
+  action,
 }: PageHeaderProps) {
   return (
     <div className="bg-white border-b">
@@ -744,7 +742,9 @@ export function PageHeader({
             )}
             <div>
               <h1 className="text-3xl font-bold">{title}</h1>
-              {description && <p className="text-gray-600 mt-1">{description}</p>}
+              {description && (
+                <p className="text-gray-600 mt-1">{description}</p>
+              )}
             </div>
           </div>
           {action}
@@ -759,7 +759,7 @@ export function PageHeader({
   title="Dashboard"
   description="Selamat datang kembali!"
   action={<Button onClick={logout}>Keluar</Button>}
-/>
+/>;
 ```
 
 ### Utility Functions (Always Extract Common Logic)
@@ -835,6 +835,7 @@ export interface SelectOption<T = string> {
 ### Checklist Before Creating New Component
 
 ✅ **ALWAYS Ask**:
+
 1. Does this component already exist?
 2. Is this used in 3+ places? (If no, maybe keep inline)
 3. Can I compose existing components instead?
@@ -843,6 +844,7 @@ export interface SelectOption<T = string> {
 6. Can others understand and use it easily?
 
 ❌ **AVOID**:
+
 1. Over-abstraction (too generic, hard to use)
 2. God components (doing too many things)
 3. Premature optimization (one-off components)

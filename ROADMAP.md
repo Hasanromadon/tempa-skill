@@ -408,6 +408,7 @@
 ### 🚧 In Progress (Phase 3+)
 
 **Priority: Admin & Content Management**
+
 - [ ] Admin Panel for CRUD operations
 - [ ] MDX Editor with live preview
 - [ ] Content migration scripts (HTML → MDX)
@@ -626,6 +627,7 @@ See detailed breakdown in [Phase 5: Advanced Features](#-phase-5-advanced-featur
 Based on business value and technical dependencies:
 
 ### 🔴 High Priority (MVP Required)
+
 - ✅ Authentication & Authorization
 - ✅ Course catalog & enrollment
 - ✅ Lesson content delivery
@@ -635,6 +637,7 @@ Based on business value and technical dependencies:
 - ⏳ MDX editor
 
 ### 🟡 Medium Priority (Post-MVP)
+
 - Payment integration
 - Certificate generation
 - Live session scheduling
@@ -643,6 +646,7 @@ Based on business value and technical dependencies:
 - E2E test coverage
 
 ### 🟢 Low Priority (Nice to Have)
+
 - Discussion forum
 - Course reviews & ratings
 - Custom MDX components

@@ -79,6 +79,7 @@ tempaskill-fe/src/
 ## 🎯 Principles for Reusable Components
 
 ### 1. Single Responsibility
+
 Each component should have **one clear purpose**.
 
 ```tsx
@@ -111,13 +112,16 @@ function UserActions({ onEdit, onDelete }: UserActionsProps) {
   return (
     <div className="flex gap-2">
       <Button onClick={onEdit}>Edit</Button>
-      <Button onClick={onDelete} variant="destructive">Delete</Button>
+      <Button onClick={onDelete} variant="destructive">
+        Delete
+      </Button>
     </div>
   );
 }
 ```
 
 ### 2. Composition Over Configuration
+
 Prefer composition pattern dengan `children` instead of banyak props.
 
 ```tsx
@@ -148,6 +152,7 @@ Prefer composition pattern dengan `children` instead of banyak props.
 ```
 
 ### 3. TypeScript First
+
 Always define proper types and interfaces.
 
 ```tsx
@@ -159,11 +164,11 @@ interface PageHeaderProps {
   breadcrumbs?: Breadcrumb[];
 }
 
-export function PageHeader({ 
-  title, 
-  description, 
-  action, 
-  breadcrumbs 
+export function PageHeader({
+  title,
+  description,
+  action,
+  breadcrumbs,
 }: PageHeaderProps) {
   return (
     <div className="border-b bg-white">
@@ -181,6 +186,7 @@ export function PageHeader({
 ```
 
 ### 4. Colocate Styles
+
 Use Tailwind classes directly, avoid separate CSS files.
 
 ```tsx
@@ -217,11 +223,11 @@ interface PageHeaderProps {
   action?: React.ReactNode;
 }
 
-export function PageHeader({ 
-  title, 
-  description, 
-  backHref, 
-  action 
+export function PageHeader({
+  title,
+  description,
+  backHref,
+  action,
 }: PageHeaderProps) {
   return (
     <div className="bg-white border-b">
@@ -259,7 +265,7 @@ export function PageHeader({
       Keluar
     </Button>
   }
-/>
+/>;
 ```
 
 ### 2. EmptyState Component
@@ -280,11 +286,11 @@ interface EmptyStateProps {
   };
 }
 
-export function EmptyState({ 
-  icon: Icon, 
-  title, 
-  description, 
-  action 
+export function EmptyState({
+  icon: Icon,
+  title,
+  description,
+  action,
 }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
@@ -294,7 +300,10 @@ export function EmptyState({
       <h3 className="text-xl font-semibold text-gray-900 mb-2">{title}</h3>
       <p className="text-gray-600 max-w-md mb-6">{description}</p>
       {action && (
-        <Button onClick={action.onClick} className="bg-orange-600 hover:bg-orange-700">
+        <Button
+          onClick={action.onClick}
+          className="bg-orange-600 hover:bg-orange-700"
+        >
           {action.label}
         </Button>
       )}
@@ -311,7 +320,7 @@ export function EmptyState({
     label: "Jelajahi Kursus",
     onClick: () => router.push("/courses"),
   }}
-/>
+/>;
 ```
 
 ### 3. LoadingScreen Component
@@ -404,7 +413,7 @@ export function ProgressRing({ progress, size = "md" }: ProgressRingProps) {
 }
 
 // Usage
-<ProgressRing progress={courseProgress.progress_percentage} size="lg" />
+<ProgressRing progress={courseProgress.progress_percentage} size="lg" />;
 ```
 
 ### 5. CourseCard Component
@@ -412,7 +421,12 @@ export function ProgressRing({ progress, size = "md" }: ProgressRingProps) {
 **File**: `src/components/course/course-card.tsx`
 
 ```tsx
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Clock, Users } from "lucide-react";
@@ -433,12 +447,12 @@ export function CourseCard({ course, enrolled, progress }: CourseCardProps) {
         <div className="aspect-video bg-gradient-to-br from-orange-100 to-orange-200 rounded-lg mb-4" />
         <h3 className="font-semibold text-lg line-clamp-2">{course.title}</h3>
       </CardHeader>
-      
+
       <CardContent>
         <p className="text-gray-600 text-sm line-clamp-2 mb-4">
           {course.description}
         </p>
-        
+
         <div className="flex items-center gap-4 text-sm text-gray-500">
           <div className="flex items-center gap-1">
             <BookOpen className="h-4 w-4" />
@@ -449,13 +463,13 @@ export function CourseCard({ course, enrolled, progress }: CourseCardProps) {
             {course.enrolled_count}
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2 mt-4">
           <Badge variant="secondary">{course.category}</Badge>
           <Badge variant="outline">{course.difficulty}</Badge>
         </div>
       </CardContent>
-      
+
       <CardFooter className="flex items-center justify-between">
         {enrolled && progress !== undefined ? (
           <>
@@ -467,7 +481,9 @@ export function CourseCard({ course, enrolled, progress }: CourseCardProps) {
         ) : (
           <>
             <span className="font-semibold text-orange-600">
-              {course.price === 0 ? "Gratis" : `Rp ${course.price.toLocaleString()}`}
+              {course.price === 0
+                ? "Gratis"
+                : `Rp ${course.price.toLocaleString()}`}
             </span>
             <Button asChild className="bg-orange-600 hover:bg-orange-700">
               <Link href={`/courses/${course.slug}`}>Lihat Detail</Link>
@@ -609,15 +625,17 @@ export const loginSchema = z.object({
   password: z.string().min(6, "Password minimal 6 karakter"),
 });
 
-export const registerSchema = z.object({
-  name: z.string().min(3, "Nama minimal 3 karakter"),
-  email: z.string().email("Email tidak valid"),
-  password: z.string().min(6, "Password minimal 6 karakter"),
-  password_confirmation: z.string(),
-}).refine((data) => data.password === data.password_confirmation, {
-  message: "Password tidak cocok",
-  path: ["password_confirmation"],
-});
+export const registerSchema = z
+  .object({
+    name: z.string().min(3, "Nama minimal 3 karakter"),
+    email: z.string().email("Email tidak valid"),
+    password: z.string().min(6, "Password minimal 6 karakter"),
+    password_confirmation: z.string(),
+  })
+  .refine((data) => data.password === data.password_confirmation, {
+    message: "Password tidak cocok",
+    path: ["password_confirmation"],
+  });
 
 // Course schemas
 export const createCourseSchema = z.object({
@@ -635,14 +653,16 @@ export const updateProfileSchema = z.object({
   bio: z.string().max(500, "Bio maksimal 500 karakter").optional(),
 });
 
-export const changePasswordSchema = z.object({
-  current_password: z.string().min(1, "Password lama harus diisi"),
-  new_password: z.string().min(6, "Password baru minimal 6 karakter"),
-  new_password_confirmation: z.string(),
-}).refine((data) => data.new_password === data.new_password_confirmation, {
-  message: "Password baru tidak cocok",
-  path: ["new_password_confirmation"],
-});
+export const changePasswordSchema = z
+  .object({
+    current_password: z.string().min(1, "Password lama harus diisi"),
+    new_password: z.string().min(6, "Password baru minimal 6 karakter"),
+    new_password_confirmation: z.string(),
+  })
+  .refine((data) => data.new_password === data.new_password_confirmation, {
+    message: "Password baru tidak cocok",
+    path: ["new_password_confirmation"],
+  });
 ```
 
 ---
@@ -713,12 +733,14 @@ export * from "./common";
 ### 2. When to Create a Reusable Component
 
 ✅ **DO** create a reusable component when:
+
 - Pattern is used in 3+ places
 - Component has clear, single responsibility
 - Logic can be abstracted without losing clarity
 - Saves significant duplication
 
 ❌ **DON'T** create a reusable component when:
+
 - Only used in one place
 - Too specific to one feature
 - Makes code harder to understand
@@ -827,6 +849,7 @@ const ORANGE_COLORS = {
 ## 🔄 Migration Plan
 
 ### Phase 1: Extract Common Components (Week 1)
+
 - [x] Create `components/common/` folder
 - [ ] Extract `PageHeader`
 - [ ] Extract `LoadingScreen`
@@ -834,6 +857,7 @@ const ORANGE_COLORS = {
 - [ ] Update all pages to use new components
 
 ### Phase 2: Extract Domain Components (Week 2)
+
 - [ ] Create `components/course/` folder
 - [ ] Extract `CourseCard`
 - [ ] Extract `ProgressRing`
@@ -841,6 +865,7 @@ const ORANGE_COLORS = {
 - [ ] Update course pages
 
 ### Phase 3: Utilities & Types (Week 3)
+
 - [ ] Create `lib/constants.ts`
 - [ ] Create `lib/validators.ts`
 - [ ] Create `types/common.ts`

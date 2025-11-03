@@ -16,7 +16,9 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { User, Lock, ArrowLeft, Loader2 } from "lucide-react";
+import { PageHeader, LoadingScreen } from "@/components/common";
+import { ROUTES, PASSWORD_MIN_LENGTH } from "@/lib/constants";
+import { User, Lock, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ProfilePage() {
@@ -39,15 +41,11 @@ export default function ProfilePage() {
   const [passwordError, setPasswordError] = useState("");
 
   if (authLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
-      </div>
-    );
+    return <LoadingScreen message="Memuat profil..." />;
   }
 
   if (!isAuthenticated) {
-    router.push("/login");
+    router.push(ROUTES.LOGIN);
     return null;
   }
 
@@ -106,10 +104,10 @@ export default function ProfilePage() {
       return;
     }
 
-    if (newPassword.length < 6) {
-      setPasswordError("Kata sandi baru minimal 6 karakter");
+    if (newPassword.length < PASSWORD_MIN_LENGTH) {
+      setPasswordError(`Kata sandi baru minimal ${PASSWORD_MIN_LENGTH} karakter`);
       toast.error("Validasi gagal", {
-        description: "Kata sandi baru minimal 6 karakter",
+        description: `Kata sandi baru minimal ${PASSWORD_MIN_LENGTH} karakter`,
       });
       return;
     }
@@ -142,26 +140,12 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => router.push("/dashboard")}
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold">Profil Saya</h1>
-              <p className="text-gray-600">Kelola informasi profil Anda</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        title="Profil Saya"
+        description="Kelola informasi profil Anda"
+        backHref={ROUTES.DASHBOARD}
+      />
 
-      {/* Content */}
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="space-y-6">
           {/* User Info Card */}

@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { useIsAuthenticated, useUserProgress } from "@/hooks";
 import { removeAuthToken } from "@/lib/auth-token";
 import { Button } from "@/components/ui/button";
@@ -14,7 +13,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,6 +24,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { PageHeader, LoadingScreen, EmptyState } from "@/components/common";
+import { ROUTES, MESSAGES } from "@/lib/constants";
 import { BookOpen, LogOut, User } from "lucide-react";
 import { useEffect } from "react";
 import { toast } from "sonner";
@@ -43,116 +43,75 @@ export default function DashboardPage() {
 
   const handleLogout = () => {
     removeAuthToken();
-    toast.success("Logout berhasil", {
+    toast.success(MESSAGES.AUTH.LOGOUT_SUCCESS, {
       description: "Sampai jumpa lagi! Semoga hari Anda menyenangkan.",
     });
-    router.push("/");
+    router.push(ROUTES.HOME);
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-8">
-        <div className="container mx-auto max-w-6xl">
-          <Skeleton className="h-12 w-64 mb-8" />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(3)].map((_, i) => (
-              <Card key={i}>
-                <CardHeader>
-                  <Skeleton className="h-6 w-3/4 mb-2" />
-                  <Skeleton className="h-4 w-full" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-20 w-full" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message="Memuat dashboard..." />;
   }
 
   if (!user) return null;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Selamat datang kembali, {user.name}!
-              </h1>
-              <p className="text-gray-600 mt-1">
-                Lanjutkan perjalanan belajar Anda
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Link href="/profile">
-                <Button
-                  variant="outline"
-                  className="border-gray-300 text-gray-700 hover:bg-gray-50"
-                >
-                  <User className="h-4 w-4 mr-2" />
-                  Profil
+      <PageHeader
+        title={`Selamat datang kembali, ${user.name}!`}
+        description="Lanjutkan perjalanan belajar Anda"
+        action={
+          <div className="flex gap-2">
+            <Link href={ROUTES.PROFILE}>
+              <Button
+                variant="outline"
+                className="border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
+                <User className="h-4 w-4 mr-2" />
+                Profil
+              </Button>
+            </Link>
+            <Link href={ROUTES.COURSES}>
+              <Button
+                variant="outline"
+                className="border-orange-600 text-orange-600 hover:bg-orange-50"
+              >
+                Jelajahi Kursus
+              </Button>
+            </Link>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Keluar
                 </Button>
-              </Link>
-              <Link href="/courses">
-                <Button
-                  variant="outline"
-                  className="border-orange-600 text-orange-600 hover:bg-orange-50"
-                >
-                  Jelajahi Kursus
-                </Button>
-              </Link>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="ghost">
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Keluar
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Keluar dari Akun?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Anda yakin ingin keluar dari akun Anda? Anda harus login
-                      kembali untuk mengakses dashboard dan kursus Anda.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Batal</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleLogout}
-                      className="bg-orange-600 hover:bg-orange-700"
-                    >
-                      Ya, Keluar
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Keluar dari Akun?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Anda yakin ingin keluar dari akun Anda? Anda harus login
+                    kembali untuk mengakses dashboard dan kursus Anda.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Batal</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleLogout}
+                    className="bg-orange-600 hover:bg-orange-700"
+                  >
+                    Ya, Keluar
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
-        </div>
-      </div>
+        }
+      />
 
-      {/* Content */}
       <div className="container mx-auto px-4 py-8">
         {progressLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(3)].map((_, i) => (
-              <Card key={i}>
-                <CardHeader>
-                  <Skeleton className="h-6 w-3/4 mb-2" />
-                  <Skeleton className="h-4 w-full" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-20 w-full" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <LoadingScreen message="Memuat kursus Anda..." />
         ) : progress && progress.length > 0 ? (
           <>
             <h2 className="text-2xl font-bold mb-6">Kursus yang Anda Ikuti</h2>
@@ -200,23 +159,15 @@ export default function DashboardPage() {
             </div>
           </>
         ) : (
-          <div className="text-center py-12">
-            <BookOpen className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-              Belum Ada Kursus yang Diikuti
-            </h2>
-            <p className="text-gray-600 mb-6">
-              Mulai belajar dengan mendaftar kursus
-            </p>
-            <Link href="/courses">
-              <Button
-                size="lg"
-                className="bg-orange-600 hover:bg-orange-700 text-white"
-              >
-                Jelajahi Kursus
-              </Button>
-            </Link>
-          </div>
+          <EmptyState
+            icon={BookOpen}
+            title="Belum Ada Kursus yang Diikuti"
+            description="Mulai belajar dengan mendaftar kursus yang tersedia"
+            action={{
+              label: "Jelajahi Kursus",
+              onClick: () => router.push(ROUTES.COURSES),
+            }}
+          />
         )}
       </div>
     </div>
