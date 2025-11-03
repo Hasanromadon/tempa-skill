@@ -1,12 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { useIsAuthenticated, useUpdateProfile, useChangePassword } from "@/hooks";
+import { LoadingScreen, PageHeader } from "@/components/common";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
@@ -14,16 +10,28 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { PageHeader, LoadingScreen } from "@/components/common";
-import { ROUTES, PASSWORD_MIN_LENGTH } from "@/lib/constants";
-import { User, Lock, Loader2 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  useChangePassword,
+  useIsAuthenticated,
+  useUpdateProfile,
+} from "@/hooks";
+import { PASSWORD_MIN_LENGTH, ROUTES } from "@/lib/constants";
+import { Loader2, Lock, User } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading: authLoading, user } = useIsAuthenticated();
+  const {
+    isAuthenticated,
+    isLoading: authLoading,
+    user,
+  } = useIsAuthenticated();
   const updateProfile = useUpdateProfile();
   const changePassword = useChangePassword();
 
@@ -105,7 +113,9 @@ export default function ProfilePage() {
     }
 
     if (newPassword.length < PASSWORD_MIN_LENGTH) {
-      setPasswordError(`Kata sandi baru minimal ${PASSWORD_MIN_LENGTH} karakter`);
+      setPasswordError(
+        `Kata sandi baru minimal ${PASSWORD_MIN_LENGTH} karakter`
+      );
       toast.error("Validasi gagal", {
         description: `Kata sandi baru minimal ${PASSWORD_MIN_LENGTH} karakter`,
       });
@@ -170,9 +180,7 @@ export default function ProfilePage() {
                 <User className="h-5 w-5" />
                 Edit Profil
               </CardTitle>
-              <CardDescription>
-                Perbarui informasi profil Anda
-              </CardDescription>
+              <CardDescription>Perbarui informasi profil Anda</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleUpdateProfile} className="space-y-4">
@@ -215,7 +223,9 @@ export default function ProfilePage() {
                     id="bio"
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
-                    placeholder={user?.bio || "Ceritakan sedikit tentang diri Anda..."}
+                    placeholder={
+                      user?.bio || "Ceritakan sedikit tentang diri Anda..."
+                    }
                     rows={4}
                     disabled={updateProfile.isPending}
                   />
@@ -248,9 +258,7 @@ export default function ProfilePage() {
                 <Lock className="h-5 w-5" />
                 Ubah Kata Sandi
               </CardTitle>
-              <CardDescription>
-                Perbarui kata sandi akun Anda
-              </CardDescription>
+              <CardDescription>Perbarui kata sandi akun Anda</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleChangePassword} className="space-y-4">

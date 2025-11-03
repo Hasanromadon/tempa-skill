@@ -1,35 +1,37 @@
 import * as z from "zod";
-import { PASSWORD_MIN_LENGTH, NAME_MIN_LENGTH } from "./constants";
+import { NAME_MIN_LENGTH, PASSWORD_MIN_LENGTH } from "./constants";
 
 // Authentication schemas
 export const loginSchema = z.object({
-  email: z
-    .string()
-    .min(1, "Email harus diisi")
-    .email("Email tidak valid"),
+  email: z.string().min(1, "Email harus diisi").email("Email tidak valid"),
   password: z
     .string()
-    .min(PASSWORD_MIN_LENGTH, `Password minimal ${PASSWORD_MIN_LENGTH} karakter`),
+    .min(
+      PASSWORD_MIN_LENGTH,
+      `Password minimal ${PASSWORD_MIN_LENGTH} karakter`
+    ),
 });
 
-export const registerSchema = z.object({
-  name: z
-    .string()
-    .min(NAME_MIN_LENGTH, `Nama minimal ${NAME_MIN_LENGTH} karakter`)
-    .max(100, "Nama maksimal 100 karakter"),
-  email: z
-    .string()
-    .min(1, "Email harus diisi")
-    .email("Email tidak valid"),
-  password: z
-    .string()
-    .min(PASSWORD_MIN_LENGTH, `Password minimal ${PASSWORD_MIN_LENGTH} karakter`)
-    .max(50, "Password maksimal 50 karakter"),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Password tidak cocok",
-  path: ["confirmPassword"],
-});
+export const registerSchema = z
+  .object({
+    name: z
+      .string()
+      .min(NAME_MIN_LENGTH, `Nama minimal ${NAME_MIN_LENGTH} karakter`)
+      .max(100, "Nama maksimal 100 karakter"),
+    email: z.string().min(1, "Email harus diisi").email("Email tidak valid"),
+    password: z
+      .string()
+      .min(
+        PASSWORD_MIN_LENGTH,
+        `Password minimal ${PASSWORD_MIN_LENGTH} karakter`
+      )
+      .max(50, "Password maksimal 50 karakter"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Password tidak cocok",
+    path: ["confirmPassword"],
+  });
 
 // Profile schemas
 export const updateProfileSchema = z.object({
@@ -37,25 +39,25 @@ export const updateProfileSchema = z.object({
     .string()
     .min(NAME_MIN_LENGTH, `Nama minimal ${NAME_MIN_LENGTH} karakter`)
     .max(100, "Nama maksimal 100 karakter"),
-  email: z
-    .string()
-    .min(1, "Email harus diisi")
-    .email("Email tidak valid"),
+  email: z.string().min(1, "Email harus diisi").email("Email tidak valid"),
 });
 
-export const changePasswordSchema = z.object({
-  currentPassword: z
-    .string()
-    .min(1, "Password saat ini harus diisi"),
-  newPassword: z
-    .string()
-    .min(PASSWORD_MIN_LENGTH, `Password baru minimal ${PASSWORD_MIN_LENGTH} karakter`)
-    .max(50, "Password baru maksimal 50 karakter"),
-  confirmPassword: z.string(),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Password baru tidak cocok",
-  path: ["confirmPassword"],
-});
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Password saat ini harus diisi"),
+    newPassword: z
+      .string()
+      .min(
+        PASSWORD_MIN_LENGTH,
+        `Password baru minimal ${PASSWORD_MIN_LENGTH} karakter`
+      )
+      .max(50, "Password baru maksimal 50 karakter"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Password baru tidak cocok",
+    path: ["confirmPassword"],
+  });
 
 // Course schemas (for future admin panel)
 export const createCourseSchema = z.object({
@@ -67,17 +69,15 @@ export const createCourseSchema = z.object({
     .string()
     .min(3, "Slug minimal 3 karakter")
     .max(255, "Slug maksimal 255 karakter")
-    .regex(/^[a-z0-9-]+$/, "Slug hanya boleh mengandung huruf kecil, angka, dan tanda hubung"),
-  description: z
-    .string()
-    .min(20, "Deskripsi minimal 20 karakter"),
-  category: z
-    .string()
-    .min(1, "Kategori harus dipilih"),
-  difficulty: z
-    .enum(["beginner", "intermediate", "advanced"], {
-      message: "Tingkat kesulitan tidak valid",
-    }),
+    .regex(
+      /^[a-z0-9-]+$/,
+      "Slug hanya boleh mengandung huruf kecil, angka, dan tanda hubung"
+    ),
+  description: z.string().min(20, "Deskripsi minimal 20 karakter"),
+  category: z.string().min(1, "Kategori harus dipilih"),
+  difficulty: z.enum(["beginner", "intermediate", "advanced"], {
+    message: "Tingkat kesulitan tidak valid",
+  }),
   price: z
     .number()
     .min(0, "Harga tidak boleh negatif")
@@ -101,10 +101,11 @@ export const createLessonSchema = z.object({
     .string()
     .min(3, "Slug minimal 3 karakter")
     .max(255, "Slug maksimal 255 karakter")
-    .regex(/^[a-z0-9-]+$/, "Slug hanya boleh mengandung huruf kecil, angka, dan tanda hubung"),
-  content: z
-    .string()
-    .min(50, "Konten minimal 50 karakter"),
+    .regex(
+      /^[a-z0-9-]+$/,
+      "Slug hanya boleh mengandung huruf kecil, angka, dan tanda hubung"
+    ),
+  content: z.string().min(50, "Konten minimal 50 karakter"),
   orderIndex: z
     .number()
     .int("Order harus berupa bilangan bulat")

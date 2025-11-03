@@ -1,18 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { useIsAuthenticated, useUserProgress } from "@/hooks";
-import { removeAuthToken } from "@/lib/auth-token";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { EmptyState, LoadingScreen, PageHeader } from "@/components/common";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,9 +12,21 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { PageHeader, LoadingScreen, EmptyState } from "@/components/common";
-import { ROUTES, MESSAGES } from "@/lib/constants";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { useIsAuthenticated, useUserProgress } from "@/hooks";
+import { removeAuthToken } from "@/lib/auth-token";
+import { MESSAGES, ROUTES } from "@/lib/constants";
 import { BookOpen, LogOut, User } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "sonner";
 

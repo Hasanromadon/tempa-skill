@@ -60,7 +60,7 @@ export const CATEGORY_LABELS = {
   "Web Development": "Pengembangan Web",
   "Mobile Development": "Pengembangan Mobile",
   "Data Science": "Sains Data",
-  "DevOps": "DevOps",
+  DevOps: "DevOps",
   "UI/UX Design": "Desain UI/UX",
   Backend: "Backend",
   Frontend: "Frontend",
