@@ -142,7 +142,17 @@ export interface UserProgress {
   completed_lessons: number;
   progress_percentage: number;
   is_completed: boolean;
-  last_activity: string;
+  last_activity: string | null;
+  enrolled_at?: string;
+  status?: string;
+  thumbnail_url?: string;
+}
+
+export interface UserProgressSummary {
+  total_enrolled: number;
+  total_completed: number;
+  total_in_progress: number;
+  courses: UserProgress[];
 }
 
 export interface MarkLessonCompleteRequest {

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import apiClient from "@/lib/api-client";
-import type { ApiResponse, CourseProgress, UserProgress } from "@/types/api";
+import type { ApiResponse, CourseProgress, UserProgressSummary } from "@/types/api";
 
 // Get course progress
 export const useCourseProgress = (courseId: number) => {
@@ -21,10 +21,12 @@ export const useUserProgress = () => {
   return useQuery({
     queryKey: ["userProgress"],
     queryFn: async () => {
-      const response = await apiClient.get<ApiResponse<UserProgress[]>>(
+      const response = await apiClient.get<ApiResponse<UserProgressSummary>>(
         "/progress/me"
       );
-      return response.data.data || [];
+      // Backend returns { data: { courses: [...] } }
+      // Extract the courses array
+      return response.data.data?.courses || [];
     },
   });
 };

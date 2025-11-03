@@ -1,5 +1,5 @@
-import { test, expect } from "@playwright/test";
-import { register, generateTestUser } from "./helpers/test-helpers";
+import { expect, test } from "@playwright/test";
+import { generateTestUser, register } from "./helpers/test-helpers";
 
 test.describe("Dashboard", () => {
   test.describe("Dashboard Access", () => {
@@ -42,8 +42,12 @@ test.describe("Dashboard", () => {
       await page.waitForLoadState("networkidle");
 
       // Should have enrolled courses section (either "Kursus yang Anda Ikuti" or empty state)
-      const hasEnrolledSection = await page.locator("text=/kursus.*yang.*anda.*ikuti/i").isVisible();
-      const hasEmptyState = await page.locator("text=/belum.*ada.*kursus/i").isVisible();
+      const hasEnrolledSection = await page
+        .locator("text=/kursus.*yang.*anda.*ikuti/i")
+        .isVisible();
+      const hasEmptyState = await page
+        .locator("text=/belum.*ada.*kursus/i")
+        .isVisible();
       expect(hasEnrolledSection || hasEmptyState).toBeTruthy();
     });
 
