@@ -91,3 +91,80 @@ export const useUnenrollCourse = () => {
     },
   });
 };
+
+// Create course (Admin/Instructor)
+export const useCreateCourse = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: {
+      title: string;
+      slug?: string;
+      description: string;
+      category: string;
+      difficulty: string;
+      price: number;
+      thumbnail_url?: string;
+      instructor_id: number;
+    }) => {
+      const response = await apiClient.post<ApiResponse<Course>>(
+        API_ENDPOINTS.COURSES.CREATE,
+        data
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+    },
+  });
+};
+
+// Update course (Admin/Instructor)
+export const useUpdateCourse = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: number;
+      data: {
+        title?: string;
+        slug?: string;
+        description?: string;
+        category?: string;
+        difficulty?: string;
+        price?: number;
+        thumbnail_url?: string;
+      };
+    }) => {
+      const response = await apiClient.put<ApiResponse<Course>>(
+        API_ENDPOINTS.COURSES.UPDATE(id),
+        data
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      queryClient.invalidateQueries({ queryKey: ["course"] });
+    },
+  });
+};
+
+// Delete course (Admin only)
+export const useDeleteCourse = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiClient.delete<ApiResponse<{ message: string }>>(
+        API_ENDPOINTS.COURSES.DELETE(id)
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+    },
+  });
+};

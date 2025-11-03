@@ -59,6 +59,44 @@ export const changePasswordSchema = z
     path: ["confirmPassword"],
   });
 
+// Course management schemas
+export const courseSchema = z.object({
+  title: z
+    .string()
+    .min(5, "Judul kursus minimal 5 karakter")
+    .max(200, "Judul kursus maksimal 200 karakter"),
+  slug: z
+    .string()
+    .min(3, "Slug minimal 3 karakter")
+    .max(255, "Slug maksimal 255 karakter")
+    .regex(/^[a-z0-9-]+$/, "Slug hanya boleh huruf kecil, angka, dan tanda (-)")
+    .optional()
+    .or(z.literal("")),
+  description: z
+    .string()
+    .min(20, "Deskripsi minimal 20 karakter")
+    .max(1000, "Deskripsi maksimal 1000 karakter"),
+  category: z.enum(
+    ["Web Development", "Mobile Development", "Data Science", "DevOps"],
+    { message: "Kategori tidak valid" }
+  ),
+  difficulty: z.enum(["beginner", "intermediate", "advanced"], {
+    message: "Tingkat kesulitan tidak valid",
+  }),
+  price: z
+    .number({ message: "Harga harus berupa angka" })
+    .min(0, "Harga tidak boleh negatif")
+    .max(10000000, "Harga maksimal Rp 10.000.000"),
+  thumbnail_url: z
+    .string()
+    .url("URL thumbnail tidak valid")
+    .optional()
+    .or(z.literal("")),
+  instructor_id: z
+    .number({ message: "Instruktur harus dipilih" })
+    .min(1, "Instruktur harus dipilih"),
+});
+
 // Course schemas (for future admin panel)
 export const createCourseSchema = z.object({
   title: z
