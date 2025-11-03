@@ -1,6 +1,7 @@
 "use client";
 
 import { EmptyState, LoadingScreen, PageHeader } from "@/components/common";
+import { CourseCard } from "@/components/course";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,14 +14,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { useIsAuthenticated, useUserProgress } from "@/hooks";
 import { removeAuthToken } from "@/lib/auth-token";
 import { MESSAGES, ROUTES } from "@/lib/constants";
@@ -66,8 +59,9 @@ export default function DashboardPage() {
               <Button
                 variant="outline"
                 className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                aria-label="Buka halaman profil"
               >
-                <User className="h-4 w-4 mr-2" />
+                <User className="h-4 w-4 mr-2" aria-hidden="true" />
                 Profil
               </Button>
             </Link>
@@ -75,14 +69,15 @@ export default function DashboardPage() {
               <Button
                 variant="outline"
                 className="border-orange-600 text-orange-600 hover:bg-orange-50"
+                aria-label="Jelajahi kursus yang tersedia"
               >
                 Jelajahi Kursus
               </Button>
             </Link>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="ghost">
-                  <LogOut className="h-4 w-4 mr-2" />
+                <Button variant="ghost" aria-label="Keluar dari akun">
+                  <LogOut className="h-4 w-4 mr-2" aria-hidden="true" />
                   Keluar
                 </Button>
               </AlertDialogTrigger>
@@ -117,44 +112,29 @@ export default function DashboardPage() {
             <h2 className="text-2xl font-bold mb-6">Kursus yang Anda Ikuti</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {progress.map((item) => (
-                <Link
+                <CourseCard
                   key={item.course_id}
-                  href={`/courses/${item.course_slug}`}
-                >
-                  <Card className="hover:shadow-lg transition-shadow cursor-pointer overflow-hidden">
-                    {/* Course Thumbnail Placeholder */}
-                    <div className="relative w-full h-40 bg-gradient-to-br from-orange-400 to-orange-600">
-                      <div className="w-full h-full flex items-center justify-center">
-                        <BookOpen className="h-12 w-12 text-white opacity-50" />
-                      </div>
-                    </div>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-lg">
-                        {item.course_title}
-                      </CardTitle>
-                      <CardDescription>
-                        {item.completed_lessons} dari {item.total_lessons}{" "}
-                        pelajaran selesai
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600">Kemajuan</span>
-                          <span className="font-medium">
-                            {item.progress_percentage}%
-                          </span>
-                        </div>
-                        <Progress value={item.progress_percentage} />
-                        {item.is_completed && (
-                          <p className="text-sm text-green-600 font-medium mt-2">
-                            ✓ Selesai
-                          </p>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
+                  course={{
+                    id: item.course_id,
+                    title: item.course_title,
+                    slug: item.course_slug,
+                    description: "",
+                    thumbnail_url: undefined,
+                    difficulty: "beginner",
+                    category: "",
+                    price: 0,
+                    lesson_count: item.total_lessons,
+                    enrolled_count: 0,
+                    is_enrolled: true,
+                  }}
+                  showProgress={true}
+                  progress={{
+                    completed_lessons: item.completed_lessons,
+                    total_lessons: item.total_lessons,
+                    progress_percentage: item.progress_percentage,
+                    is_completed: item.is_completed,
+                  }}
+                />
               ))}
             </div>
           </>

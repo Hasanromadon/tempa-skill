@@ -22,8 +22,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
 import { LoadingScreen } from "@/components/common";
+import { LessonList } from "@/components/lesson";
 import { ROUTES, DIFFICULTY_LABELS, DIFFICULTY_COLORS } from "@/lib/constants";
 import { formatCurrency } from "@/lib/utils";
 import {
@@ -39,9 +39,7 @@ import {
   ArrowLeft,
   BookOpen,
   CheckCircle2,
-  Clock,
   Loader2,
-  Lock,
   TrendingUp,
   User,
   Users,
@@ -308,90 +306,16 @@ export default function CourseDetailPage({ params }: PageProps) {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {lessonsLoading ? (
-                  <div className="space-y-3">
-                    {[...Array(3)].map((_, i) => (
-                      <Skeleton key={i} className="h-16 w-full" />
-                    ))}
-                  </div>
-                ) : lessons && lessons.length > 0 ? (
-                  <div className="space-y-2">
-                    {lessons.map((lesson, index) => {
-                      const isCompleted =
-                        progress?.completed_lesson_ids?.includes(lesson.id) ??
-                        false;
-                      const canAccess = course.is_enrolled;
-
-                      return (
-                        <div
-                          key={lesson.id}
-                          className={`flex items-center justify-between p-4 rounded-lg border transition-colors ${
-                            canAccess
-                              ? "hover:bg-gray-50 cursor-pointer"
-                              : "bg-gray-50"
-                          }`}
-                          onClick={() => {
-                            if (canAccess) {
-                              router.push(
-                                `/courses/${slug}/lessons/${lesson.id}`
-                              );
-                            }
-                          }}
-                        >
-                          <div className="flex items-start gap-3 flex-1">
-                            <div
-                              className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                                isCompleted
-                                  ? "bg-green-100 text-green-700"
-                                  : "bg-gray-100 text-gray-600"
-                              }`}
-                            >
-                              {isCompleted ? (
-                                <CheckCircle2 className="h-5 w-5" />
-                              ) : (
-                                index + 1
-                              )}
-                            </div>
-                            <div className="flex-1">
-                              <h4 className="font-medium text-gray-900">
-                                {lesson.title}
-                              </h4>
-                              <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
-                                <span className="flex items-center gap-1">
-                                  <Clock className="h-3 w-3" />
-                                  {lesson.duration} menit
-                                </span>
-                                {isCompleted && (
-                                  <Badge
-                                    variant="outline"
-                                    className="bg-green-50 text-green-700 border-green-200"
-                                  >
-                                    ✓ Selesai
-                                  </Badge>
-                                )}
-                                {!canAccess && (
-                                  <Badge
-                                    variant="outline"
-                                    className="bg-gray-100 text-gray-500 border-gray-300"
-                                  >
-                                    🔒 Terkunci
-                                  </Badge>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          {!canAccess && (
-                            <Lock className="h-5 w-5 text-gray-400" />
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <p className="text-gray-500 text-center py-8">
-                    Belum ada pelajaran tersedia. Periksa kembali nanti!
-                  </p>
-                )}
+                <LessonList
+                  lessons={lessons || []}
+                  completedLessonIds={progress?.completed_lesson_ids || []}
+                  canAccess={course.is_enrolled}
+                  isLoading={lessonsLoading}
+                  onLessonClick={(lessonId) => {
+                    router.push(`/courses/${slug}/lessons/${lessonId}`);
+                  }}
+                  emptyMessage="Belum ada pelajaran tersedia. Periksa kembali nanti!"
+                />
               </CardContent>
             </Card>
 

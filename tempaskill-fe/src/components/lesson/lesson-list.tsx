@@ -1,12 +1,13 @@
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CheckCircle2, Clock, Lock } from "lucide-react";
+import { memo } from "react";
 
 export interface Lesson {
   id: number;
   title: string;
   duration: number;
-  order: number;
+  order?: number;
 }
 
 export interface LessonListProps {
@@ -20,7 +21,7 @@ export interface LessonListProps {
   className?: string;
 }
 
-export function LessonList({
+export const LessonList = memo(function LessonList({
   lessons,
   currentLessonId,
   completedLessonIds = [],
@@ -45,7 +46,7 @@ export function LessonList({
   }
 
   return (
-    <div className={`space-y-2 ${className}`}>
+    <div className={`space-y-2 ${className}`} role="list" aria-label="Daftar pelajaran">
       {lessons.map((lesson, index) => {
         const isCompleted = completedLessonIds.includes(lesson.id);
         const isCurrent = lesson.id === currentLessonId;
@@ -61,6 +62,19 @@ export function LessonList({
                 onLessonClick(lesson.id);
               }
             }}
+            onKeyDown={(e) => {
+              if (canAccess && onLessonClick && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault();
+                onLessonClick(lesson.id);
+              }
+            }}
+            role="listitem"
+            tabIndex={canAccess ? 0 : -1}
+            aria-label={`Pelajaran ${index + 1}: ${lesson.title}${
+              isCompleted ? ', selesai' : ''
+            }${isCurrent ? ', sedang dipelajari' : ''}${
+              !canAccess ? ', terkunci' : ''
+            }`}
           >
             <div className="flex items-start gap-3 flex-1">
               <div
@@ -71,6 +85,7 @@ export function LessonList({
                     ? "bg-orange-100 text-orange-700"
                     : "bg-gray-100 text-gray-600"
                 }`}
+                aria-hidden="true"
               >
                 {isCompleted ? <CheckCircle2 className="h-5 w-5" /> : index + 1}
               </div>
@@ -120,4 +135,4 @@ export function LessonList({
       })}
     </div>
   );
-}
+});

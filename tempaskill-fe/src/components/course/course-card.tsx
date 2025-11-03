@@ -14,6 +14,7 @@ import { formatCurrency } from "@/lib/utils";
 import { BookOpen, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { memo } from "react";
 
 export interface CourseCardProps {
   course: {
@@ -40,7 +41,7 @@ export interface CourseCardProps {
   className?: string;
 }
 
-export function CourseCard({
+export const CourseCard = memo(function CourseCard({
   course,
   showProgress = false,
   progress,
@@ -50,19 +51,24 @@ export function CourseCard({
   const content = (
     <Card
       className={`h-full hover:shadow-lg transition-shadow cursor-pointer overflow-hidden ${className}`}
+      role="article"
+      aria-label={`Kursus: ${course.title}`}
     >
       {/* Course Thumbnail */}
       <div className="relative w-full h-48 bg-gray-200">
         {course.thumbnail_url ? (
           <Image
             src={course.thumbnail_url}
-            alt={course.title}
+            alt={`Gambar kursus ${course.title}`}
             fill
             className="object-cover"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-400 to-orange-600">
+          <div 
+            className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-400 to-orange-600"
+            aria-hidden="true"
+          >
             <BookOpen className="h-16 w-16 text-white opacity-50" />
           </div>
         )}
@@ -142,6 +148,11 @@ export function CourseCard({
               : "w-full bg-orange-600 hover:bg-orange-700 text-white"
           }
           variant={course.is_enrolled ? "outline" : "default"}
+          aria-label={
+            course.is_enrolled
+              ? `Lanjutkan belajar kursus ${course.title}`
+              : `Lihat detail kursus ${course.title}`
+          }
         >
           {course.is_enrolled ? "Lanjutkan Belajar" : "Lihat Kursus"}
         </Button>
@@ -150,8 +161,30 @@ export function CourseCard({
   );
 
   if (onClick) {
-    return <div onClick={onClick}>{content}</div>;
+    return (
+      <div 
+        onClick={onClick} 
+        role="button" 
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onClick();
+          }
+        }}
+        aria-label={`Pilih kursus ${course.title}`}
+      >
+        {content}
+      </div>
+    );
   }
 
-  return <Link href={`/courses/${course.slug}`}>{content}</Link>;
-}
+  return (
+    <Link 
+      href={`/courses/${course.slug}`}
+      aria-label={`Buka halaman kursus ${course.title}`}
+    >
+      {content}
+    </Link>
+  );
+});
