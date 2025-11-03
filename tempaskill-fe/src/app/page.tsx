@@ -20,9 +20,9 @@ export default function Home() {
               <span className="text-orange-600"> Kursus Berbasis Teks</span>
             </h1>
             <p className="mt-6 text-lg leading-8 text-gray-600 max-w-2xl mx-auto">
-              TempaSKill menawarkan pembelajaran efisien melalui materi berbasis teks
-              yang dikombinasikan dengan sesi langsung dua minggu sekali untuk Q&A interaktif dan live
-              coding.
+              TempaSKill menawarkan pembelajaran efisien melalui materi berbasis
+              teks yang dikombinasikan dengan sesi langsung dua minggu sekali
+              untuk Q&A interaktif dan live coding.
             </p>
             <div className="mt-10 flex items-center justify-center gap-4">
               <Link href="/courses">
@@ -74,7 +74,8 @@ export default function Home() {
                 <Users className="h-10 w-10 text-orange-600 mb-2" />
                 <CardTitle>Sesi Langsung</CardTitle>
                 <CardDescription>
-                  Sesi Zoom/Meet dua minggu sekali untuk Q&A dan pembelajaran interaktif
+                  Sesi Zoom/Meet dua minggu sekali untuk Q&A dan pembelajaran
+                  interaktif
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -83,7 +84,8 @@ export default function Home() {
                 <Zap className="h-10 w-10 text-orange-600 mb-2" />
                 <CardTitle>Cepat & Mudah Diakses</CardTitle>
                 <CardDescription>
-                  Belajar di mana saja, bahkan dengan bandwidth internet terbatas
+                  Belajar di mana saja, bahkan dengan bandwidth internet
+                  terbatas
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -104,9 +106,7 @@ export default function Home() {
       {/* CTA Section */}
       <section className="bg-orange-600 py-16 px-4">
         <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-3xl font-bold text-white">
-            Siap Mulai Belajar?
-          </h2>
+          <h2 className="text-3xl font-bold text-white">Siap Mulai Belajar?</h2>
           <p className="mt-4 text-lg text-orange-100">
             Bergabung dengan ribuan siswa yang belajar efisien dengan TempaSKill
           </p>

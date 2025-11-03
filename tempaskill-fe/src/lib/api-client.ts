@@ -1,5 +1,6 @@
 import axios, { AxiosError } from "axios";
 import type { ApiResponse } from "@/types/api";
+import { getAuthToken, removeAuthToken } from "@/lib/auth-token";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
@@ -15,11 +16,9 @@ export const apiClient = axios.create({
 // Request interceptor - Add auth token
 apiClient.interceptors.request.use(
   (config) => {
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("auth_token");
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
+    const token = getAuthToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
@@ -34,8 +33,8 @@ apiClient.interceptors.response.use(
   (error: AxiosError<ApiResponse<never>>) => {
     // Handle unauthorized
     if (error.response?.status === 401) {
+      removeAuthToken();
       if (typeof window !== "undefined") {
-        localStorage.removeItem("auth_token");
         window.location.href = "/login";
       }
     }

@@ -63,52 +63,52 @@ setError("Email is required")
 
 ### 📚 Translation Quick Reference
 
-| English | Indonesian | Context |
-|---------|------------|---------|
-| Sign In / Login | Masuk | Button, link |
-| Sign Up / Register | Daftar | Button, link |
-| Create Account | Buat Akun | Title, button |
-| Password | Kata Sandi | Label, placeholder |
-| Confirm Password | Konfirmasi Kata Sandi | Label |
-| Welcome Back | Selamat Datang Kembali | Title, greeting |
-| Browse Courses | Jelajahi Kursus | Link, CTA |
-| Enroll | Daftar / Ikuti | Button for courses |
-| Continue Learning | Lanjutkan Belajar | Button, link |
-| Start Learning | Mulai Belajar | Button, CTA |
-| Get Started | Mulai | CTA button |
-| Mark as Complete | Tandai Selesai | Button |
-| Dashboard | Dasbor | Navigation |
-| Profile | Profil | Navigation |
-| Settings | Pengaturan | Navigation |
-| Search | Cari | Placeholder, button |
-| Filter | Filter | Button, label |
-| Category | Kategori | Label |
-| Difficulty | Tingkat Kesulitan | Label |
-| Price | Harga | Label |
-| Free | Gratis | Tag, label |
-| Lessons | Pelajaran | Counter, label |
-| Students | Siswa | Counter, label |
-| Enrolled | Terdaftar | Status |
-| Progress | Kemajuan | Label |
-| Learn More | Pelajari Lebih Lanjut | Link |
-| Back | Kembali | Button |
-| Next | Selanjutnya | Button |
-| Previous | Sebelumnya | Button |
-| Cancel | Batal | Button |
-| Submit | Kirim | Button |
-| Save | Simpan | Button |
-| Edit | Ubah / Edit | Button |
-| Delete | Hapus | Button |
-| Update | Perbarui | Button |
-| Create | Buat | Button |
-| Add | Tambah | Button |
-| Remove | Hapus | Button |
-| Loading... | Sedang memuat... | Loading state |
-| Please wait... | Mohon tunggu... | Loading state |
-| Try again | Coba lagi | Error action |
-| Error | Kesalahan | Error title |
-| Success | Berhasil | Success title |
-| Warning | Peringatan | Warning title |
+| English            | Indonesian             | Context             |
+| ------------------ | ---------------------- | ------------------- |
+| Sign In / Login    | Masuk                  | Button, link        |
+| Sign Up / Register | Daftar                 | Button, link        |
+| Create Account     | Buat Akun              | Title, button       |
+| Password           | Kata Sandi             | Label, placeholder  |
+| Confirm Password   | Konfirmasi Kata Sandi  | Label               |
+| Welcome Back       | Selamat Datang Kembali | Title, greeting     |
+| Browse Courses     | Jelajahi Kursus        | Link, CTA           |
+| Enroll             | Daftar / Ikuti         | Button for courses  |
+| Continue Learning  | Lanjutkan Belajar      | Button, link        |
+| Start Learning     | Mulai Belajar          | Button, CTA         |
+| Get Started        | Mulai                  | CTA button          |
+| Mark as Complete   | Tandai Selesai         | Button              |
+| Dashboard          | Dasbor                 | Navigation          |
+| Profile            | Profil                 | Navigation          |
+| Settings           | Pengaturan             | Navigation          |
+| Search             | Cari                   | Placeholder, button |
+| Filter             | Filter                 | Button, label       |
+| Category           | Kategori               | Label               |
+| Difficulty         | Tingkat Kesulitan      | Label               |
+| Price              | Harga                  | Label               |
+| Free               | Gratis                 | Tag, label          |
+| Lessons            | Pelajaran              | Counter, label      |
+| Students           | Siswa                  | Counter, label      |
+| Enrolled           | Terdaftar              | Status              |
+| Progress           | Kemajuan               | Label               |
+| Learn More         | Pelajari Lebih Lanjut  | Link                |
+| Back               | Kembali                | Button              |
+| Next               | Selanjutnya            | Button              |
+| Previous           | Sebelumnya             | Button              |
+| Cancel             | Batal                  | Button              |
+| Submit             | Kirim                  | Button              |
+| Save               | Simpan                 | Button              |
+| Edit               | Ubah / Edit            | Button              |
+| Delete             | Hapus                  | Button              |
+| Update             | Perbarui               | Button              |
+| Create             | Buat                   | Button              |
+| Add                | Tambah                 | Button              |
+| Remove             | Hapus                  | Button              |
+| Loading...         | Sedang memuat...       | Loading state       |
+| Please wait...     | Mohon tunggu...        | Loading state       |
+| Try again          | Coba lagi              | Error action        |
+| Error              | Kesalahan              | Error title         |
+| Success            | Berhasil               | Success title       |
+| Warning            | Peringatan             | Warning title       |
 
 ### Common Error Messages
 

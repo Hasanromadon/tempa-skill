@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import apiClient from "@/lib/api-client";
+import { setAuthToken, removeAuthToken, getAuthToken } from "@/lib/auth-token";
 import type {
   ApiResponse,
   AuthResponse,
@@ -22,7 +23,7 @@ export const useRegister = () => {
     },
     onSuccess: (data) => {
       if (data.data?.token) {
-        localStorage.setItem("auth_token", data.data.token);
+        setAuthToken(data.data.token);
         queryClient.setQueryData(["currentUser"], data.data.user);
       }
     },
@@ -43,7 +44,7 @@ export const useLogin = () => {
     },
     onSuccess: (data) => {
       if (data.data?.token) {
-        localStorage.setItem("auth_token", data.data.token);
+        setAuthToken(data.data.token);
         queryClient.setQueryData(["currentUser"], data.data.user);
       }
     },
@@ -55,7 +56,7 @@ export const useLogout = () => {
   const queryClient = useQueryClient();
 
   return () => {
-    localStorage.removeItem("auth_token");
+    removeAuthToken();
     queryClient.setQueryData(["currentUser"], null);
     queryClient.clear();
     window.location.href = "/login";
@@ -67,7 +68,7 @@ export const useCurrentUser = () => {
   return useQuery({
     queryKey: ["currentUser"],
     queryFn: async () => {
-      const token = localStorage.getItem("auth_token");
+      const token = getAuthToken();
       if (!token) return null;
 
       const response = await apiClient.get<ApiResponse<User>>("/auth/me");

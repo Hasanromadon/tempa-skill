@@ -109,7 +109,6 @@ test.describe("Course Browsing", () => {
   test.describe("Course Detail", () => {
     test("should display course detail page", async ({ page }) => {
       // This test requires a course to exist
-      // You might need to seed database or skip if no courses
       await page.goto("/courses");
       await page.waitForLoadState("networkidle");
 
@@ -120,10 +119,15 @@ test.describe("Course Browsing", () => {
         await firstCourse.click();
         await page.waitForLoadState("networkidle");
 
-        // Should show course details - check for "Ringkasan Kursus" heading
-        await expect(
-          page.locator("text=/ringkasan|overview|apa yang/i")
-        ).toBeVisible();
+        // Wait for course content to load - wait for heading first
+        await page.waitForSelector("h1", { timeout: 10000 });
+
+        // Should show course title and back button
+        await expect(page.locator("text=/kembali ke kursus/i")).toBeVisible();
+
+        // Should show course difficulty badge - wait for any badge to be visible
+        const difficultyBadge = page.getByText(/pemula|menengah|lanjutan/i);
+        await expect(difficultyBadge).toBeVisible({ timeout: 10000 });
       }
     });
 
@@ -139,9 +143,38 @@ test.describe("Course Browsing", () => {
         await firstCourse.click();
         await page.waitForLoadState("networkidle");
 
-        // Should have enroll button or enrolled badge (Daftar or Terdaftar or Mulai Belajar)
-        const enrollButton = page.locator("text=/daftar|terdaftar|mulai belajar/i");
-        await expect(enrollButton.first()).toBeVisible();
+        // Wait for page to fully load - wait for heading
+        await page.waitForSelector("h1", { timeout: 10000 });
+
+        // For guest users, should show login/register prompt
+        // For authenticated users, should show enroll button or enrolled status
+        const hasLoginPrompt = await page
+          .getByText(/masuk.*atau.*buat akun/i)
+          .isVisible()
+          .catch(() => false);
+
+        const hasDaftarButton = await page
+          .getByRole("button", { name: /daftar/i })
+          .isVisible()
+          .catch(() => false);
+
+        const hasEnrolledBadge = await page
+          .getByText("Terdaftar")
+          .isVisible()
+          .catch(() => false);
+
+        const hasStartButton = await page
+          .getByRole("button", { name: /mulai belajar|lanjutkan/i })
+          .isVisible()
+          .catch(() => false);
+
+        // At least one of these should be visible
+        expect(
+          hasLoginPrompt ||
+            hasDaftarButton ||
+            hasEnrolledBadge ||
+            hasStartButton
+        ).toBeTruthy();
       }
     });
 
@@ -155,14 +188,12 @@ test.describe("Course Browsing", () => {
         await firstCourse.click();
         await page.waitForLoadState("networkidle");
 
-        // Should show lessons section - "Konten Kursus" heading
-        await expect(
-          page.locator("text=/konten kursus|course content/i").first()
-        ).toBeVisible();
+        // Should show course stats - check for "Pelajaran" count in stats area
+        await expect(page.locator("text=/pelajaran/i").first()).toBeVisible();
       }
     });
 
-    test("should show instructor information", async ({ page }) => {
+    test("should show course information", async ({ page }) => {
       await page.goto("/courses");
       await page.waitForLoadState("networkidle");
 
@@ -172,11 +203,18 @@ test.describe("Course Browsing", () => {
         await firstCourse.click();
         await page.waitForLoadState("networkidle");
 
-        // Should show course info - skip this test as instructor section not yet implemented
-        // Check for course level info instead
-        await expect(
-          page.locator("text=/tingkat kesulitan|difficulty/i")
-        ).toBeVisible();
+        // Wait for page to load - wait for heading
+        await page.waitForSelector("h1", { timeout: 10000 });
+
+        // Should show course information in sidebar - check for Kategori label
+        await expect(page.getByText("Kategori")).toBeVisible({
+          timeout: 10000,
+        });
+
+        // Should show Tingkat Kesulitan label
+        await expect(page.getByText("Tingkat Kesulitan")).toBeVisible({
+          timeout: 10000,
+        });
       }
     });
   });

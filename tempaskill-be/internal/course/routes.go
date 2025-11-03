@@ -18,6 +18,8 @@ func RegisterRoutes(router *gin.RouterGroup, db *gorm.DB, authMiddleware *middle
 		public.GET("/courses", handler.ListCourses)                    // List all courses with filters
 		public.GET("/courses/slug/:slug", handler.GetCourseBySlug)     // Get course by slug (must be before :id)
 		public.GET("/courses/:id", handler.GetCourse)                  // Get course by ID
+		public.GET("/courses/:id/lessons", handler.GetCourseLessons)   // Get course lessons (public for curriculum preview)
+		public.GET("/lessons/:id", handler.GetLesson)                  // Get lesson detail (public for preview)
 	}
 
 	// Protected routes (authentication required)
@@ -31,8 +33,6 @@ func RegisterRoutes(router *gin.RouterGroup, db *gorm.DB, authMiddleware *middle
 
 		// Lesson management (instructor only - authorization checked in service layer)
 		protected.POST("/courses/:id/lessons", handler.CreateLesson)  // Create lesson
-		protected.GET("/courses/:id/lessons", handler.GetCourseLessons) // Get course lessons
-		protected.GET("/lessons/:id", handler.GetLesson)               // Get lesson detail
 		protected.PATCH("/lessons/:id", handler.UpdateLesson)          // Update lesson
 		protected.DELETE("/lessons/:id", handler.DeleteLesson)         // Delete lesson
 

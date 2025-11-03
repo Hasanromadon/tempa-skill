@@ -217,12 +217,14 @@ make help      # Lihat semua commands
 **Opsi 4: Manual (Cara Lama)**
 
 Terminal 1 - Backend:
+
 ```powershell
 cd tempaskill-be
 $env:GOTOOLCHAIN="auto"; go run cmd/api/main.go
 ```
 
 Terminal 2 - Frontend:
+
 ```powershell
 cd tempaskill-fe
 yarn dev
@@ -236,10 +238,14 @@ yarn dev
 - **Health Check**: http://localhost:8080/api/v1/health
 
 # Output:
+
 # ▲ Next.js 14.x.x
-# - Local:        http://localhost:3000
-# - Network:      http://192.168.x.x:3000
-```
+
+# - Local: http://localhost:3000
+
+# - Network: http://192.168.x.x:3000
+
+````
 
 ### Akses Aplikasi
 
@@ -284,7 +290,7 @@ $body = @{
 } | ConvertTo-Json
 
 Invoke-RestMethod -Uri "http://localhost:8080/api/v1/auth/register" -Method POST -Body $body -ContentType "application/json"
-```
+````
 
 ---
 

@@ -9,7 +9,7 @@ Script untuk mempermudah development workflow.
 ### PowerShell Scripts (Windows)
 
 1. **`start-backend.ps1`** - Jalankan backend saja
-2. **`start-frontend.ps1`** - Jalankan frontend saja  
+2. **`start-frontend.ps1`** - Jalankan frontend saja
 3. **`start-dev.ps1`** - Jalankan keduanya bersamaan
 
 ### NPM Scripts (Cross-platform)
@@ -19,7 +19,7 @@ File: `package.json` di root folder
 ```json
 {
   "scripts": {
-    "dev": "concurrently ...",           // Keduanya
+    "dev": "concurrently ...", // Keduanya
     "dev:backend": "cd tempaskill-be...", // Backend only
     "dev:frontend": "cd tempaskill-fe..." // Frontend only
   }
@@ -48,6 +48,7 @@ File: `Makefile` di root folder
 ```
 
 **Keuntungan:**
+
 - ✅ Tidak perlu install dependencies tambahan
 - ✅ Mudah dibaca dan dimodifikasi
 - ✅ Native Windows PowerShell
@@ -85,6 +86,7 @@ yarn dev:frontend
 ```
 
 **Keuntungan:**
+
 - ✅ Cross-platform (Windows/Linux/Mac)
 - ✅ Familiar bagi developer Node.js
 - ✅ Bisa dipanggil dari package.json lain
@@ -94,6 +96,7 @@ yarn dev:frontend
 ### Opsi 3: Makefile
 
 **Prerequisite:**
+
 - Install Make (Windows: `choco install make` atau Git Bash)
 
 **Jalankan:**
@@ -106,6 +109,7 @@ make help      # Lihat semua commands
 ```
 
 **Keuntungan:**
+
 - ✅ Standard untuk development workflow
 - ✅ Familiar bagi developer C/Go
 - ✅ Powerful untuk automation
@@ -134,12 +138,12 @@ yarn dev
 
 Setelah menjalankan scripts:
 
-| Service          | URL                                              |
-| ---------------- | ------------------------------------------------ |
-| **Frontend**     | http://localhost:3000                            |
-| **Backend API**  | http://localhost:8080/api/v1                     |
-| **Swagger Docs** | http://localhost:8080/swagger/index.html         |
-| **Health Check** | http://localhost:8080/api/v1/health              |
+| Service          | URL                                      |
+| ---------------- | ---------------------------------------- |
+| **Frontend**     | http://localhost:3000                    |
+| **Backend API**  | http://localhost:8080/api/v1             |
+| **Swagger Docs** | http://localhost:8080/swagger/index.html |
+| **Health Check** | http://localhost:8080/api/v1/health      |
 
 ---
 
@@ -148,11 +152,13 @@ Setelah menjalankan scripts:
 ### Script PowerShell tidak bisa dijalankan
 
 **Error:**
+
 ```
 .\start-dev.ps1 : File cannot be loaded because running scripts is disabled
 ```
 
 **Solusi:**
+
 ```powershell
 # Set execution policy (sekali saja)
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
@@ -166,6 +172,7 @@ powershell -ExecutionPolicy Bypass -File .\start-dev.ps1
 ### Port 8080 atau 3000 sudah digunakan
 
 **Backend (8080):**
+
 ```powershell
 # Cek proses yang pakai port 8080
 netstat -ano | findstr :8080
@@ -175,6 +182,7 @@ taskkill /PID <PID> /F
 ```
 
 **Frontend (3000):**
+
 ```powershell
 # Cek proses yang pakai port 3000
 netstat -ano | findstr :3000
@@ -188,11 +196,13 @@ taskkill /PID <PID> /F
 ### Concurrently tidak terinstall (NPM Scripts)
 
 **Error:**
+
 ```
 'concurrently' is not recognized...
 ```
 
 **Solusi:**
+
 ```bash
 # Install dari root folder
 cd d:\non-bri\tempa-skill
@@ -206,6 +216,7 @@ yarn install
 ### Database connection error (Backend)
 
 **Error:**
+
 ```
 Error connecting to database...
 ```
@@ -213,12 +224,14 @@ Error connecting to database...
 **Solusi:**
 
 1. Pastikan MySQL running:
+
 ```powershell
 # Start MySQL service
 net start MySQL80
 ```
 
 2. Cek database exists:
+
 ```sql
 mysql -u root -p
 SHOW DATABASES;
@@ -226,6 +239,7 @@ SHOW DATABASES;
 ```
 
 3. Cek `.env` file di `tempaskill-be/`:
+
 ```env
 DB_USER=root
 DB_PASSWORD=your_password
@@ -243,6 +257,7 @@ DB_NAME=tempaskill
 **Backend (default 8080):**
 
 Edit `tempaskill-be/cmd/api/main.go`:
+
 ```go
 r.Run(":8080") // Ganti ke port lain
 ```
@@ -250,6 +265,7 @@ r.Run(":8080") // Ganti ke port lain
 **Frontend (default 3000):**
 
 Next.js otomatis pakai port 3000. Untuk ganti:
+
 ```bash
 # Jalankan dengan port custom
 cd tempaskill-fe
@@ -261,6 +277,7 @@ PORT=3001 yarn dev
 ### Menambahkan Script Baru
 
 **PowerShell:**
+
 ```powershell
 # Buat file baru: start-test.ps1
 Write-Host "Running tests..." -ForegroundColor Green
@@ -271,6 +288,7 @@ go test ./...
 **NPM Script:**
 
 Edit `package.json` di root:
+
 ```json
 {
   "scripts": {
@@ -282,6 +300,7 @@ Edit `package.json` di root:
 **Makefile:**
 
 Edit `Makefile`:
+
 ```makefile
 test:
 	@echo "Running tests..."
@@ -293,11 +312,13 @@ test:
 ## 🎉 Rekomendasi
 
 **Untuk Development Harian:**
+
 - ✅ **Windows**: Gunakan `.\start-dev.ps1` (paling mudah)
 - ✅ **Linux/Mac**: Gunakan `make dev` atau `npm run dev`
 - ✅ **CI/CD**: Gunakan Makefile untuk konsistensi
 
 **Untuk Debugging:**
+
 - Gunakan 2 terminal manual supaya bisa lihat log terpisah
 - Backend: `.\start-backend.ps1`
 - Frontend: `.\start-frontend.ps1`

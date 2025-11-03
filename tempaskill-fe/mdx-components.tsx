@@ -107,9 +107,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
         </table>
       </div>
     ),
-    thead: ({ children }) => (
-      <thead className="bg-gray-50">{children}</thead>
-    ),
+    thead: ({ children }) => <thead className="bg-gray-50">{children}</thead>,
     tbody: ({ children }) => (
       <tbody className="bg-white divide-y divide-gray-200">{children}</tbody>
     ),
@@ -136,7 +134,13 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     ),
 
     // Custom components
-    Note: ({ children, type = "info" }: { children: React.ReactNode; type?: "info" | "warning" | "success" | "error" }) => {
+    Note: ({
+      children,
+      type = "info",
+    }: {
+      children: React.ReactNode;
+      type?: "info" | "warning" | "success" | "error";
+    }) => {
       const styles = {
         info: "bg-blue-50 border-blue-500 text-blue-900",
         warning: "bg-yellow-50 border-yellow-500 text-yellow-900",
@@ -164,7 +168,13 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
       );
     },
 
-    Callout: ({ children, title }: { children: React.ReactNode; title?: string }) => (
+    Callout: ({
+      children,
+      title,
+    }: {
+      children: React.ReactNode;
+      title?: string;
+    }) => (
       <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
         {title && (
           <h4 className="font-semibold text-orange-900 mb-2">{title}</h4>
@@ -173,7 +183,15 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
       </div>
     ),
 
-    CodeBlock: ({ children, language, title }: { children: React.ReactNode; language?: string; title?: string }) => (
+    CodeBlock: ({
+      children,
+      language,
+      title,
+    }: {
+      children: React.ReactNode;
+      language?: string;
+      title?: string;
+    }) => (
       <div className="mb-4">
         {title && (
           <div className="bg-gray-800 text-gray-200 px-4 py-2 rounded-t-lg text-sm font-medium flex items-center justify-between">
@@ -185,7 +203,11 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
             )}
           </div>
         )}
-        <pre className={`bg-gray-900 text-gray-100 p-4 overflow-x-auto border border-gray-700 ${title ? "rounded-b-lg" : "rounded-lg"}`}>
+        <pre
+          className={`bg-gray-900 text-gray-100 p-4 overflow-x-auto border border-gray-700 ${
+            title ? "rounded-b-lg" : "rounded-lg"
+          }`}
+        >
           <code className="font-mono text-sm">{children}</code>
         </pre>
       </div>

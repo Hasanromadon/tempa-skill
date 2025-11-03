@@ -31,7 +31,9 @@ import {
   BookOpen,
   Clock,
   Menu,
+  Loader2,
 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function LessonPage() {
   const params = useParams();
@@ -59,7 +61,8 @@ export default function LessonPage() {
       : null;
 
   // Check if lesson is completed
-  const isCompleted = progress?.completed_lesson_ids?.includes(lessonId) ?? false;
+  const isCompleted =
+    progress?.completed_lesson_ids?.includes(lessonId) ?? false;
 
   const handleMarkComplete = async () => {
     if (!isAuthenticated) {
@@ -67,15 +70,28 @@ export default function LessonPage() {
       return;
     }
 
-    if (!course) return;
+    if (!course || !currentLesson) return;
 
     try {
       await markComplete.mutateAsync({
         lessonId,
         courseId: course.id,
       });
+
+      toast.success("Pelajaran selesai!", {
+        description: `"${
+          currentLesson.title
+        }" telah ditandai sebagai selesai. ${
+          nextLesson
+            ? "Lanjut ke pelajaran berikutnya?"
+            : "Selamat! Anda telah menyelesaikan semua pelajaran."
+        }`,
+      });
     } catch (error) {
       console.error("Error marking lesson complete:", error);
+      toast.error("Gagal menandai selesai", {
+        description: "Terjadi kesalahan. Silakan coba lagi.",
+      });
     }
   };
 
@@ -105,7 +121,8 @@ export default function LessonPage() {
       <div className="container mx-auto px-4 py-8">
         <Alert variant="destructive">
           <AlertDescription>
-            Pelajaran tidak ditemukan atau Anda tidak memiliki akses ke pelajaran ini.
+            Pelajaran tidak ditemukan atau Anda tidak memiliki akses ke
+            pelajaran ini.
           </AlertDescription>
         </Alert>
       </div>
@@ -129,7 +146,8 @@ export default function LessonPage() {
               <div>
                 <h1 className="font-semibold text-lg">{course.title}</h1>
                 <p className="text-sm text-gray-600">
-                  {progress?.completed_lessons} dari {progress?.total_lessons} pelajaran selesai
+                  {progress?.completed_lessons} dari {progress?.total_lessons}{" "}
+                  pelajaran selesai
                 </p>
               </div>
             </div>
@@ -182,19 +200,27 @@ export default function LessonPage() {
                         key={lesson.id}
                         href={`/courses/${slug}/lessons/${lesson.id}`}
                         className={`block px-4 py-3 border-b hover:bg-gray-50 transition-colors ${
-                          isCurrent ? "bg-blue-50 border-l-4 border-l-blue-600" : ""
+                          isCurrent
+                            ? "bg-blue-50 border-l-4 border-l-blue-600"
+                            : ""
                         }`}
                       >
                         <div className="flex items-start gap-3">
                           <div className="shrink-0 mt-1">
                             {(() => {
                               if (isLessonCompleted) {
-                                return <CheckCircle2 className="h-5 w-5 text-green-600" />;
+                                return (
+                                  <CheckCircle2 className="h-5 w-5 text-green-600" />
+                                );
                               }
                               if (isCurrent) {
-                                return <Circle className="h-5 w-5 text-blue-600 fill-blue-600" />;
+                                return (
+                                  <Circle className="h-5 w-5 text-blue-600 fill-blue-600" />
+                                );
                               }
-                              return <Circle className="h-5 w-5 text-gray-400" />;
+                              return (
+                                <Circle className="h-5 w-5 text-gray-400" />
+                              );
                             })()}
                           </div>
                           <div className="flex-1 min-w-0">
@@ -244,10 +270,17 @@ export default function LessonPage() {
                       disabled={markComplete.isPending}
                       className="flex items-center gap-2"
                     >
-                      <CheckCircle2 className="h-4 w-4" />
-                      {markComplete.isPending
-                        ? "Menyimpan..."
-                        : "Tandai Selesai"}
+                      {markComplete.isPending ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Menyimpan...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="h-4 w-4" />
+                          Tandai Selesai
+                        </>
+                      )}
                     </Button>
                   )}
                 </div>

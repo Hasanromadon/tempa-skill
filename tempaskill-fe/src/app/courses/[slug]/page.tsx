@@ -24,6 +24,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   BookOpen,
   Clock,
   Users,
@@ -32,8 +43,10 @@ import {
   ArrowLeft,
   User,
   TrendingUp,
+  Loader2,
 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface PageProps {
   params: {
@@ -101,12 +114,18 @@ export default function CourseDetailPage({ params }: PageProps) {
     setEnrollError("");
     try {
       await enrollCourse.mutateAsync(course.id);
+      toast.success("Berhasil mendaftar!", {
+        description: `Anda sekarang terdaftar di kursus "${course.title}". Mulai belajar sekarang!`,
+      });
     } catch (err) {
       const errorMessage =
         (err as { response?: { data?: { error?: { message?: string } } } })
           .response?.data?.error?.message ||
         "Gagal mendaftar. Silakan coba lagi.";
       setEnrollError(errorMessage);
+      toast.error("Gagal mendaftar", {
+        description: errorMessage,
+      });
     }
   };
 
@@ -115,8 +134,14 @@ export default function CourseDetailPage({ params }: PageProps) {
 
     try {
       await unenrollCourse.mutateAsync(course.id);
+      toast.success("Berhasil keluar dari kursus", {
+        description: `Anda telah keluar dari kursus "${course.title}".`,
+      });
     } catch (err) {
       console.error("Unenroll failed:", err);
+      toast.error("Gagal keluar dari kursus", {
+        description: "Terjadi kesalahan. Silakan coba lagi.",
+      });
     }
   };
 
@@ -242,8 +267,8 @@ export default function CourseDetailPage({ params }: PageProps) {
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm text-gray-600">
-                        {progress.completed_lessons} dari {progress.total_lessons}{" "}
-                        pelajaran selesai
+                        {progress.completed_lessons} dari{" "}
+                        {progress.total_lessons} pelajaran selesai
                       </span>
                       <span className="text-sm font-medium">
                         {progress.progress_percentage}%
@@ -272,9 +297,13 @@ export default function CourseDetailPage({ params }: PageProps) {
                 <h3>Apa yang akan Anda pelajari</h3>
                 <ul>
                   <li>
-                    Menguasai fundamental melalui materi berbasis teks yang komprehensif
+                    Menguasai fundamental melalui materi berbasis teks yang
+                    komprehensif
                   </li>
-                  <li>Berpartisipasi dalam sesi Q&A dan coding langsung dua minggu sekali</li>
+                  <li>
+                    Berpartisipasi dalam sesi Q&A dan coding langsung dua minggu
+                    sekali
+                  </li>
                   <li>
                     Membangun proyek nyata dan mendapatkan pengalaman praktis
                   </li>
@@ -285,17 +314,21 @@ export default function CourseDetailPage({ params }: PageProps) {
 
                 <h3>Format Kursus</h3>
                 <p>
-                  Kursus ini menggunakan pendekatan pembelajaran hybrid unik TempaSKill:
+                  Kursus ini menggunakan pendekatan pembelajaran hybrid unik
+                  TempaSKill:
                 </p>
                 <ul>
                   <li>
-                    <strong>Pelajaran Berbasis Teks:</strong> Baca dan belajar sesuai kecepatan Anda
+                    <strong>Pelajaran Berbasis Teks:</strong> Baca dan belajar
+                    sesuai kecepatan Anda
                   </li>
                   <li>
-                    <strong>Sesi Langsung:</strong> Ikuti sesi interaktif setiap 2 minggu
+                    <strong>Sesi Langsung:</strong> Ikuti sesi interaktif setiap
+                    2 minggu
                   </li>
                   <li>
-                    <strong>Pelacakan Kemajuan:</strong> Pantau perkembangan Anda dalam kursus
+                    <strong>Pelacakan Kemajuan:</strong> Pantau perkembangan
+                    Anda dalam kursus
                   </li>
                 </ul>
               </CardContent>
@@ -438,11 +471,16 @@ export default function CourseDetailPage({ params }: PageProps) {
                     onClick={handleEnroll}
                     disabled={enrollCourse.isPending}
                   >
-                    {enrollCourse.isPending
-                      ? "Mendaftar..."
-                      : course.price === 0
-                      ? "Daftar Gratis"
-                      : "Daftar Sekarang"}
+                    {enrollCourse.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Mendaftar...
+                      </>
+                    ) : course.price === 0 ? (
+                      "Daftar Gratis"
+                    ) : (
+                      "Daftar Sekarang"
+                    )}
                   </Button>
                 ) : (
                   <div className="space-y-3">
@@ -466,14 +504,45 @@ export default function CourseDetailPage({ params }: PageProps) {
                         ? "Lanjutkan Belajar"
                         : "Mulai Belajar"}
                     </Button>
-                    <Button
-                      variant="outline"
-                      className="w-full border-orange-600 text-orange-600 hover:bg-orange-50"
-                      onClick={handleUnenroll}
-                      disabled={unenrollCourse.isPending}
-                    >
-                      {unenrollCourse.isPending ? "Membatalkan..." : "Batalkan Pendaftaran"}
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full border-orange-600 text-orange-600 hover:bg-orange-50"
+                          disabled={unenrollCourse.isPending}
+                        >
+                          {unenrollCourse.isPending ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Membatalkan...
+                            </>
+                          ) : (
+                            "Batalkan Pendaftaran"
+                          )}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            Keluar dari Kursus?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Anda yakin ingin keluar dari kursus &quot;
+                            {course.title}&quot;? Progress Anda akan tetap
+                            tersimpan jika Anda mendaftar kembali nanti.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Batal</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={handleUnenroll}
+                            className="bg-orange-600 hover:bg-orange-700"
+                          >
+                            Ya, Keluar
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 )}
 

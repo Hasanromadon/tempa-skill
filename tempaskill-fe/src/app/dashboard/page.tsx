@@ -2,7 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useIsAuthenticated, useUserProgress } from "@/hooks";
+import { removeAuthToken } from "@/lib/auth-token";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,8 +15,20 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BookOpen, LogOut } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { BookOpen, LogOut, User } from "lucide-react";
 import { useEffect } from "react";
+import { toast } from "sonner";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -28,7 +42,10 @@ export default function DashboardPage() {
   }, [isAuthenticated, isLoading, router]);
 
   const handleLogout = () => {
-    localStorage.removeItem("auth_token");
+    removeAuthToken();
+    toast.success("Logout berhasil", {
+      description: "Sampai jumpa lagi! Semoga hari Anda menyenangkan.",
+    });
     router.push("/");
   };
 
@@ -72,6 +89,15 @@ export default function DashboardPage() {
               </p>
             </div>
             <div className="flex gap-2">
+              <Link href="/profile">
+                <Button
+                  variant="outline"
+                  className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  Profil
+                </Button>
+              </Link>
               <Link href="/courses">
                 <Button
                   variant="outline"
@@ -80,10 +106,32 @@ export default function DashboardPage() {
                   Jelajahi Kursus
                 </Button>
               </Link>
-              <Button variant="ghost" onClick={handleLogout}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Keluar
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="ghost">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Keluar
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Keluar dari Akun?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Anda yakin ingin keluar dari akun Anda? Anda harus login
+                      kembali untuk mengakses dashboard dan kursus Anda.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleLogout}
+                      className="bg-orange-600 hover:bg-orange-700"
+                    >
+                      Ya, Keluar
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </div>
         </div>
@@ -114,15 +162,20 @@ export default function DashboardPage() {
                   key={item.course_id}
                   href={`/courses/${item.course_slug}`}
                 >
-                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer overflow-hidden">
+                    {/* Course Thumbnail Placeholder */}
+                    <div className="relative w-full h-40 bg-gradient-to-br from-orange-400 to-orange-600">
+                      <div className="w-full h-full flex items-center justify-center">
+                        <BookOpen className="h-12 w-12 text-white opacity-50" />
+                      </div>
+                    </div>
                     <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <BookOpen className="h-5 w-5" />
+                      <CardTitle className="flex items-center gap-2 text-lg">
                         {item.course_title}
                       </CardTitle>
                       <CardDescription>
-                        {item.completed_lessons} dari {item.total_lessons} pelajaran
-                        selesai
+                        {item.completed_lessons} dari {item.total_lessons}{" "}
+                        pelajaran selesai
                       </CardDescription>
                     </CardHeader>
                     <CardContent>

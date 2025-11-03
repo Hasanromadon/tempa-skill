@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useCourses, useIsAuthenticated } from "@/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -139,7 +140,23 @@ export default function CoursesPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {data.courses.map((course) => (
                 <Link key={course.id} href={`/courses/${course.slug}`}>
-                  <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer">
+                  <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer overflow-hidden">
+                    {/* Course Thumbnail */}
+                    <div className="relative w-full h-48 bg-gray-200">
+                      {course.thumbnail_url ? (
+                        <Image
+                          src={course.thumbnail_url}
+                          alt={course.title}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-400 to-orange-600">
+                          <BookOpen className="h-16 w-16 text-white opacity-50" />
+                        </div>
+                      )}
+                    </div>
                     <CardHeader>
                       <div className="flex items-start justify-between mb-2">
                         <Badge
