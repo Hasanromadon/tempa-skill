@@ -41,11 +41,7 @@ export function LessonList({
   }
 
   if (!lessons || lessons.length === 0) {
-    return (
-      <p className="text-gray-500 text-center py-8">
-        {emptyMessage}
-      </p>
-    );
+    return <p className="text-gray-500 text-center py-8">{emptyMessage}</p>;
   }
 
   return (
@@ -76,11 +72,7 @@ export function LessonList({
                     : "bg-gray-100 text-gray-600"
                 }`}
               >
-                {isCompleted ? (
-                  <CheckCircle2 className="h-5 w-5" />
-                ) : (
-                  index + 1
-                )}
+                {isCompleted ? <CheckCircle2 className="h-5 w-5" /> : index + 1}
               </div>
               <div className="flex-1">
                 <h4

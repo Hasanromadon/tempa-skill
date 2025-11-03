@@ -1,5 +1,4 @@
-import Image from "next/image";
-import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,11 +8,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { DIFFICULTY_COLORS, DIFFICULTY_LABELS } from "@/lib/constants";
 import { formatCurrency } from "@/lib/utils";
 import { BookOpen, Users } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
 export interface CourseCardProps {
   course: {
