@@ -17,6 +17,8 @@
 - [Security Requirements](#security-requirements)
 - [Code Quality Standards](#code-quality-standards)
 - [Common Patterns](#common-patterns)
+- [Quick Reference](#quick-reference)
+- [Need Help?](#need-help)
 
 ---
 
@@ -407,11 +409,11 @@ export default async function CoursesPage() {
 
 // ✅ CLIENT COMPONENT (needs 'use client')
 // Use for: Interactivity, hooks, event handlers
-'use client';
+("use client");
 
 export default function CourseEnrollButton() {
   const [enrolled, setEnrolled] = useState(false);
-  
+
   return <button onClick={() => setEnrolled(true)}>Enroll</button>;
 }
 ```
@@ -425,7 +427,7 @@ export default function CourseDetailPage({ params }: PageProps) {
 }
 
 // ✅ NEW WAY (Next.js 15) - Use React.use()
-import { use } from 'react';
+import { use } from "react";
 
 interface PageProps {
   params: Promise<{ slug: string }>; // params is Promise
@@ -433,14 +435,14 @@ interface PageProps {
 
 export default function CourseDetailPage({ params }: PageProps) {
   const { slug } = use(params); // Unwrap Promise with React.use()
-  
+
   // Now use slug normally
   const { data: course } = useCourse(slug);
 }
 
 // ✅ ALTERNATIVE: useParams hook (client components only)
-'use client';
-import { useParams } from 'next/navigation';
+("use client");
+import { useParams } from "next/navigation";
 
 export default function CourseDetailPage() {
   const { slug } = useParams(); // Works in client components
@@ -451,14 +453,16 @@ export default function CourseDetailPage() {
 
 ```tsx
 // ✅ CUSTOM HOOK PATTERN (in hooks/use-courses.ts)
-import { useQuery, useMutation } from '@tanstack/react-query';
-import apiClient from '@/lib/api-client';
+import { useQuery, useMutation } from "@tanstack/react-query";
+import apiClient from "@/lib/api-client";
 
 export const useCourses = (params?: CourseParams) => {
   return useQuery({
-    queryKey: ['courses', params],
+    queryKey: ["courses", params],
     queryFn: async () => {
-      const response = await apiClient.get<ApiResponse<Course[]>>('/courses', { params });
+      const response = await apiClient.get<ApiResponse<Course[]>>("/courses", {
+        params,
+      });
       return response.data.data;
     },
   });
@@ -466,9 +470,11 @@ export const useCourses = (params?: CourseParams) => {
 
 export const useCourse = (slug: string) => {
   return useQuery({
-    queryKey: ['course', slug],
+    queryKey: ["course", slug],
     queryFn: async () => {
-      const response = await apiClient.get<ApiResponse<Course>>(`/courses/slug/${slug}`);
+      const response = await apiClient.get<ApiResponse<Course>>(
+        `/courses/slug/${slug}`
+      );
       return response.data.data;
     },
     enabled: !!slug, // Only run if slug exists
@@ -477,15 +483,15 @@ export const useCourse = (slug: string) => {
 
 export const useEnrollCourse = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (courseId: number) => {
       await apiClient.post(`/courses/${courseId}/enroll`);
     },
     onSuccess: () => {
       // Invalidate relevant queries
-      queryClient.invalidateQueries({ queryKey: ['courses'] });
-      queryClient.invalidateQueries({ queryKey: ['my-courses'] });
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      queryClient.invalidateQueries({ queryKey: ["my-courses"] });
     },
   });
 };
@@ -497,7 +503,7 @@ export const useEnrollCourse = () => {
 
 ```tsx
 // ✅ GOOD: Use Skeleton components
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CoursesPage() {
   const { data: courses, isLoading } = useCourses();
@@ -545,15 +551,15 @@ export default function CoursePage() {
 
 ```tsx
 // ✅ GOOD: Use React Hook Form with inline validation
-'use client';
+"use client";
 
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 
 const loginSchema = z.object({
-  email: z.string().email('Email tidak valid'),
-  password: z.string().min(6, 'Password minimal 6 karakter'),
+  email: z.string().email("Email tidak valid"),
+  password: z.string().min(6, "Password minimal 6 karakter"),
 });
 
 export default function LoginForm() {
@@ -573,10 +579,10 @@ export default function LoginForm() {
     <form onSubmit={handleSubmit(onSubmit)}>
       <div>
         <input
-          {...register('email')}
+          {...register("email")}
           type="email"
           placeholder="Email"
-          className={errors.email ? 'border-red-500' : ''}
+          className={errors.email ? "border-red-500" : ""}
         />
         {errors.email && (
           <span className="text-red-500 text-sm">{errors.email.message}</span>
@@ -588,7 +594,7 @@ export default function LoginForm() {
         disabled={isSubmitting}
         className="bg-orange-600 hover:bg-orange-700"
       >
-        {isSubmitting ? 'Memproses...' : 'Masuk'}
+        {isSubmitting ? "Memproses..." : "Masuk"}
       </button>
     </form>
   );
@@ -654,16 +660,16 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 ```typescript
 // ✅ GOOD: Descriptive test names, proper setup
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-test.describe('Course Browsing', () => {
-  test('should display course list with search', async ({ page }) => {
+test.describe("Course Browsing", () => {
+  test("should display course list with search", async ({ page }) => {
     // Arrange
-    await page.goto('/courses');
-    await page.waitForLoadState('networkidle');
+    await page.goto("/courses");
+    await page.waitForLoadState("networkidle");
 
     // Act
-    await page.fill('input[placeholder*="Cari"]', 'React');
+    await page.fill('input[placeholder*="Cari"]', "React");
     await page.waitForTimeout(500); // Debounce
 
     // Assert
@@ -679,7 +685,7 @@ test.describe('Course Browsing', () => {
 ```typescript
 // ✅ REUSABLE TEST HELPERS (helpers/test-helpers.ts)
 export async function login(page: Page, email: string, password: string) {
-  await page.goto('/login');
+  await page.goto("/login");
   await page.fill('input[id="email"]', email);
   await page.fill('input[id="password"]', password);
   await page.click('button[type="submit"]');
@@ -687,10 +693,10 @@ export async function login(page: Page, email: string, password: string) {
 }
 
 export async function logout(page: Page) {
-  const logoutButton = page.locator('text=/keluar|logout/i').first();
+  const logoutButton = page.locator("text=/keluar|logout/i").first();
   await logoutButton.click();
   await page.waitForTimeout(500);
-  await page.locator('text=/Ya,?\\s*Keluar/i').click();
+  await page.locator("text=/Ya,?\\s*Keluar/i").click();
   await page.waitForURL(/\/(|login)/, { timeout: 10000 });
 }
 ```
@@ -701,20 +707,20 @@ export async function logout(page: Page) {
 // ✅ GOOD: Use fixtures for test data
 export const testUsers = {
   valid: {
-    name: 'Test User',
+    name: "Test User",
     email: `test${Date.now()}@example.com`, // Unique email
-    password: 'password123',
+    password: "password123",
   },
   admin: {
-    email: 'admin@example.com',
-    password: 'admin123',
+    email: "admin@example.com",
+    password: "admin123",
   },
 };
 
 export const testCourses = {
   free: {
-    slug: 'pemrograman-web-modern-react-nextjs',
-    title: 'Pemrograman Web Modern dengan React & Next.js',
+    slug: "pemrograman-web-modern-react-nextjs",
+    title: "Pemrograman Web Modern dengan React & Next.js",
   },
 };
 ```
@@ -723,17 +729,17 @@ export const testCourses = {
 
 ```typescript
 // ✅ GOOD: Wait for specific conditions
-await page.waitForLoadState('networkidle'); // Network idle
-await page.waitForSelector('h1'); // Element present
-await page.waitForURL('/dashboard'); // URL changed
+await page.waitForLoadState("networkidle"); // Network idle
+await page.waitForSelector("h1"); // Element present
+await page.waitForURL("/dashboard"); // URL changed
 await expect(element).toBeVisible({ timeout: 10000 }); // Element visible
 
 // ⚠️ USE SPARINGLY: Fixed timeouts (flaky)
 await page.waitForTimeout(1000); // Only for animations/debounce
 
 // ❌ AVOID: No waiting (race conditions)
-await page.click('button');
-expect(page.url()).toBe('/dashboard'); // BAD! Might not have navigated yet
+await page.click("button");
+expect(page.url()).toBe("/dashboard"); // BAD! Might not have navigated yet
 ```
 
 ---
@@ -781,7 +787,7 @@ CREATE TABLE users (
 ```sql
 -- ✅ GOOD: Realistic, Indonesian content
 INSERT INTO courses (title, slug, description, price, category, difficulty, instructor_id)
-VALUES 
+VALUES
 (
     'Pemrograman Web Modern dengan React & Next.js',
     'pemrograman-web-modern-react-nextjs',
@@ -801,10 +807,10 @@ VALUES
 
 ```typescript
 // ✅ FRONTEND: Store JWT securely
-localStorage.setItem('token', response.data.token);
+localStorage.setItem("token", response.data.token);
 
 // Include in requests
-axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
 // ❌ NEVER: Store password or sensitive data in localStorage
 ```
@@ -856,8 +862,8 @@ if err := c.ShouldBindJSON(&req); err != nil {
 ```typescript
 // ✅ FRONTEND: Client-side validation with Zod
 const schema = z.object({
-  email: z.string().email('Email tidak valid'),
-  password: z.string().min(6, 'Password minimal 6 karakter'),
+  email: z.string().email("Email tidak valid"),
+  password: z.string().min(6, "Password minimal 6 karakter"),
 });
 ```
 
