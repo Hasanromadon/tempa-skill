@@ -1,11 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { useCourses, useIsAuthenticated } from "@/hooks";
+import { EmptyState, LoadingScreen, PageHeader } from "@/components/common";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
@@ -14,9 +11,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Search, BookOpen, Users, Clock } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { useCourses, useIsAuthenticated } from "@/hooks";
+import { DIFFICULTY_COLORS, DIFFICULTY_LABELS, ROUTES } from "@/lib/constants";
+import { formatCurrency } from "@/lib/utils";
+import { BookOpen, Search, Users } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
 
 export default function CoursesPage() {
   const [search, setSearch] = useState("");
@@ -31,75 +33,36 @@ export default function CoursesPage() {
   });
   const { isAuthenticated } = useIsAuthenticated();
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case "beginner":
-        return "bg-green-100 text-green-800";
-      case "intermediate":
-        return "bg-yellow-100 text-yellow-800";
-      case "advanced":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getDifficultyText = (difficulty: string) => {
-    switch (difficulty) {
-      case "beginner":
-        return "Pemula";
-      case "intermediate":
-        return "Menengah";
-      case "advanced":
-        return "Lanjutan";
-      default:
-        return difficulty;
-    }
-  };
-
-  const formatPrice = (price: number) => {
-    if (price === 0) return "Gratis";
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(price);
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Jelajahi Kursus
-              </h1>
-              <p className="text-gray-600 mt-1">
-                Temukan kursus berbasis teks dengan sesi langsung
-              </p>
+      <PageHeader
+        title="Jelajahi Kursus"
+        description="Temukan kursus berbasis teks dengan sesi langsung"
+        action={
+          !isAuthenticated ? (
+            <div className="flex gap-2">
+              <Link href={ROUTES.LOGIN}>
+                <Button
+                  variant="outline"
+                  className="border-orange-600 text-orange-600 hover:bg-orange-50"
+                >
+                  Masuk
+                </Button>
+              </Link>
+              <Link href={ROUTES.REGISTER}>
+                <Button className="bg-orange-600 hover:bg-orange-700 text-white">
+                  Mulai
+                </Button>
+              </Link>
             </div>
-            {!isAuthenticated && (
-              <div className="flex gap-2">
-                <Link href="/login">
-                  <Button
-                    variant="outline"
-                    className="border-orange-600 text-orange-600 hover:bg-orange-50"
-                  >
-                    Masuk
-                  </Button>
-                </Link>
-                <Link href="/register">
-                  <Button className="bg-orange-600 hover:bg-orange-700 text-white">
-                    Mulai
-                  </Button>
-                </Link>
-              </div>
-            )}
-          </div>
+          ) : undefined
+        }
+      />
 
-          {/* Search */}
+      {/* Search */}
+      <div className="bg-white border-b">
+        <div className="container mx-auto px-4 py-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input
@@ -116,19 +79,7 @@ export default function CoursesPage() {
       {/* Content */}
       <div className="container mx-auto px-4 py-8">
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <Card key={i}>
-                <CardHeader>
-                  <Skeleton className="h-4 w-3/4 mb-2" />
-                  <Skeleton className="h-3 w-full" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-20 w-full" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <LoadingScreen message="Memuat kursus..." />
         ) : error ? (
           <div className="text-center py-12">
             <p className="text-red-600">
@@ -160,9 +111,15 @@ export default function CoursesPage() {
                     <CardHeader>
                       <div className="flex items-start justify-between mb-2">
                         <Badge
-                          className={getDifficultyColor(course.difficulty)}
+                          className={
+                            DIFFICULTY_COLORS[
+                              course.difficulty as keyof typeof DIFFICULTY_COLORS
+                            ] || DIFFICULTY_COLORS.beginner
+                          }
                         >
-                          {getDifficultyText(course.difficulty)}
+                          {DIFFICULTY_LABELS[
+                            course.difficulty as keyof typeof DIFFICULTY_LABELS
+                          ] || course.difficulty}
                         </Badge>
                         {course.is_enrolled && (
                           <Badge variant="outline">Terdaftar</Badge>
@@ -191,7 +148,7 @@ export default function CoursesPage() {
                           {course.category}
                         </span>
                         <span className="text-lg font-bold text-orange-600">
-                          {formatPrice(course.price)}
+                          {formatCurrency(course.price)}
                         </span>
                       </div>
                     </CardContent>
@@ -238,11 +195,11 @@ export default function CoursesPage() {
             )}
           </>
         ) : (
-          <div className="text-center py-12">
-            <p className="text-gray-600">
-              Tidak ada kursus ditemukan. Coba sesuaikan pencarian Anda.
-            </p>
-          </div>
+          <EmptyState
+            icon={BookOpen}
+            title="Tidak ada kursus ditemukan"
+            description="Coba sesuaikan pencarian Anda atau coba lagi nanti."
+          />
         )}
       </div>
     </div>
