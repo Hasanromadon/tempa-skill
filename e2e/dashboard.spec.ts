@@ -74,11 +74,15 @@ test.describe("Dashboard", () => {
         const enrollButton = page.locator('button:has-text("Daftar")').first();
         if (await enrollButton.isVisible()) {
           await enrollButton.click();
-          
+
           // Wait for enrollment to complete (success toast or button text change)
           await Promise.race([
-            page.waitForSelector('text=/berhasil.*mendaftar/i', { timeout: 5000 }),
-            page.waitForSelector('text=/mulai.*belajar|lanjutkan.*belajar/i', { timeout: 5000 }),
+            page.waitForSelector("text=/berhasil.*mendaftar/i", {
+              timeout: 5000,
+            }),
+            page.waitForSelector("text=/mulai.*belajar|lanjutkan.*belajar/i", {
+              timeout: 5000,
+            }),
           ]).catch(() => {
             // Fallback: wait fixed time if toast doesn't appear
             return page.waitForTimeout(3000);
@@ -98,10 +102,11 @@ test.describe("Dashboard", () => {
         const enrolledSection = await page
           .locator("text=/kursus.*yang.*anda.*ikuti/i")
           .isVisible();
-        
+
         // Alternative: Check if there are any course cards visible
-        const hasCourseCards = (await page.locator('[href*="/courses/"]').count()) > 0;
-        
+        const hasCourseCards =
+          (await page.locator('[href*="/courses/"]').count()) > 0;
+
         // At least one should be true
         expect(enrolledSection || hasCourseCards).toBeTruthy();
       }

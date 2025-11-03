@@ -1,28 +1,5 @@
 "use client";
 
-import { use } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import {
-  useCourse,
-  useCourseLessons,
-  useEnrollCourse,
-  useUnenrollCourse,
-  useIsAuthenticated,
-  useCourseProgress,
-  useUser,
-} from "@/hooks";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   AlertDialog,
@@ -35,18 +12,40 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
-  BookOpen,
-  Clock,
-  Users,
-  CheckCircle2,
-  Lock,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  useCourse,
+  useCourseLessons,
+  useCourseProgress,
+  useEnrollCourse,
+  useIsAuthenticated,
+  useUnenrollCourse,
+  useUser,
+} from "@/hooks";
+import {
   ArrowLeft,
-  User,
-  TrendingUp,
+  BookOpen,
+  CheckCircle2,
+  Clock,
   Loader2,
+  Lock,
+  TrendingUp,
+  User,
+  Users,
 } from "lucide-react";
-import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { use, useState } from "react";
 import { toast } from "sonner";
 
 interface PageProps {
@@ -262,7 +261,8 @@ export default function CourseDetailPage({ params }: PageProps) {
               <Alert className="bg-green-50 border-green-200">
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
                 <AlertDescription className="text-green-800 font-medium">
-                  Selamat! Anda sudah terdaftar di kursus ini. Mulai belajar sekarang atau lanjutkan dari terakhir kali Anda berhenti.
+                  Selamat! Anda sudah terdaftar di kursus ini. Mulai belajar
+                  sekarang atau lanjutkan dari terakhir kali Anda berhenti.
                 </AlertDescription>
               </Alert>
             )}
