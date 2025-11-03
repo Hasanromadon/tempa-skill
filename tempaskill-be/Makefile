@@ -28,6 +28,8 @@ help: ## Show this help message
 	@echo   make db-drop        - Drop database
 	@echo   make db-reset       - Reset database
 	@echo   make db-status      - Show database status
+	@echo   make db-migrate     - Run specific migration file (FILE=xxx)
+	@echo   make db-migrate-mdx - Run MDX migration (007)
 	@echo.
 	@echo DEVELOPMENT:
 	@echo   make run            - Run server
@@ -78,6 +80,22 @@ db-status: ## Show database tables and row counts
 	@echo.
 	@echo Users Table:
 	@"$(MYSQL_BIN)" -u root $(DB_NAME) -e "SELECT id, name, email, role, created_at FROM users LIMIT 10;"
+
+.PHONY: db-migrate
+db-migrate: ## Run specific migration file (use: make db-migrate FILE=007_update_lesson_to_mdx.sql)
+	@echo "$(YELLOW)Running migration: $(FILE)...$(NC)"
+	@if not defined FILE (echo Error: Please specify FILE parameter && echo Example: make db-migrate FILE=007_update_lesson_to_mdx.sql && exit /b 1)
+	@"$(MYSQL_BIN)" -u root $(DB_NAME) < migrations/$(FILE)
+	@echo "$(GREEN)✓ Migration completed: $(FILE)$(NC)"
+
+.PHONY: db-migrate-mdx
+db-migrate-mdx: ## Run MDX content migration (007_update_lesson_to_mdx.sql)
+	@echo "$(YELLOW)Running MDX migration...$(NC)"
+	@"$(MYSQL_BIN)" -u root $(DB_NAME) < migrations/007_update_lesson_to_mdx.sql
+	@echo "$(GREEN)✓ MDX migration completed$(NC)"
+	@echo.
+	@echo "$(GREEN)Lesson 25 updated with MDX content$(NC)"
+	@echo "$(YELLOW)View at: http://localhost:3000/courses/ui-ux-design-fundamental/lessons/25$(NC)"
 
 .PHONY: run
 run: ## Run server in development mode
