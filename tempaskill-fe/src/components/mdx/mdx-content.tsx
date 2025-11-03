@@ -2,12 +2,12 @@
 
 import { MDXRemote, MDXRemoteSerializeResult } from "next-mdx-remote";
 import { serialize } from "next-mdx-remote/serialize";
+import type { HTMLAttributes } from "react";
 import { useEffect, useState } from "react";
+import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeHighlight from "rehype-highlight";
 import rehypeSlug from "rehype-slug";
-import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import remarkGfm from "remark-gfm";
-import type { HTMLAttributes } from "react";
 
 // Custom components for MDX
 const components = {
@@ -21,15 +21,18 @@ const components = {
   h3: (props: HTMLAttributes<HTMLHeadingElement>) => (
     <h3 className="text-2xl font-semibold mt-6 mb-3 text-gray-900" {...props} />
   ),
-  
+
   // Code blocks with better styling
   pre: (props: HTMLAttributes<HTMLPreElement>) => (
-    <pre className="bg-gray-900 rounded-lg p-4 overflow-x-auto my-4" {...props} />
+    <pre
+      className="bg-gray-900 rounded-lg p-4 overflow-x-auto my-4"
+      {...props}
+    />
   ),
   code: (props: HTMLAttributes<HTMLElement>) => (
     <code className="text-sm font-mono" {...props} />
   ),
-  
+
   // Links with brand color
   a: (props: HTMLAttributes<HTMLAnchorElement>) => (
     <a
@@ -39,7 +42,7 @@ const components = {
       {...props}
     />
   ),
-  
+
   // Lists with better spacing
   ul: (props: HTMLAttributes<HTMLUListElement>) => (
     <ul className="list-disc list-inside space-y-2 my-4" {...props} />
@@ -50,12 +53,12 @@ const components = {
   li: (props: HTMLAttributes<HTMLLIElement>) => (
     <li className="text-gray-700" {...props} />
   ),
-  
+
   // Paragraphs
   p: (props: HTMLAttributes<HTMLParagraphElement>) => (
     <p className="text-gray-700 leading-relaxed my-4" {...props} />
   ),
-  
+
   // Blockquotes
   blockquote: (props: HTMLAttributes<HTMLQuoteElement>) => (
     <blockquote
@@ -63,7 +66,7 @@ const components = {
       {...props}
     />
   ),
-  
+
   // Tables
   table: (props: HTMLAttributes<HTMLTableElement>) => (
     <div className="overflow-x-auto my-4">
@@ -83,7 +86,9 @@ interface MDXContentProps {
 }
 
 export function MDXContent({ content }: MDXContentProps) {
-  const [mdxSource, setMdxSource] = useState<MDXRemoteSerializeResult | null>(null);
+  const [mdxSource, setMdxSource] = useState<MDXRemoteSerializeResult | null>(
+    null
+  );
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {

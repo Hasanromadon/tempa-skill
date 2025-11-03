@@ -72,7 +72,10 @@ export const useMarkLessonComplete = () => {
           return {
             ...old,
             completed_lessons: old.completed_lessons + 1,
-            completed_lesson_ids: [...(old.completed_lesson_ids || []), lessonId],
+            completed_lesson_ids: [
+              ...(old.completed_lesson_ids || []),
+              lessonId,
+            ],
             progress_percentage: Math.round(
               ((old.completed_lessons + 1) / old.total_lessons) * 100
             ),

@@ -1,5 +1,6 @@
 "use client";
 
+import { MDXContent } from "@/components/mdx/mdx-content";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,7 +36,6 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { MDXContent } from "@/components/mdx/mdx-content";
 
 export default function LessonPage() {
   const params = useParams();
