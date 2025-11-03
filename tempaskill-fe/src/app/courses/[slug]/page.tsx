@@ -371,7 +371,7 @@ export default function CourseDetailPage({ params }: PageProps) {
                   <div className="space-y-2">
                     {lessons.map((lesson, index) => {
                       const isCompleted =
-                        progress?.completed_lesson_ids.includes(lesson.id);
+                        progress?.completed_lesson_ids?.includes(lesson.id) ?? false;
                       const canAccess = course.is_enrolled;
 
                       return (
