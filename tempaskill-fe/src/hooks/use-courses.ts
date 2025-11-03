@@ -66,6 +66,7 @@ export const useEnrollCourse = () => {
       queryClient.invalidateQueries({ queryKey: ["courses"] });
       queryClient.invalidateQueries({ queryKey: ["course"] });
       queryClient.invalidateQueries({ queryKey: ["progress"] });
+      queryClient.invalidateQueries({ queryKey: ["userProgress"] }); // ADDED: Invalidate dashboard data
     },
   });
 };
@@ -85,6 +86,7 @@ export const useUnenrollCourse = () => {
       queryClient.invalidateQueries({ queryKey: ["courses"] });
       queryClient.invalidateQueries({ queryKey: ["course"] });
       queryClient.invalidateQueries({ queryKey: ["progress"] });
+      queryClient.invalidateQueries({ queryKey: ["userProgress"] }); // ADDED: Invalidate dashboard data
     },
   });
 };
