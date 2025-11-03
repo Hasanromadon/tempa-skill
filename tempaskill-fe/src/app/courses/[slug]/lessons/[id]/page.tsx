@@ -6,6 +6,7 @@ import Link from "next/link";
 import {
   useCourse,
   useCourseLessons,
+  useLesson,
   useMarkLessonComplete,
   useCourseProgress,
   useIsAuthenticated,
@@ -48,11 +49,11 @@ export default function LessonPage() {
   const { data: lessons, isLoading: lessonsLoading } = useCourseLessons(
     course?.id || 0
   );
+  const { data: currentLesson, isLoading: lessonLoading } = useLesson(lessonId);
   const { data: progress } = useCourseProgress(course?.id || 0);
   const markComplete = useMarkLessonComplete();
 
-  // Find current lesson
-  const currentLesson = lessons?.find((l) => l.id === lessonId);
+  // Find lesson index for navigation
   const currentIndex = lessons?.findIndex((l) => l.id === lessonId) ?? -1;
   const prevLesson = currentIndex > 0 ? lessons?.[currentIndex - 1] : null;
   const nextLesson =
@@ -104,7 +105,7 @@ export default function LessonPage() {
     return mins > 0 ? `${hours} jam ${mins} menit` : `${hours} jam`;
   };
 
-  if (courseLoading || lessonsLoading) {
+  if (courseLoading || lessonsLoading || lessonLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Skeleton className="h-8 w-64 mb-4" />
