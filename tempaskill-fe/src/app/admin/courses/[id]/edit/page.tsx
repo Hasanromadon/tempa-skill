@@ -2,10 +2,10 @@
 
 import { LoadingScreen, PageHeader } from "@/components/common";
 import { CourseForm } from "@/components/course/course-form";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useCourseById, useUpdateCourse } from "@/hooks/use-courses";
 import { ROUTES } from "@/lib/constants";
 import { courseSchema } from "@/lib/validators";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use, useState } from "react";
@@ -20,7 +20,7 @@ interface PageProps {
 
 /**
  * Edit Course Page - Admin panel page for editing existing courses
- * 
+ *
  * Features:
  * - Fetches course data by ID
  * - Pre-fills form with existing data
@@ -32,9 +32,13 @@ interface PageProps {
 export default function EditCoursePage({ params }: PageProps) {
   const { id } = use(params);
   const courseId = parseInt(id, 10);
-  
+
   const router = useRouter();
-  const { data: course, isLoading, error: fetchError } = useCourseById(courseId);
+  const {
+    data: course,
+    isLoading,
+    error: fetchError,
+  } = useCourseById(courseId);
   const updateCourse = useUpdateCourse();
   const [error, setError] = useState<string | null>(null);
 
@@ -42,11 +46,11 @@ export default function EditCoursePage({ params }: PageProps) {
     try {
       setError(null);
       await updateCourse.mutateAsync({ id: courseId, data });
-      
+
       toast.success("Kursus berhasil diperbarui!", {
         description: `Perubahan pada "${data.title}" telah disimpan.`,
       });
-      
+
       router.push(ROUTES.ADMIN.COURSES);
     } catch (err) {
       const errorMessage =

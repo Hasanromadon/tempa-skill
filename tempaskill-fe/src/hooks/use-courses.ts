@@ -168,3 +168,28 @@ export const useDeleteCourse = () => {
     },
   });
 };
+
+// Publish/Unpublish course (Admin/Instructor)
+export const useTogglePublishCourse = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      isPublished,
+    }: {
+      id: number;
+      isPublished: boolean;
+    }) => {
+      const response = await apiClient.put<ApiResponse<Course>>(
+        API_ENDPOINTS.COURSES.UPDATE(id),
+        { is_published: isPublished }
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      queryClient.invalidateQueries({ queryKey: ["course"] });
+    },
+  });
+};

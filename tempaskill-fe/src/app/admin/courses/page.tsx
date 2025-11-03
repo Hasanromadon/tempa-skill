@@ -1,6 +1,7 @@
 "use client";
 
 import { LoadingScreen } from "@/components/common";
+import { DeleteCourseDialog } from "@/components/course/delete-course-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +15,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -32,7 +34,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useCourses } from "@/hooks";
+import {
+  useCourses,
+  useDeleteCourse,
+  useTogglePublishCourse,
+} from "@/hooks";
 import { DIFFICULTY_COLORS, DIFFICULTY_LABELS } from "@/lib/constants";
 import { formatCurrency } from "@/lib/utils";
 import {
@@ -46,14 +52,72 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function AdminCoursesPage() {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [difficultyFilter, setDifficultyFilter] = useState("all");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [courseToDelete, setCourseToDelete] = useState<{
+    id: number;
+    title: string;
+  } | null>(null);
 
   const { data: coursesData, isLoading } = useCourses();
   const courses = coursesData?.courses || [];
+  const togglePublish = useTogglePublishCourse();
+  const deleteCourse = useDeleteCourse();
+
+  // Handle publish/unpublish
+  const handleTogglePublish = async (
+    courseId: number,
+    currentStatus: boolean,
+    courseTitle: string
+  ) => {
+    try {
+      await togglePublish.mutateAsync({
+        id: courseId,
+        isPublished: !currentStatus,
+      });
+
+      toast.success(
+        !currentStatus ? "Kursus dipublikasikan" : "Kursus di-unpublish",
+        {
+          description: `"${courseTitle}" sekarang ${!currentStatus ? "aktif" : "tidak aktif"}.`,
+        }
+      );
+    } catch {
+      toast.error("Gagal mengubah status kursus", {
+        description: "Silakan coba lagi.",
+      });
+    }
+  };
+
+  // Handle delete
+  const handleDeleteClick = (courseId: number, courseTitle: string) => {
+    setCourseToDelete({ id: courseId, title: courseTitle });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!courseToDelete) return;
+
+    try {
+      await deleteCourse.mutateAsync(courseToDelete.id);
+
+      toast.success("Kursus berhasil dihapus", {
+        description: `"${courseToDelete.title}" telah dihapus dari platform.`,
+      });
+
+      setDeleteDialogOpen(false);
+      setCourseToDelete(null);
+    } catch {
+      toast.error("Gagal menghapus kursus", {
+        description: "Silakan coba lagi.",
+      });
+    }
+  };
 
   // Filter courses
   const filteredCourses = courses.filter((course) => {
@@ -238,7 +302,17 @@ export default function AdminCoursesPage() {
                                 Kelola Pelajaran
                               </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleTogglePublish(
+                                  course.id,
+                                  course.is_published,
+                                  course.title
+                                )
+                              }
+                              disabled={togglePublish.isPending}
+                            >
                               {course.is_published ? (
                                 <>
                                   <EyeOff className="h-4 w-4 mr-2" />
@@ -251,7 +325,12 @@ export default function AdminCoursesPage() {
                                 </>
                               )}
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600">
+                            <DropdownMenuItem
+                              className="text-red-600"
+                              onClick={() =>
+                                handleDeleteClick(course.id, course.title)
+                              }
+                            >
                               <Trash2 className="h-4 w-4 mr-2" />
                               Hapus
                             </DropdownMenuItem>
@@ -278,6 +357,15 @@ export default function AdminCoursesPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteCourseDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        courseName={courseToDelete?.title || ""}
+        isDeleting={deleteCourse.isPending}
+      />
     </div>
   );
 }

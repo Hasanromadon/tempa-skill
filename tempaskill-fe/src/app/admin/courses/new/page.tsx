@@ -14,7 +14,7 @@ type CourseFormData = z.infer<typeof courseSchema>;
 
 /**
  * New Course Page - Admin panel page for creating new courses
- * 
+ *
  * Features:
  * - Uses reusable CourseForm component
  * - Success toast notification
@@ -30,11 +30,11 @@ export default function NewCoursePage() {
     try {
       setError(null);
       await createCourse.mutateAsync(data);
-      
+
       toast.success("Kursus berhasil dibuat!", {
         description: `"${data.title}" telah ditambahkan ke daftar kursus.`,
       });
-      
+
       router.push(ROUTES.ADMIN.COURSES);
     } catch (err) {
       const errorMessage =
