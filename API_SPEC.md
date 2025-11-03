@@ -696,5 +696,5 @@ Future versions will be available at `/api/v2`, etc.
 
 ---
 
-**Last Updated**: November 2, 2025  
+**Last Updated**: November 3, 2025  
 **API Version**: 1.0.0

@@ -109,29 +109,36 @@ test.describe("Course Browsing", () => {
   test.describe("Course Detail", () => {
     test("should display course detail page", async ({ page }) => {
       // Listen for console messages
-      page.on('console', msg => console.log('BROWSER:', msg.text()));
-      
+      page.on("console", (msg) => console.log("BROWSER:", msg.text()));
+
       // Direct navigation to a known course
       await page.goto("/courses/pemrograman-web-modern-react-nextjs");
       await page.waitForLoadState("networkidle");
 
       const currentUrl = page.url();
-      console.log('Current URL after navigation:', currentUrl);
+      console.log("Current URL after navigation:", currentUrl);
 
       // Check what's on the page
       const bodyText = await page.locator("body").textContent();
       console.log("Page body first 500 chars:", bodyText?.substring(0, 500));
 
       // Check for error message
-      const hasError = await page.getByText(/kursus tidak ditemukan/i).isVisible().catch(() => false);
+      const hasError = await page
+        .getByText(/kursus tidak ditemukan/i)
+        .isVisible()
+        .catch(() => false);
       console.log("Shows error:", hasError);
 
       if (hasError) {
-        console.log("ERROR: Page shows 'Kursus Tidak Ditemukan' - API call failed");
+        console.log(
+          "ERROR: Page shows 'Kursus Tidak Ditemukan' - API call failed"
+        );
         // Let's check if we can manually fetch to see the error
         const apiResponse = await page.evaluate(async () => {
           try {
-            const res = await fetch('http://localhost:8080/api/v1/courses/slug/pemrograman-web-modern-react-nextjs');
+            const res = await fetch(
+              "http://localhost:8080/api/v1/courses/slug/pemrograman-web-modern-react-nextjs"
+            );
             return { status: res.status, ok: res.ok, data: await res.json() };
           } catch (e) {
             return { error: String(e) };
@@ -150,7 +157,9 @@ test.describe("Course Browsing", () => {
       await expect(page.locator("text=/kembali ke kursus/i")).toBeVisible();
 
       // Should show course difficulty badge (use first() since it appears multiple times)
-      const difficultyBadge = page.getByText(/pemula|menengah|lanjutan/i).first();
+      const difficultyBadge = page
+        .getByText(/pemula|menengah|lanjutan/i)
+        .first();
       await expect(difficultyBadge).toBeVisible({ timeout: 10000 });
     });
 

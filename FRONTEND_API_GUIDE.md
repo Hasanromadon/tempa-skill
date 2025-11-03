@@ -2,7 +2,7 @@
 
 > Complete guide for integrating Next.js frontend with TempaSKill Backend API
 
-**Last Updated**: November 2, 2025  
+**Last Updated**: November 3, 2025  
 **Backend Version**: 1.0.0  
 **Base URL**: `http://localhost:8080/api/v1`
 
