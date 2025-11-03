@@ -120,3 +120,11 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Highlight.js Theme for Code Syntax Highlighting */
+@import "highlight.js/styles/atom-one-dark.css";
+
+/* MDX Code Block Customization */
+.hljs {
+  @apply rounded-lg;
+}

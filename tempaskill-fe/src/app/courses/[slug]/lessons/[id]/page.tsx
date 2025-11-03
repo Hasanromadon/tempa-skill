@@ -1,16 +1,7 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
-import Link from "next/link";
-import {
-  useCourse,
-  useCourseLessons,
-  useLesson,
-  useMarkLessonComplete,
-  useCourseProgress,
-  useIsAuthenticated,
-} from "@/hooks";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,22 +10,32 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  useCourse,
+  useCourseLessons,
+  useCourseProgress,
+  useIsAuthenticated,
+  useLesson,
+  useMarkLessonComplete,
+} from "@/hooks";
 import {
   ArrowLeft,
+  BookOpen,
+  CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  CheckCircle2,
   Circle,
-  BookOpen,
   Clock,
-  Menu,
   Loader2,
+  Menu,
 } from "lucide-react";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
+import { MDXContent } from "@/components/mdx/mdx-content";
 
 export default function LessonPage() {
   const params = useParams();
@@ -288,11 +289,7 @@ export default function LessonPage() {
               </CardHeader>
               <CardContent>
                 {/* Lesson Content */}
-                <div className="prose prose-slate max-w-none">
-                  <div
-                    dangerouslySetInnerHTML={{ __html: currentLesson.content }}
-                  />
-                </div>
+                <MDXContent content={currentLesson.content} />
 
                 {/* Navigation Buttons */}
                 <div className="flex items-center justify-between mt-8 pt-6 border-t">
