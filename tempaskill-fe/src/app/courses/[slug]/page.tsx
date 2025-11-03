@@ -209,7 +209,7 @@ export default function CourseDetailPage({ params }: PageProps) {
 
           <div className="flex items-start justify-between gap-6">
             <div className="flex-1">
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-3 flex-wrap">
                 <Badge className={getDifficultyColor(course.difficulty)}>
                   {getDifficultyText(course.difficulty)}
                 </Badge>
@@ -220,7 +220,9 @@ export default function CourseDetailPage({ params }: PageProps) {
                   {course.category}
                 </Badge>
                 {course.is_enrolled && (
-                  <Badge className="bg-green-500 text-white">Terdaftar</Badge>
+                  <Badge className="bg-green-500 text-white border-0 px-3 py-1 text-sm font-semibold shadow-lg">
+                    ✓ Anda Sudah Terdaftar
+                  </Badge>
                 )}
               </div>
 
@@ -255,6 +257,16 @@ export default function CourseDetailPage({ params }: PageProps) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Course Content */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Enrolled Status Alert */}
+            {course.is_enrolled && (
+              <Alert className="bg-green-50 border-green-200">
+                <CheckCircle2 className="h-5 w-5 text-green-600" />
+                <AlertDescription className="text-green-800 font-medium">
+                  Selamat! Anda sudah terdaftar di kursus ini. Mulai belajar sekarang atau lanjutkan dari terakhir kali Anda berhenti.
+                </AlertDescription>
+              </Alert>
+            )}
+
             {/* Progress Section (if enrolled) */}
             {course.is_enrolled && progress && (
               <Card>
@@ -341,6 +353,11 @@ export default function CourseDetailPage({ params }: PageProps) {
                 <CardTitle>Konten Kursus</CardTitle>
                 <CardDescription>
                   {course.lesson_count} pelajaran dalam kursus ini
+                  {!course.is_enrolled && (
+                    <span className="block mt-1 text-orange-600 font-medium">
+                      Daftar terlebih dahulu untuk mengakses semua pelajaran
+                    </span>
+                  )}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -401,7 +418,15 @@ export default function CourseDetailPage({ params }: PageProps) {
                                     variant="outline"
                                     className="bg-green-50 text-green-700 border-green-200"
                                   >
-                                    Selesai
+                                    ✓ Selesai
+                                  </Badge>
+                                )}
+                                {!canAccess && (
+                                  <Badge
+                                    variant="outline"
+                                    className="bg-gray-100 text-gray-500 border-gray-300"
+                                  >
+                                    🔒 Terkunci
                                   </Badge>
                                 )}
                               </div>
@@ -453,6 +478,14 @@ export default function CourseDetailPage({ params }: PageProps) {
           {/* Right Column - Enrollment Card */}
           <div>
             <Card className="sticky top-6">
+              {course.is_enrolled && (
+                <div className="bg-green-500 text-white px-4 py-3 rounded-t-lg">
+                  <div className="flex items-center gap-2 font-semibold">
+                    <CheckCircle2 className="h-5 w-5" />
+                    <span>Anda Sudah Terdaftar</span>
+                  </div>
+                </div>
+              )}
               <CardHeader>
                 <div className="text-3xl font-bold text-orange-600">
                   {formatPrice(course.price)}

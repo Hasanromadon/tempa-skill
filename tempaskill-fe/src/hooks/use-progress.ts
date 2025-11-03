@@ -1,6 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import apiClient from "@/lib/api-client";
-import type { ApiResponse, CourseProgress, UserProgressSummary } from "@/types/api";
+import type {
+  ApiResponse,
+  CourseProgress,
+  UserProgressSummary,
+} from "@/types/api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 // Get course progress
 export const useCourseProgress = (courseId: number) => {

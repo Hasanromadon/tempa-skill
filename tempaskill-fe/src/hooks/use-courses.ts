@@ -1,4 +1,3 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import apiClient from "@/lib/api-client";
 import type {
   ApiResponse,
@@ -6,6 +5,7 @@ import type {
   CourseListQuery,
   CourseListResponse,
 } from "@/types/api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 // List courses with filters
 export const useCourses = (params?: CourseListQuery) => {
