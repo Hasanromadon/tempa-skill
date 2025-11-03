@@ -40,11 +40,39 @@
 
 ### 📊 Technical Specs
 
-| File                             | Isi                                       | Kapan Dibaca                    |
-| -------------------------------- | ----------------------------------------- | ------------------------------- |
-| **[API_SPEC.md](./API_SPEC.md)** | Complete API documentation, all endpoints | Saat integrasi frontend-backend |
-| **[DATABASE.md](./DATABASE.md)** | Database schema, queries, optimizations   | Saat kerja dengan database      |
-| **[ROADMAP.md](./ROADMAP.md)**   | Development timeline, task breakdown      | Planning & progress tracking    |
+| File                                                     | Isi                                       | Kapan Dibaca                    |
+| -------------------------------------------------------- | ----------------------------------------- | ------------------------------- |
+| **[API_SPEC.md](./API_SPEC.md)**                         | Complete API documentation, all endpoints | Saat integrasi frontend-backend |
+| **[API_QUICK_REFERENCE.md](./API_QUICK_REFERENCE.md)**   | Quick API endpoints reference             | Quick lookup saat coding        |
+| **[DATABASE.md](./DATABASE.md)**                         | Database schema, queries, optimizations   | Saat kerja dengan database      |
+| **[ROADMAP.md](./ROADMAP.md)**                           | Development timeline, task breakdown      | Planning & progress tracking    |
+
+### 🌐 Frontend Development
+
+| File                                                     | Isi                                       | Kapan Dibaca                           |
+| -------------------------------------------------------- | ----------------------------------------- | -------------------------------------- |
+| **[FRONTEND_API_GUIDE.md](./FRONTEND_API_GUIDE.md)**     | Frontend API integration guide            | Saat implement API calls di frontend   |
+| **[PRIVATE_ROUTES.md](./PRIVATE_ROUTES.md)**             | Route protection & authentication flow    | Saat implement protected pages         |
+
+### 🛡️ Security & Quality
+
+| File                                                     | Isi                                       | Kapan Dibaca                           |
+| -------------------------------------------------------- | ----------------------------------------- | -------------------------------------- |
+| **[SECURITY_AUDIT.md](./SECURITY_AUDIT.md)**             | Security analysis & vulnerabilities       | Before production deployment           |
+| **[SECURITY_CHECKLIST.md](./SECURITY_CHECKLIST.md)**     | Security implementation checklist         | During development & before deployment |
+
+### 🤝 Contributing & Scripts
+
+| File                                                     | Isi                                       | Kapan Dibaca                           |
+| -------------------------------------------------------- | ----------------------------------------- | -------------------------------------- |
+| **[CONTRIBUTING.md](./CONTRIBUTING.md)**                 | Contribution guidelines & PR process      | Saat mau contribute ke project         |
+| **[SCRIPTS.md](./SCRIPTS.md)**                           | Development scripts & automation          | Reference untuk commands               |
+
+### 🤖 AI Development
+
+| File                                                                                  | Isi                                                          | Kapan Dibaca                                 |
+| ------------------------------------------------------------------------------------- | ------------------------------------------------------------ | -------------------------------------------- |
+| **[.github/copilot-instructions.md](./.github/copilot-instructions.md)**              | Comprehensive AI development guidelines (1000+ lines)        | Reference untuk AI agents & new developers   |
 
 ### 📄 Project Files
 
@@ -70,6 +98,30 @@
 3. ✅ [API_SPEC.md](./API_SPEC.md) - API contracts
 4. ✅ [CHEATSHEET.md](./CHEATSHEET.md) - Code templates
 
+### "Saya mau kerja dengan API"
+
+1. ✅ [API_SPEC.md](./API_SPEC.md) - Complete API documentation
+2. ✅ [API_QUICK_REFERENCE.md](./API_QUICK_REFERENCE.md) - Quick lookup
+3. ✅ [FRONTEND_API_GUIDE.md](./FRONTEND_API_GUIDE.md) - Frontend integration
+
+### "Saya mau implement authentication"
+
+1. ✅ [PRIVATE_ROUTES.md](./PRIVATE_ROUTES.md) - Route protection
+2. ✅ [SECURITY_CHECKLIST.md](./SECURITY_CHECKLIST.md) - Security tasks
+3. ✅ [DEVELOPMENT.md](./DEVELOPMENT.md) - Auth implementation
+
+### "Saya mau run scripts/automation"
+
+1. ✅ [SCRIPTS.md](./SCRIPTS.md) - Available scripts
+2. ✅ [CHEATSHEET.md](./CHEATSHEET.md) - Common commands
+3. ✅ Makefile in backend
+
+### "Saya mau contribute"
+
+1. ✅ [CONTRIBUTING.md](./CONTRIBUTING.md) - Contribution guidelines
+2. ✅ [DEVELOPMENT.md](./DEVELOPMENT.md) - Code standards
+3. ✅ [.github/copilot-instructions.md](./.github/copilot-instructions.md) - AI patterns
+
 ### "Saya stuck/ada error"
 
 1. ✅ [CHEATSHEET.md](./CHEATSHEET.md) - Common errors
@@ -85,8 +137,15 @@
 ### "Saya mau kerja dengan AI"
 
 1. ✅ [CONTEXT.md](./CONTEXT.md) - AI rules & guidelines
-2. ✅ Open file yang relevan di workspace
-3. ✅ Ask dengan context yang jelas
+2. ✅ [.github/copilot-instructions.md](./.github/copilot-instructions.md) - Comprehensive AI dev guide
+3. ✅ Open file yang relevan di workspace
+4. ✅ Ask dengan context yang jelas
+
+### "Saya mau review security"
+
+1. ✅ [SECURITY_AUDIT.md](./SECURITY_AUDIT.md) - Security analysis
+2. ✅ [SECURITY_CHECKLIST.md](./SECURITY_CHECKLIST.md) - Implementation checklist
+3. ✅ [DEVELOPMENT.md](./DEVELOPMENT.md) - Security best practices
 
 ---
 
@@ -209,17 +268,25 @@ Content with code examples
 
 ## 🎯 Quick Reference Table
 
-| Need                 | Documentation                      |
-| -------------------- | ---------------------------------- |
-| Project overview     | [README.md](./README.md)           |
-| Setup instructions   | [QUICKSTART.md](./QUICKSTART.md)   |
-| AI guidelines        | [CONTEXT.md](./CONTEXT.md)         |
-| Coding standards     | [DEVELOPMENT.md](./DEVELOPMENT.md) |
-| Folder structure     | [STRUCTURE.md](./STRUCTURE.md)     |
-| API endpoints        | [API_SPEC.md](./API_SPEC.md)       |
-| Database schema      | [DATABASE.md](./DATABASE.md)       |
-| Development timeline | [ROADMAP.md](./ROADMAP.md)         |
-| Quick commands       | [CHEATSHEET.md](./CHEATSHEET.md)   |
+| Need                          | Documentation                                                                  |
+| ----------------------------- | ------------------------------------------------------------------------------ |
+| Project overview              | [README.md](./README.md)                                                       |
+| Setup instructions            | [QUICKSTART.md](./QUICKSTART.md)                                               |
+| AI guidelines                 | [CONTEXT.md](./CONTEXT.md)                                                     |
+| AI development (comprehensive)| [.github/copilot-instructions.md](./.github/copilot-instructions.md)           |
+| Coding standards              | [DEVELOPMENT.md](./DEVELOPMENT.md)                                             |
+| Folder structure              | [STRUCTURE.md](./STRUCTURE.md)                                                 |
+| API endpoints (complete)      | [API_SPEC.md](./API_SPEC.md)                                                   |
+| API endpoints (quick ref)     | [API_QUICK_REFERENCE.md](./API_QUICK_REFERENCE.md)                             |
+| Frontend API usage            | [FRONTEND_API_GUIDE.md](./FRONTEND_API_GUIDE.md)                               |
+| Route protection              | [PRIVATE_ROUTES.md](./PRIVATE_ROUTES.md)                                       |
+| Database schema               | [DATABASE.md](./DATABASE.md)                                                   |
+| Development timeline          | [ROADMAP.md](./ROADMAP.md)                                                     |
+| Quick commands                | [CHEATSHEET.md](./CHEATSHEET.md)                                               |
+| Scripts & automation          | [SCRIPTS.md](./SCRIPTS.md)                                                     |
+| Security audit                | [SECURITY_AUDIT.md](./SECURITY_AUDIT.md)                                       |
+| Security checklist            | [SECURITY_CHECKLIST.md](./SECURITY_CHECKLIST.md)                               |
+| Contributing                  | [CONTRIBUTING.md](./CONTRIBUTING.md)                                           |
 
 ---
 
@@ -300,10 +367,26 @@ Sebelum mulai development, pastikan Anda sudah:
 │   ├── STRUCTURE.md
 │   └── CHEATSHEET.md
 │
-└── 📊 Technical
-    ├── API_SPEC.md
-    ├── DATABASE.md
-    └── ROADMAP.md
+├── 📊 Technical
+│   ├── API_SPEC.md
+│   ├── API_QUICK_REFERENCE.md
+│   ├── DATABASE.md
+│   └── ROADMAP.md
+│
+├── 🌐 Frontend
+│   ├── FRONTEND_API_GUIDE.md
+│   └── PRIVATE_ROUTES.md
+│
+├── 🛡️ Security
+│   ├── SECURITY_AUDIT.md
+│   └── SECURITY_CHECKLIST.md
+│
+├── 🤝 Contributing
+│   ├── CONTRIBUTING.md
+│   └── SCRIPTS.md
+│
+└── 🤖 AI Development
+    └── .github/copilot-instructions.md
 ```
 
 ---
@@ -325,4 +408,4 @@ Anda sudah siap untuk mulai development!
 ---
 
 **Last Updated**: November 3, 2025  
-**Documentation Version**: 1.0.0
+**Documentation Version**: 1.1.0
