@@ -23,6 +23,9 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingScreen } from "@/components/common";
+import { ROUTES, DIFFICULTY_LABELS, DIFFICULTY_COLORS } from "@/lib/constants";
+import { formatCurrency } from "@/lib/utils";
 import {
   useCourse,
   useCourseLessons,
@@ -68,44 +71,9 @@ export default function CourseDetailPage({ params }: PageProps) {
   const unenrollCourse = useUnenrollCourse();
   const [enrollError, setEnrollError] = useState("");
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case "beginner":
-        return "bg-green-100 text-green-800";
-      case "intermediate":
-        return "bg-yellow-100 text-yellow-800";
-      case "advanced":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getDifficultyText = (difficulty: string) => {
-    switch (difficulty) {
-      case "beginner":
-        return "Pemula";
-      case "intermediate":
-        return "Menengah";
-      case "advanced":
-        return "Lanjutan";
-      default:
-        return difficulty;
-    }
-  };
-
-  const formatPrice = (price: number) => {
-    if (price === 0) return "Gratis";
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(price);
-  };
-
   const handleEnroll = async () => {
     if (!isAuthenticated) {
-      router.push("/login");
+      router.push(ROUTES.LOGIN);
       return;
     }
 
@@ -146,28 +114,7 @@ export default function CourseDetailPage({ params }: PageProps) {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white border-b">
-          <div className="container mx-auto px-4 py-6">
-            <Skeleton className="h-8 w-32 mb-4" />
-            <Skeleton className="h-12 w-3/4 mb-4" />
-            <Skeleton className="h-6 w-full max-w-2xl" />
-          </div>
-        </div>
-        <div className="container mx-auto px-4 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-6">
-              <Skeleton className="h-64 w-full" />
-              <Skeleton className="h-48 w-full" />
-            </div>
-            <div>
-              <Skeleton className="h-96 w-full" />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message="Memuat detail kursus..." />;
   }
 
   if (error || !course) {
@@ -181,7 +128,7 @@ export default function CourseDetailPage({ params }: PageProps) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Link href="/courses">
+            <Link href={ROUTES.COURSES}>
               <Button className="w-full">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Kembali ke Kursus
@@ -199,7 +146,7 @@ export default function CourseDetailPage({ params }: PageProps) {
       <div className="bg-gradient-to-r from-orange-600 to-orange-700 text-white">
         <div className="container mx-auto px-4 py-8">
           <Link
-            href="/courses"
+            href={ROUTES.COURSES}
             className="inline-flex items-center text-orange-100 hover:text-white mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -209,8 +156,8 @@ export default function CourseDetailPage({ params }: PageProps) {
           <div className="flex items-start justify-between gap-6">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-3 flex-wrap">
-                <Badge className={getDifficultyColor(course.difficulty)}>
-                  {getDifficultyText(course.difficulty)}
+                <Badge className={DIFFICULTY_COLORS[course.difficulty as keyof typeof DIFFICULTY_COLORS] || DIFFICULTY_COLORS.beginner}>
+                  {DIFFICULTY_LABELS[course.difficulty as keyof typeof DIFFICULTY_LABELS] || course.difficulty}
                 </Badge>
                 <Badge
                   variant="outline"
@@ -242,7 +189,7 @@ export default function CourseDetailPage({ params }: PageProps) {
                 <div className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5" />
                   <span className="text-2xl font-bold">
-                    {formatPrice(course.price)}
+                    {formatCurrency(course.price)}
                   </span>
                 </div>
               </div>
@@ -489,7 +436,7 @@ export default function CourseDetailPage({ params }: PageProps) {
               )}
               <CardHeader>
                 <div className="text-3xl font-bold text-orange-600">
-                  {formatPrice(course.price)}
+                  {formatCurrency(course.price)}
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -592,8 +539,8 @@ export default function CourseDetailPage({ params }: PageProps) {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600">Tingkat Kesulitan</span>
-                    <Badge className={getDifficultyColor(course.difficulty)}>
-                      {getDifficultyText(course.difficulty)}
+                    <Badge className={DIFFICULTY_COLORS[course.difficulty as keyof typeof DIFFICULTY_COLORS] || DIFFICULTY_COLORS.beginner}>
+                      {DIFFICULTY_LABELS[course.difficulty as keyof typeof DIFFICULTY_LABELS] || course.difficulty}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
@@ -608,14 +555,14 @@ export default function CourseDetailPage({ params }: PageProps) {
                   <Alert>
                     <AlertDescription className="text-sm">
                       <Link
-                        href="/login"
+                        href={ROUTES.LOGIN}
                         className="text-blue-600 hover:underline"
                       >
                         Masuk
                       </Link>{" "}
                       atau{" "}
                       <Link
-                        href="/register"
+                        href={ROUTES.REGISTER}
                         className="text-blue-600 hover:underline"
                       >
                         buat akun
