@@ -1,0 +1,53 @@
+#!/bin/sh
+# Pre-commit hook untuk quality checks
+
+echo "🔍 Running pre-commit checks..."
+
+# 1. Check for TODO/FIXME in staged files
+echo "📝 Checking for TODO/FIXME..."
+git diff --cached --name-only | xargs grep -l "TODO\|FIXME\|XXX" && {
+    echo "⚠️  Warning: Found TODO/FIXME in staged files"
+    echo "   Consider addressing them before committing"
+    # Don't fail, just warn
+}
+
+# 2. Run linter for frontend files
+echo "🎨 Checking frontend code..."
+git diff --cached --name-only | grep -E '\.(ts|tsx|js|jsx)$' | grep 'tempaskill-fe' && {
+    cd tempaskill-fe
+    yarn lint --fix
+    cd ..
+} || echo "   No frontend files changed"
+
+# 3. Run Go fmt for backend files
+echo "🔧 Formatting backend code..."
+git diff --cached --name-only | grep -E '\.go$' | grep 'tempaskill-be' && {
+    cd tempaskill-be
+    go fmt ./...
+    cd ..
+} || echo "   No backend files changed"
+
+# 4. Check for secrets/credentials
+echo "🔒 Checking for credentials..."
+git diff --cached --name-only | xargs grep -E '(password|secret|api[_-]?key|token).*=.*["\'][^"\']+["\']' && {
+    echo "❌ ERROR: Potential credentials found in staged files!"
+    echo "   Please remove sensitive data before committing"
+    exit 1
+} || echo "   ✅ No credentials detected"
+
+# 5. Check for large files
+echo "📦 Checking file sizes..."
+for file in $(git diff --cached --name-only); do
+    if [ -f "$file" ]; then
+        size=$(wc -c < "$file")
+        if [ $size -gt 1048576 ]; then  # 1MB
+            echo "❌ ERROR: File $file is larger than 1MB ($size bytes)"
+            echo "   Large files should not be committed to Git"
+            exit 1
+        fi
+    fi
+done
+echo "   ✅ All files are reasonable size"
+
+echo "✅ Pre-commit checks passed!"
+exit 0
