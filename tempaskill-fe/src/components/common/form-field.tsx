@@ -1,5 +1,12 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import React from "react";
@@ -124,6 +131,82 @@ export function TextareaField({
         {...register(name)}
         {...props}
       />
+      {description && !error && (
+        <p className="text-sm text-gray-500">{description}</p>
+      )}
+      {error && <p className="text-sm text-red-600">{error}</p>}
+    </div>
+  );
+}
+
+interface SelectFieldProps {
+  name: string;
+  label: string;
+  description?: string;
+  placeholder?: string;
+  options: { value: string; label: string }[];
+  className?: string;
+}
+
+/**
+ * Reusable select field component with integrated validation
+ * Automatically connects to React Hook Form context
+ *
+ * @example
+ * ```tsx
+ * <SelectField
+ *   name="category"
+ *   label="Kategori"
+ *   options={[
+ *     { value: "web", label: "Web Development" },
+ *     { value: "mobile", label: "Mobile Development" }
+ *   ]}
+ * />
+ * ```
+ */
+export function SelectField({
+  name,
+  label,
+  description,
+  placeholder = "Pilih...",
+  options,
+  className,
+}: SelectFieldProps) {
+  const {
+    setValue,
+    watch,
+    formState: { errors },
+  } = useFormContext();
+
+  const error = errors[name]?.message as string | undefined;
+  const value = watch(name);
+
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={name} className={error ? "text-red-600" : ""}>
+        {label}
+      </Label>
+      <Select
+        value={value}
+        onValueChange={(newValue) => setValue(name, newValue)}
+      >
+        <SelectTrigger
+          id={name}
+          className={cn(
+            error && "border-red-500 focus-visible:ring-red-500",
+            className
+          )}
+        >
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
       {description && !error && (
         <p className="text-sm text-gray-500">{description}</p>
       )}
