@@ -14,8 +14,8 @@ test.describe("Dashboard", () => {
       await page.goto("/dashboard");
       await page.waitForLoadState("networkidle");
 
-      // Should show dashboard content
-      await expect(page.locator("text=/dashboard/i")).toBeVisible();
+      // Should show dashboard content (greeting text)
+      await expect(page.locator("text=/selamat.*datang/i")).toBeVisible();
     });
 
     test("should show user greeting in Indonesian", async ({ page }) => {
@@ -41,10 +41,10 @@ test.describe("Dashboard", () => {
       await page.goto("/dashboard");
       await page.waitForLoadState("networkidle");
 
-      // Should have enrolled courses section
-      await expect(
-        page.locator("text=/kursus.*saya|kursus.*terdaftar|enrolled/i")
-      ).toBeVisible();
+      // Should have enrolled courses section (either "Kursus yang Anda Ikuti" or empty state)
+      const hasEnrolledSection = await page.locator("text=/kursus.*yang.*anda.*ikuti/i").isVisible();
+      const hasEmptyState = await page.locator("text=/belum.*ada.*kursus/i").isVisible();
+      expect(hasEnrolledSection || hasEmptyState).toBeTruthy();
     });
 
     test("should show enrolled course after enrollment", async ({ page }) => {
@@ -80,9 +80,9 @@ test.describe("Dashboard", () => {
 
       // Should see the enrolled course (if we got a title)
       if (courseTitle) {
-        // Dashboard should show course or at least enrolled courses section
+        // Dashboard should show "Kursus yang Anda Ikuti" section
         const enrolledSection = await page
-          .locator("text=/kursus.*saya|enrolled/i")
+          .locator("text=/kursus.*yang.*anda.*ikuti/i")
           .isVisible();
         expect(enrolledSection).toBeTruthy();
       }

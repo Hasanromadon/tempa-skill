@@ -147,40 +147,48 @@ func (s *service) GetCourseProgress(ctx context.Context, userID, courseID uint) 
 
 // GetUserProgress gets progress summary for all enrolled courses
 func (s *service) GetUserProgress(ctx context.Context, userID uint) (*UserProgressSummary, error) {
-	// Get all courses (we'll need to filter by enrollment)
-	// This is a simplified approach - in production, you might want a dedicated query
+	// Get ALL enrollments first (source of truth)
+	enrollments, err := s.courseRepo.GetUserEnrollments(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get all progress data
 	allProgress, err := s.repo.GetUserProgress(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Group progress by course
+	// Group progress by course for easy lookup
 	courseProgressMap := make(map[uint][]*LessonProgress)
 	for _, p := range allProgress {
 		courseProgressMap[p.CourseID] = append(courseProgressMap[p.CourseID], p)
 	}
 
-	// Get details for each course
+	// Build summaries for all enrolled courses
 	courseSummaries := make([]*CourseProgressSummary, 0)
-	totalEnrolled := 0
+	totalEnrolled := len(enrollments)
 	totalCompleted := 0
 	totalInProgress := 0
 
-	// We need to get enrolled courses
-	// For now, we'll iterate through the courses that have progress
-	for courseID, progressList := range courseProgressMap {
-		course, err := s.courseRepo.FindCourseByID(ctx, courseID)
+	// Iterate through enrollments (not progress!)
+	for _, enrollment := range enrollments {
+		course, err := s.courseRepo.FindCourseByID(ctx, enrollment.CourseID)
 		if err != nil {
 			continue // Skip if course not found
 		}
 
 		// Get total lessons for this course
-		totalLessons, err := s.courseRepo.CountLessonsByCourseID(ctx, courseID)
+		totalLessons, err := s.courseRepo.CountLessonsByCourseID(ctx, enrollment.CourseID)
 		if err != nil {
 			continue
 		}
 
+		// Get progress for this course (may be empty)
+		progressList := courseProgressMap[enrollment.CourseID]
 		completedLessons := len(progressList)
+
+		// Calculate percentage
 		percentage := 0.0
 		if totalLessons > 0 {
 			percentage = float64(completedLessons) / float64(totalLessons) * 100
@@ -208,18 +216,25 @@ func (s *service) GetUserProgress(ctx context.Context, userID uint) (*UserProgre
 			lastAccessed = &progressList[0].CompletedAt
 		}
 
-		totalEnrolled++
+		isCompleted := status == "completed"
 
 		courseSummaries = append(courseSummaries, &CourseProgressSummary{
-			CourseID:         courseID,
-			Title:            course.Title,
-			ThumbnailURL:     &course.ThumbnailURL,
-			Percentage:       percentage,
-			CompletedLessons: completedLessons,
-			TotalLessons:     totalLessons,
-			LastAccessed:     lastAccessed,
-			Status:           status,
-			CompletedAt:      completedAt,
+			CourseID:           enrollment.CourseID,
+			Title:              course.Title,
+			Slug:               course.Slug,
+			CourseTitle:        course.Title,        // Alias for frontend
+			CourseSlug:         course.Slug,         // Alias for frontend
+			ThumbnailURL:       &course.ThumbnailURL,
+			Percentage:         percentage,
+			ProgressPercentage: percentage,          // Alias for frontend
+			CompletedLessons:   completedLessons,
+			TotalLessons:       totalLessons,
+			LastAccessed:       lastAccessed,
+			LastActivity:       lastAccessed,        // Alias for frontend
+			Status:             status,
+			IsCompleted:        isCompleted,         // Computed field
+			CompletedAt:        completedAt,
+			EnrolledAt:         &enrollment.EnrolledAt,
 		})
 	}
 

@@ -32,13 +32,20 @@ type UserProgressSummary struct {
 
 // CourseProgressSummary represents a course in the user's progress list
 type CourseProgressSummary struct {
-	CourseID         uint       `json:"course_id"`
-	Title            string     `json:"title"`
-	ThumbnailURL     *string    `json:"thumbnail_url"`
-	Percentage       float64    `json:"percentage"`
-	CompletedLessons int        `json:"completed_lessons"`
-	TotalLessons     int        `json:"total_lessons"`
-	LastAccessed     *time.Time `json:"last_accessed"`
-	Status           string     `json:"status"` // "not_started", "in_progress", "completed"
-	CompletedAt      *time.Time `json:"completed_at,omitempty"`
+	CourseID           uint       `json:"course_id"`
+	Title              string     `json:"title"`
+	Slug               string     `json:"slug"`                 // Add slug for frontend navigation
+	CourseTitle        string     `json:"course_title"`         // Alias for frontend compatibility
+	CourseSlug         string     `json:"course_slug"`          // Alias for frontend compatibility
+	ThumbnailURL       *string    `json:"thumbnail_url"`
+	Percentage         float64    `json:"percentage"`
+	ProgressPercentage float64    `json:"progress_percentage"`  // Alias for frontend compatibility
+	CompletedLessons   int        `json:"completed_lessons"`
+	TotalLessons       int        `json:"total_lessons"`
+	LastAccessed       *time.Time `json:"last_accessed"`
+	LastActivity       *time.Time `json:"last_activity"`        // Alias for frontend compatibility
+	Status             string     `json:"status"`               // "not_started", "in_progress", "completed"
+	IsCompleted        bool       `json:"is_completed"`         // Computed from status
+	CompletedAt        *time.Time `json:"completed_at,omitempty"`
+	EnrolledAt         *time.Time `json:"enrolled_at,omitempty"` // Add enrolled_at timestamp
 }

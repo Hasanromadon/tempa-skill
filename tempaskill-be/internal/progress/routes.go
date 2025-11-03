@@ -24,4 +24,11 @@ func RegisterRoutes(router *gin.RouterGroup, handler *Handler, authMiddleware *m
 	{
 		users.GET("/me/progress", handler.GetUserProgress)
 	}
+
+	// Alias route for frontend compatibility
+	progress := router.Group("/progress")
+	progress.Use(authMiddleware.RequireAuth())
+	{
+		progress.GET("/me", handler.GetUserProgress) // Alias for /users/me/progress
+	}
 }

@@ -35,6 +35,7 @@ type Repository interface {
 	FindEnrollment(ctx context.Context, userID, courseID uint) (*Enrollment, error)
 	DeleteEnrollment(ctx context.Context, userID, courseID uint) error
 	IsUserEnrolled(ctx context.Context, userID, courseID uint) (bool, error)
+	GetUserEnrollments(ctx context.Context, userID uint) ([]*Enrollment, error) // New method
 }
 
 type repository struct {
@@ -365,4 +366,16 @@ func (r *repository) IsUserEnrolled(ctx context.Context, userID, courseID uint) 
 		return false, err
 	}
 	return count > 0, nil
+}
+
+// GetUserEnrollments gets all enrollments for a user
+func (r *repository) GetUserEnrollments(ctx context.Context, userID uint) ([]*Enrollment, error) {
+	var enrollments []*Enrollment
+	if err := r.db.WithContext(ctx).
+		Where("user_id = ?", userID).
+		Order("enrolled_at DESC").
+		Find(&enrollments).Error; err != nil {
+		return nil, err
+	}
+	return enrollments, nil
 }
