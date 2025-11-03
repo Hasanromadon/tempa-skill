@@ -1,6 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
 import apiClient from "@/lib/api-client";
+import { API_ENDPOINTS } from "@/lib/constants";
 import type { ApiResponse, Lesson } from "@/types/api";
+import { useQuery } from "@tanstack/react-query";
 
 // Get lessons for a course
 export const useCourseLessons = (courseId: number) => {
@@ -8,7 +9,7 @@ export const useCourseLessons = (courseId: number) => {
     queryKey: ["lessons", courseId],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<Lesson[]>>(
-        `/courses/${courseId}/lessons`
+        API_ENDPOINTS.COURSES.LESSONS(courseId)
       );
       return response.data.data || [];
     },
@@ -23,7 +24,7 @@ export const useLesson = (lessonId: number) => {
     queryKey: ["lesson", lessonId],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<Lesson>>(
-        `/lessons/${lessonId}`
+        API_ENDPOINTS.LESSONS.DETAIL(lessonId)
       );
       return response.data.data;
     },

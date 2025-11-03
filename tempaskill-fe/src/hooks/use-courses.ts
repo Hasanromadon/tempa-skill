@@ -1,4 +1,5 @@
 import apiClient from "@/lib/api-client";
+import { API_ENDPOINTS } from "@/lib/constants";
 import type {
   ApiResponse,
   Course,
@@ -13,7 +14,7 @@ export const useCourses = (params?: CourseListQuery) => {
     queryKey: ["courses", params],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<CourseListResponse>>(
-        "/courses",
+        API_ENDPOINTS.COURSES.LIST,
         { params }
       );
       return response.data.data;
@@ -28,7 +29,7 @@ export const useCourse = (slug: string) => {
     queryKey: ["course", slug],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<Course>>(
-        `/courses/slug/${slug}`
+        API_ENDPOINTS.COURSES.DETAIL(slug)
       );
       return response.data.data;
     },
@@ -42,7 +43,7 @@ export const useCourseById = (id: number) => {
     queryKey: ["course", id],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<Course>>(
-        `/courses/${id}`
+        API_ENDPOINTS.COURSES.BY_ID(id)
       );
       return response.data.data;
     },
@@ -58,7 +59,7 @@ export const useEnrollCourse = () => {
     mutationFn: async (courseId: number) => {
       const response = await apiClient.post<
         ApiResponse<{ enrollment: unknown }>
-      >(`/courses/${courseId}/enroll`);
+      >(API_ENDPOINTS.COURSES.ENROLL(courseId));
       return response.data;
     },
     onSuccess: () => {
@@ -78,7 +79,7 @@ export const useUnenrollCourse = () => {
   return useMutation({
     mutationFn: async (courseId: number) => {
       const response = await apiClient.delete<ApiResponse<{ message: string }>>(
-        `/courses/${courseId}/enroll`
+        API_ENDPOINTS.COURSES.ENROLL(courseId)
       );
       return response.data;
     },

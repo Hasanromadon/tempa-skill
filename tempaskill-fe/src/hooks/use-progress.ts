@@ -1,4 +1,5 @@
 import apiClient from "@/lib/api-client";
+import { API_ENDPOINTS } from "@/lib/constants";
 import type {
   ApiResponse,
   CourseProgress,
@@ -12,7 +13,7 @@ export const useCourseProgress = (courseId: number) => {
     queryKey: ["courseProgress", courseId],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<CourseProgress>>(
-        `/progress/courses/${courseId}`
+        API_ENDPOINTS.PROGRESS.COURSE(courseId)
       );
       return response.data.data;
     },
@@ -26,7 +27,7 @@ export const useUserProgress = () => {
     queryKey: ["userProgress"],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<UserProgressSummary>>(
-        "/progress/me"
+        API_ENDPOINTS.PROGRESS.USER
       );
       // Backend returns { data: { courses: [...] } }
       // Extract the courses array
@@ -49,7 +50,9 @@ export const useMarkLessonComplete = () => {
     }) => {
       const response = await apiClient.post<
         ApiResponse<{ lesson_progress: unknown }>
-      >(`/progress/lessons/${lessonId}/complete`, { course_id: courseId });
+      >(API_ENDPOINTS.PROGRESS.COMPLETE_LESSON(lessonId), {
+        course_id: courseId,
+      });
       return response.data;
     },
     onMutate: async ({ lessonId, courseId }) => {

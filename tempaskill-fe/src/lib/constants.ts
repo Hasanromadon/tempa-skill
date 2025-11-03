@@ -20,25 +20,31 @@ export const ROUTES = {
 // API Endpoints
 export const API_ENDPOINTS = {
   AUTH: {
-    LOGIN: "/login",
-    REGISTER: "/register",
-    LOGOUT: "/logout",
-    ME: "/me",
+    LOGIN: "/auth/login",
+    REGISTER: "/auth/register",
+    LOGOUT: "/auth/logout",
+    ME: "/auth/me",
   },
   COURSES: {
     LIST: "/courses",
     DETAIL: (slug: string) => `/courses/slug/${slug}`,
+    BY_ID: (id: number) => `/courses/${id}`,
     ENROLL: (id: number) => `/courses/${id}/enroll`,
-    MY_COURSES: "/me/courses",
+    LESSONS: (id: number) => `/courses/${id}/lessons`,
   },
   LESSONS: {
     DETAIL: (id: number) => `/lessons/${id}`,
-    COMPLETE: (id: number) => `/lessons/${id}/complete`,
-    CONTENT: (id: number) => `/lessons/${id}/content`,
   },
   PROGRESS: {
     COURSE: (courseId: number) => `/progress/courses/${courseId}`,
-    UPDATE: "/progress",
+    USER: "/progress/me",
+    COMPLETE_LESSON: (lessonId: number) =>
+      `/progress/lessons/${lessonId}/complete`,
+  },
+  USERS: {
+    DETAIL: (id: number) => `/users/${id}`,
+    UPDATE_PROFILE: "/users/me",
+    CHANGE_PASSWORD: "/users/me/password",
   },
 } as const;
 

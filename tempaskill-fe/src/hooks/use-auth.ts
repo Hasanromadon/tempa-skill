@@ -1,6 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import apiClient from "@/lib/api-client";
-import { setAuthToken, removeAuthToken, getAuthToken } from "@/lib/auth-token";
+import { getAuthToken, removeAuthToken, setAuthToken } from "@/lib/auth-token";
+import { API_ENDPOINTS } from "@/lib/constants";
 import type {
   ApiResponse,
   AuthResponse,
@@ -8,6 +8,7 @@ import type {
   RegisterRequest,
   User,
 } from "@/types/api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 // Register mutation
 export const useRegister = () => {
@@ -16,7 +17,7 @@ export const useRegister = () => {
   return useMutation({
     mutationFn: async (data: RegisterRequest) => {
       const response = await apiClient.post<ApiResponse<AuthResponse>>(
-        "/auth/register",
+        API_ENDPOINTS.AUTH.REGISTER,
         data
       );
       return response.data;
@@ -37,7 +38,7 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: async (data: LoginRequest) => {
       const response = await apiClient.post<ApiResponse<AuthResponse>>(
-        "/auth/login",
+        API_ENDPOINTS.AUTH.LOGIN,
         data
       );
       return response.data;
@@ -71,7 +72,9 @@ export const useCurrentUser = () => {
       const token = getAuthToken();
       if (!token) return null;
 
-      const response = await apiClient.get<ApiResponse<User>>("/auth/me");
+      const response = await apiClient.get<ApiResponse<User>>(
+        API_ENDPOINTS.AUTH.ME
+      );
       return response.data.data || null;
     },
     retry: false,
