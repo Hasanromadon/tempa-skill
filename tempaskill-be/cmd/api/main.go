@@ -10,8 +10,10 @@ import (
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/course"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/middleware"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/progress"
+	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/upload"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/user"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/database"
+	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/firebase"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/logger"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/response"
 	"github.com/gin-gonic/gin"
@@ -40,6 +42,12 @@ func main() {
 	if err := database.ConnectDB(cfg); err != nil {
 		logger.Fatal("Failed to connect to database", zap.Error(err))
 	}
+
+	// Initialize Firebase
+	if err := firebase.InitializeFirebase(); err != nil {
+		logger.Fatal("Failed to initialize Firebase", zap.Error(err))
+	}
+	logger.Info("Firebase initialized successfully")
 
 	// Auto-migrate database models
 	db := database.GetDB()
@@ -145,6 +153,13 @@ func main() {
 
 		// Register progress routes
 		progress.RegisterRoutes(v1, progressHandler, authMiddleware)
+
+		// Initialize upload module
+		uploadService := upload.NewService()
+		uploadHandler := upload.NewHandler(uploadService)
+
+		// Register upload routes
+		upload.RegisterRoutes(v1, uploadHandler, authMiddleware)
 	}
 
 	// Start server

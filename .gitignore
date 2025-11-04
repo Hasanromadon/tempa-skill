@@ -121,3 +121,8 @@ temp/
 *.pem
 *.key
 *.crt
+
+# Firebase
+# DO NOT commit Firebase service account JSON files (contains private keys)
+*-firebase-adminsdk-*.json
+tempaskill-be/ngecis-4035d-firebase-adminsdk-fbsvc-b062d03ee9.json
