@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { login } from "./helpers/test-helpers";
+import { loginAdmin } from "./helpers/test-helpers";
 
 /**
  * E2E Tests for Admin CRUD Operations
@@ -17,8 +17,8 @@ test.describe("Admin CRUD Operations", () => {
 
   test.beforeEach(async ({ page }) => {
     // Login as admin before each test
-    await login(page, ADMIN_EMAIL, ADMIN_PASSWORD);
-    await page.waitForTimeout(1000);
+    await loginAdmin(page, ADMIN_EMAIL, ADMIN_PASSWORD);
+    await page.waitForTimeout(500);
   });
 
   test.describe("Course CRUD", () => {
@@ -155,7 +155,6 @@ test.describe("Admin CRUD Operations", () => {
         // Verify course is removed
         await expect(page.locator(`text=${courseTitle}`)).not.toBeVisible();
       }
-    });
     });
   });
 

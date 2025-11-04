@@ -10,8 +10,22 @@ export async function login(page: Page, email: string, password: string) {
   await page.click('button[type="submit"]');
 
   // Wait for navigation to complete
-  await page.waitForURL(/\/(dashboard|courses)/, { timeout: 60000 });
+  await page.waitForURL(/\/(dashboard|courses)/, { timeout: 10000 });
 }
+
+/**
+ * Test helper untuk login admin
+ */
+export async function loginAdmin(page: Page, email: string, password: string) {
+  await page.goto("/login");
+  await page.fill('input[id="email"]', email);
+  await page.fill('input[id="password"]', password);
+  await page.click('button[type="submit"]');
+
+  // Admin redirects to /admin/dashboard or /admin/courses
+  await page.waitForURL(/\/admin\/(dashboard|courses)/, { timeout: 10000 });
+}
+
 /**
  * Test helper untuk register user baru
  */
