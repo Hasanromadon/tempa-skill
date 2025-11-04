@@ -1,28 +1,8 @@
 "use client";
 
-import { use, useState } from "react";
-import Link from "next/link";
-import { useCourseById } from "@/hooks/use-courses";
-import { useCourseLessons, useDeleteLesson } from "@/hooks/use-lessons";
-import { ROUTES } from "@/lib/constants";
-import { PageHeader } from "@/components/common/page-header";
 import { LoadingScreen } from "@/components/common/loading-screen";
-import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { PageHeader } from "@/components/common/page-header";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,19 +14,39 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import {
-  Plus,
-  MoreVertical,
-  Edit,
-  Trash2,
-  Clock,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useCourseById } from "@/hooks/use-courses";
+import { useCourseLessons, useDeleteLesson } from "@/hooks/use-lessons";
+import { ROUTES } from "@/lib/constants";
+import {
   AlertCircle,
   BookOpen,
+  Clock,
+  Edit,
   Eye,
   EyeOff,
+  MoreVertical,
+  Plus,
+  Trash2,
 } from "lucide-react";
+import Link from "next/link";
+import { use, useState } from "react";
+import { toast } from "sonner";
 
 interface PageProps {
   params: Promise<{ id: string }>;
