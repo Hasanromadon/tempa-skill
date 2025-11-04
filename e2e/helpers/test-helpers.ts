@@ -33,8 +33,11 @@ export async function loginAdmin(page: Page, email: string, password: string) {
   ]);
 
   // Check if login was successful
-  if (response.status() !== 200) {
-    throw new Error(`Login failed with status ${response.status()}: ${await response.text()}`);
+  const status = response.status();
+  if (status !== 200) {
+    console.error(`Login failed with status ${status}`);
+    console.error(`Response URL: ${response.url()}`);
+    throw new Error(`Admin login failed with status ${status}. Check if admin user exists and backend is running.`);
   }
 
   // Wait for redirect to admin area
