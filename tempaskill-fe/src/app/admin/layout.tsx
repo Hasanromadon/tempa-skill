@@ -13,7 +13,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { useIsAuthenticated } from "@/hooks";
+import { useIsAdmin, useIsAuthenticated } from "@/hooks/use-auth";
 import { removeAuthToken } from "@/lib/auth-token";
 import { ROUTES } from "@/lib/constants";
 import {
@@ -60,15 +60,29 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { isAuthenticated, isLoading, user } = useIsAuthenticated();
+  const { isAuthenticated, isLoading: authLoading } = useIsAuthenticated();
+  const { isAdmin, isLoading: roleLoading, user } = useIsAdmin();
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
+  const isLoading = authLoading || roleLoading;
+
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push(ROUTES.LOGIN);
+    if (!isLoading) {
+      // Redirect to login if not authenticated
+      if (!isAuthenticated) {
+        router.push(ROUTES.LOGIN);
+        return;
+      }
+
+      // Redirect to dashboard if authenticated but not admin/instructor
+      if (!isAdmin) {
+        toast.error("Akses Ditolak", {
+          description: "Anda tidak memiliki akses ke panel admin.",
+        });
+        router.push(ROUTES.DASHBOARD);
+      }
     }
-    // TODO: Add role check - redirect if not admin/instructor
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isAdmin, isLoading, router]);
 
   const handleLogout = () => {
     removeAuthToken();

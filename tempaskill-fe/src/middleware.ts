@@ -1,8 +1,11 @@
-import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // Protected routes that require authentication
 const protectedRoutes = ["/dashboard", "/profile"];
+
+// Admin routes that require admin or instructor role
+const adminRoutes = ["/admin"];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -12,13 +15,16 @@ export function middleware(request: NextRequest) {
     pathname.startsWith(route)
   );
 
-  // Get token from localStorage (stored in cookie for SSR)
+  // Check if the route is admin route
+  const isAdminRoute = adminRoutes.some((route) => pathname.startsWith(route));
+
+  // Get token from cookie
   const token =
     request.cookies.get("auth_token")?.value ||
     request.headers.get("authorization")?.replace("Bearer ", "");
 
   // Redirect to login if accessing protected route without token
-  if (isProtectedRoute && !token) {
+  if ((isProtectedRoute || isAdminRoute) && !token) {
     const loginUrl = new URL("/login", request.url);
     // Store the original URL to redirect back after login
     loginUrl.searchParams.set("redirect", pathname);
@@ -29,6 +35,9 @@ export function middleware(request: NextRequest) {
   if ((pathname === "/login" || pathname === "/register") && token) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
+
+  // Note: Role-based authorization is handled client-side in AdminLayout
+  // Server-side role check would require decoding JWT here
 
   return NextResponse.next();
 }

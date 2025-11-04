@@ -1,16 +1,16 @@
 "use client";
 
-import { use, useState } from "react";
-import { useRouter } from "next/navigation";
+import { LoadingScreen } from "@/components/common/loading-screen";
+import { PageHeader } from "@/components/common/page-header";
+import { LessonForm } from "@/components/lesson";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useCourseById } from "@/hooks/use-courses";
 import { useLesson, useUpdateLesson } from "@/hooks/use-lessons";
 import { ROUTES } from "@/lib/constants";
-import { PageHeader } from "@/components/common/page-header";
-import { LoadingScreen } from "@/components/common/loading-screen";
-import { LessonForm } from "@/components/lesson";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { toast } from "sonner";
 import { AlertCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { use, useState } from "react";
+import { toast } from "sonner";
 
 interface PageProps {
   params: Promise<{ courseId: string; lessonId: string }>;
@@ -23,10 +23,12 @@ export default function EditLessonPage({ params }: PageProps) {
   const router = useRouter();
 
   // Fetch course and lesson
-  const { data: course, isLoading: courseLoading } =
-    useCourseById(courseIdNum);
-  const { data: lesson, isLoading: lessonLoading, error: fetchError } =
-    useLesson(lessonIdNum);
+  const { data: course, isLoading: courseLoading } = useCourseById(courseIdNum);
+  const {
+    data: lesson,
+    isLoading: lessonLoading,
+    error: fetchError,
+  } = useLesson(lessonIdNum);
 
   // Mutations
   const updateLesson = useUpdateLesson();
@@ -41,10 +43,7 @@ export default function EditLessonPage({ params }: PageProps) {
   if (!course || fetchError || !lesson) {
     return (
       <div className="space-y-6">
-        <PageHeader
-          title="Edit Pelajaran"
-          backHref={ROUTES.ADMIN.COURSES}
-        />
+        <PageHeader title="Edit Pelajaran" backHref={ROUTES.ADMIN.COURSES} />
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
