@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { useDropzone } from "react-dropzone";
-import { Upload, X, ImageIcon, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import apiClient from "@/lib/api-client";
 import { API_ENDPOINTS } from "@/lib/constants";
+import { ImageIcon, Loader2, Upload, X } from "lucide-react";
+import { useCallback, useState } from "react";
+import { useDropzone } from "react-dropzone";
 
 interface ImageUploadProps {
   folder?: "images" | "thumbnails" | "avatars" | "lessons";
@@ -23,7 +23,9 @@ export function ImageUpload({
   maxSizeMB = 5,
   className = "",
 }: ImageUploadProps) {
-  const [preview, setPreview] = useState<string | null>(currentImageUrl || null);
+  const [preview, setPreview] = useState<string | null>(
+    currentImageUrl || null
+  );
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,7 +45,13 @@ export function ImageUpload({
       }
 
       // Validate file type
-      const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
+      const validTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+      ];
       if (!validTypes.includes(file.type)) {
         setError("Format file harus JPG, PNG, GIF, atau WebP");
         return;
@@ -126,7 +134,7 @@ export function ImageUpload({
             alt="Preview"
             className="w-full h-64 object-cover rounded-lg border-2 border-gray-200"
           />
-          
+
           {/* Overlay with Remove Button */}
           <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 rounded-lg flex items-center justify-center">
             <Button
@@ -157,12 +165,17 @@ export function ImageUpload({
           {...getRootProps()}
           className={`
             border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all duration-200
-            ${isDragActive ? "border-orange-500 bg-orange-50" : "border-gray-300 hover:border-orange-400 hover:bg-gray-50"}
+            ${
+              isDragActive
+                ? "border-orange-500 bg-orange-50"
+                : "border-gray-300 hover:border-orange-400 hover:bg-gray-50"
+            }
             ${uploading ? "opacity-50 cursor-not-allowed" : ""}
           `}
-          >
+        >
           {/* @ts-expect-error - react-dropzone types issue */}
-          <input {...getInputProps()} />          <div className="flex flex-col items-center gap-3">
+          <input {...getInputProps()} />{" "}
+          <div className="flex flex-col items-center gap-3">
             {uploading ? (
               <>
                 <Loader2 className="h-12 w-12 text-orange-600 animate-spin" />
@@ -173,7 +186,9 @@ export function ImageUpload({
                 {isDragActive ? (
                   <>
                     <Upload className="h-12 w-12 text-orange-600" />
-                    <p className="text-sm font-medium text-orange-600">Lepaskan file di sini...</p>
+                    <p className="text-sm font-medium text-orange-600">
+                      Lepaskan file di sini...
+                    </p>
                   </>
                 ) : (
                   <>

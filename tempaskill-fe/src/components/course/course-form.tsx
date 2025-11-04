@@ -1,6 +1,6 @@
 "use client";
 
-import { FormField, SelectField, TextareaField } from "@/components/common";
+import { FormField, ImageUpload, SelectField, TextareaField } from "@/components/common";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -166,13 +166,22 @@ export function CourseForm({
               description="Masukkan 0 untuk kursus gratis"
             />
 
-            <FormField
-              name="thumbnail_url"
-              label="URL Gambar Thumbnail"
-              type="url"
-              placeholder="https://example.com/image.jpg"
-              description="Upload gambar akan tersedia setelah Task 4 selesai"
-            />
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Gambar Thumbnail
+              </label>
+              <ImageUpload
+                folder="thumbnails"
+                currentImageUrl={methods.watch("thumbnail_url")}
+                onUploadComplete={(url) => {
+                  methods.setValue("thumbnail_url", url);
+                }}
+                maxSizeMB={5}
+              />
+              <p className="text-xs text-gray-500">
+                Gambar thumbnail akan ditampilkan di daftar kursus
+              </p>
+            </div>
           </CardContent>
         </Card>
 
