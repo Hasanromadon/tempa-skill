@@ -15,15 +15,30 @@ export async function login(page: Page, email: string, password: string) {
 
 /**
  * Test helper untuk login admin
+ * Admin redirects to /admin/dashboard after successful login
  */
 export async function loginAdmin(page: Page, email: string, password: string) {
   await page.goto("/login");
+  
+  // Fill login form
   await page.fill('input[id="email"]', email);
   await page.fill('input[id="password"]', password);
-  await page.click('button[type="submit"]');
+  
+  // Click login button and wait for response
+  const [response] = await Promise.all([
+    page.waitForResponse(response => 
+      response.url().includes('/api/v1/auth/login') && response.request().method() === 'POST'
+    ),
+    page.click('button[type="submit"]')
+  ]);
 
-  // Admin redirects to /admin/dashboard or /admin/courses
-  await page.waitForURL(/\/admin\/(dashboard|courses)/, { timeout: 10000 });
+  // Check if login was successful
+  if (response.status() !== 200) {
+    throw new Error(`Login failed with status ${response.status()}: ${await response.text()}`);
+  }
+
+  // Wait for redirect to admin area
+  await page.waitForURL(/\/admin/, { timeout: 10000 });
 }
 
 /**
