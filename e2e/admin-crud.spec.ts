@@ -209,8 +209,8 @@ test.describe("Admin CRUD Operations", () => {
       // Set duration
       await page.fill('input[name="duration"]', "30");
 
-      // Submit form
-      await page.click('button[type="submit"]:has-text("Simpan")');
+      // Submit form - button text is "Buat Pelajaran" for new lesson
+      await page.click('button[type="submit"]:has-text("Buat Pelajaran")');
 
       // Wait for redirect back to lessons list
       await page.waitForURL(

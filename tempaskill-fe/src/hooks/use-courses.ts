@@ -139,9 +139,14 @@ export const useUpdateCourse = () => {
         thumbnail_url?: string;
       };
     }) => {
+      // Remove empty string fields to avoid validation errors
+      const cleanData = Object.fromEntries(
+        Object.entries(data).filter(([, value]) => value !== "")
+      );
+
       const response = await apiClient.patch<ApiResponse<Course>>(
         API_ENDPOINTS.COURSES.UPDATE(id),
-        data
+        cleanData
       );
       return response.data;
     },
