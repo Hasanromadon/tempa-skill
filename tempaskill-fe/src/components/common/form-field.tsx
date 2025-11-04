@@ -64,7 +64,9 @@ export function FormField({
           error && "border-red-500 focus-visible:ring-red-500",
           className
         )}
-        {...register(name)}
+        {...register(name, {
+          valueAsNumber: type === "number",
+        })}
         {...props}
       />
       {description && !error && (

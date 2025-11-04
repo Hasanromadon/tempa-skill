@@ -41,12 +41,12 @@ function LoginForm() {
         toast.success(MESSAGES.AUTH.LOGIN_SUCCESS, {
           description: `Selamat datang kembali, ${result.data.user.name}!`,
         });
-        
+
         await new Promise((resolve) => setTimeout(resolve, 100));
-        
+
         // Redirect based on user role
         const userRole = result.data.user.role;
-        
+
         // If redirect parameter exists, use it (unless user is admin, always go to admin dashboard)
         if (userRole === "admin" || userRole === "instructor") {
           router.push("/admin/dashboard");

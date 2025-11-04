@@ -42,19 +42,12 @@ test.describe("Admin CRUD Operations", () => {
       await page.fill('input[name="title"]', courseTitle);
       await page.fill('textarea[name="description"]', courseDescription);
 
-      // Select category using Shadcn Select component
-      const categoryTrigger = page.locator('button:has-text("Pilih kategori")');
-      await categoryTrigger.click();
-      await page.waitForTimeout(300);
-      await page.locator('[role="option"]:has-text("Web Development")').click();
+      // Category defaults to "Web Development", so we can skip or change it
+      // To change category: click trigger with current value "Web Development"
+      // For this test, we'll use the default value (no need to click)
 
-      // Select difficulty using Shadcn Select component
-      const difficultyTrigger = page.locator(
-        'button:has-text("Pilih tingkat kesulitan")'
-      );
-      await difficultyTrigger.click();
-      await page.waitForTimeout(300);
-      await page.locator('[role="option"]:has-text("Pemula")').click();
+      // Difficulty defaults to "Pemula" (beginner), we'll use default too
+      // If we need to change: click trigger showing "Pemula"
 
       // Set price
       await page.fill('input[name="price"]', "99000");
@@ -62,14 +55,14 @@ test.describe("Admin CRUD Operations", () => {
       // Submit form - button text is "Buat Kursus" for new course
       await page.click('button[type="submit"]:has-text("Buat Kursus")');
 
-      // Wait for success notification or redirect
-      await page.waitForTimeout(2000);
-
-      // Should redirect to courses list
-      expect(page.url()).toContain("/admin/courses");
+      // Wait for redirect to courses list (indicates success)
+      await page.waitForURL("/admin/courses", { timeout: 10000 });
+      await page.waitForLoadState("networkidle");
 
       // Verify course appears in list
-      await expect(page.locator(`text=${courseTitle}`)).toBeVisible();
+      await expect(page.locator(`text=${courseTitle}`)).toBeVisible({
+        timeout: 10000,
+      });
     });
 
     test("should edit an existing course", async ({ page }) => {
@@ -116,19 +109,7 @@ test.describe("Admin CRUD Operations", () => {
       await page.fill('input[name="title"]', courseTitle);
       await page.fill('textarea[name="description"]', "This will be deleted");
 
-      // Select category
-      const categoryTrigger = page.locator('button:has-text("Pilih kategori")');
-      await categoryTrigger.click();
-      await page.waitForTimeout(300);
-      await page.locator('[role="option"]:has-text("Web Development")').click();
-
-      // Select difficulty
-      const difficultyTrigger = page.locator(
-        'button:has-text("Pilih tingkat kesulitan")'
-      );
-      await difficultyTrigger.click();
-      await page.waitForTimeout(300);
-      await page.locator('[role="option"]:has-text("Pemula")').click();
+      // Use default category and difficulty (Web Development, Pemula)
 
       await page.fill('input[name="price"]', "50000");
       await page.click('button[type="submit"]:has-text("Buat Kursus")');
@@ -190,11 +171,9 @@ test.describe("Admin CRUD Operations", () => {
           'textarea[name="description"]',
           "Test course for lesson CRUD"
         );
-        await page.click('button[role="combobox"]');
-        await page.waitForTimeout(300);
-        await page.locator('div[role="option"]').first().click();
+        // Use default category and difficulty
         await page.fill('input[name="price"]', "0");
-        await page.click('button[type="submit"]');
+        await page.click('button[type="submit"]:has-text("Buat Kursus")');
         await page.waitForTimeout(2000);
 
         // Extract ID from URL or page

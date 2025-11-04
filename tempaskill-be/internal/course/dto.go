@@ -5,7 +5,7 @@ type CreateCourseRequest struct {
 	Title        string `json:"title" binding:"required,min=3,max=200"`
 	Description  string `json:"description" binding:"required,min=10"`
 	ThumbnailURL string `json:"thumbnail_url" binding:"omitempty,url,max=255"`
-	Category     string `json:"category" binding:"required,oneof=programming design business marketing"`
+	Category     string `json:"category" binding:"required,oneof='Web Development' 'Mobile Development' 'Data Science' DevOps"`
 	Difficulty   string `json:"difficulty" binding:"required,oneof=beginner intermediate advanced"`
 	Price        int    `json:"price" binding:"omitempty,min=0"`
 }
@@ -15,7 +15,7 @@ type UpdateCourseRequest struct {
 	Title        *string `json:"title" binding:"omitempty,min=3,max=200"`
 	Description  *string `json:"description" binding:"omitempty,min=10"`
 	ThumbnailURL *string `json:"thumbnail_url" binding:"omitempty,url,max=255"`
-	Category     *string `json:"category" binding:"omitempty,oneof=programming design business marketing"`
+	Category     *string `json:"category" binding:"omitempty,oneof='Web Development' 'Mobile Development' 'Data Science' DevOps"`
 	Difficulty   *string `json:"difficulty" binding:"omitempty,oneof=beginner intermediate advanced"`
 	Price        *int    `json:"price" binding:"omitempty,min=0"`
 	IsPublished  *bool   `json:"is_published"`
