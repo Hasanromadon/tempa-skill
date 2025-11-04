@@ -9,11 +9,14 @@ TempaSKill backend menggunakan **Firebase Storage** untuk menyimpan file gambar 
 ## 🔧 Prerequisites
 
 ### 1. Firebase Project
+
 Anda sudah memiliki Firebase project:
+
 - **Project ID**: `ngecis-4035d`
 - **Storage Bucket**: `ngecis-4035d.firebasestorage.app`
 
 ### 2. Service Account JSON
+
 Anda memerlukan file service account JSON dari Firebase Console.
 
 ---
@@ -35,16 +38,19 @@ Anda memerlukan file service account JSON dari Firebase Console.
 ### Step 2: Copy ke Backend Directory
 
 Copy file JSON ke directory backend:
+
 ```
 tempaskill-be/ngecis-4035d-firebase-adminsdk-fbsvc-b062d03ee9.json
 ```
 
 **PENTING**: Pastikan nama file PERSIS seperti di `.env`:
+
 ```env
 FIREBASE_SERVICE_ACCOUNT=ngecis-4035d-firebase-adminsdk-fbsvc-b062d03ee9.json
 ```
 
 Jika nama file JSON berbeda, update `.env`:
+
 ```env
 FIREBASE_SERVICE_ACCOUNT=ngecis-4035d-firebase-adminsdk-fbsvc-NEW_ID.json
 ```
@@ -52,26 +58,32 @@ FIREBASE_SERVICE_ACCOUNT=ngecis-4035d-firebase-adminsdk-fbsvc-NEW_ID.json
 ### Step 3: Verify Setup
 
 1. **Check File Exists**:
+
    ```bash
    cd tempaskill-be
    ls ngecis-4035d-firebase-adminsdk-*.json
    ```
 
 2. **Start Backend**:
+
    ```bash
    go run cmd/api/main.go
    ```
 
 3. **Look for Success Log**:
+
    ```
    2025-11-04T10:36:41.138+0700    INFO    logger/logger.go:47     Firebase initialized successfully
    ```
 
    ❌ **If you see error**:
+
    ```
    Failed to initialize Firebase
    ```
+
    Check:
+
    - File JSON exists in `tempaskill-be/` directory
    - Filename matches `.env` configuration
    - File permissions (readable)
@@ -83,6 +95,7 @@ FIREBASE_SERVICE_ACCOUNT=ngecis-4035d-firebase-adminsdk-fbsvc-NEW_ID.json
 ⚠️ **NEVER COMMIT SERVICE ACCOUNT JSON TO GIT!**
 
 File sudah ditambahkan ke `.gitignore`:
+
 ```gitignore
 # Firebase
 *-firebase-adminsdk-*.json
@@ -90,6 +103,7 @@ tempaskill-be/ngecis-4035d-firebase-adminsdk-fbsvc-b062d03ee9.json
 ```
 
 Untuk production deployment:
+
 1. Upload JSON ke server secara manual (SSH/FTP)
 2. Atau gunakan environment variable untuk private key
 3. Simpan di secret manager (Google Secret Manager, AWS Secrets Manager)
@@ -101,6 +115,7 @@ Untuk production deployment:
 ### Get JWT Token
 
 1. **Login** (gunakan akun admin):
+
    ```bash
    curl -X POST http://localhost:8080/api/v1/auth/login \
      -H "Content-Type: application/json" \
@@ -123,6 +138,7 @@ Untuk production deployment:
 ### Upload Image
 
 **Using curl**:
+
 ```bash
 curl -X POST http://localhost:8080/api/v1/upload/image \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
@@ -131,6 +147,7 @@ curl -X POST http://localhost:8080/api/v1/upload/image \
 ```
 
 **Using Postman**:
+
 1. Create POST request: `http://localhost:8080/api/v1/upload/image`
 2. Headers:
    - `Authorization: Bearer YOUR_JWT_TOKEN`
@@ -140,6 +157,7 @@ curl -X POST http://localhost:8080/api/v1/upload/image \
 4. Send
 
 **Success Response**:
+
 ```json
 {
   "message": "Image uploaded successfully",
@@ -156,14 +174,15 @@ curl -X POST http://localhost:8080/api/v1/upload/image \
 
 ## 📂 Upload Folders
 
-| Folder      | Purpose                  | Used In               |
-|-------------|--------------------------|-----------------------|
-| `images`    | General images (default) | MDX content           |
-| `thumbnails`| Course thumbnails        | Course form           |
-| `avatars`   | User profile pictures    | User profile (future) |
-| `lessons`   | Lesson-specific images   | Lesson content        |
+| Folder       | Purpose                  | Used In               |
+| ------------ | ------------------------ | --------------------- |
+| `images`     | General images (default) | MDX content           |
+| `thumbnails` | Course thumbnails        | Course form           |
+| `avatars`    | User profile pictures    | User profile (future) |
+| `lessons`    | Lesson-specific images   | Lesson content        |
 
 **Storage Organization**:
+
 ```
 Firebase Storage Bucket
 ├── images/
@@ -188,6 +207,7 @@ Firebase Storage Bucket
 **Cause**: Service account JSON file not found
 
 **Solution**:
+
 ```bash
 # Check file exists
 cd tempaskill-be
@@ -202,6 +222,7 @@ ls ngecis-4035d-firebase-adminsdk-*.json
 **Cause**: Firebase Storage rules or permissions
 
 **Solution**:
+
 1. Open Firebase Console → Storage → Rules
 2. Update rules (for testing):
    ```
@@ -221,6 +242,7 @@ ls ngecis-4035d-firebase-adminsdk-*.json
 **Cause**: Invalid or expired JWT token
 
 **Solution**:
+
 ```bash
 # Get new token
 curl -X POST http://localhost:8080/api/v1/auth/login \
@@ -239,10 +261,12 @@ See `API_SPEC.md` for complete upload endpoint documentation.
 **Endpoint**: `POST /api/v1/upload/image`
 
 **Parameters**:
+
 - `file` (multipart/form-data, required) - Image file
 - `folder` (string, optional) - Upload folder (default: "images")
 
 **Validation**:
+
 - **Allowed Types**: jpg, jpeg, png, gif, webp
 - **Max Size**: 5MB (5,242,880 bytes)
 - **Allowed Folders**: images, thumbnails, avatars, lessons
@@ -254,6 +278,7 @@ See `API_SPEC.md` for complete upload endpoint documentation.
 ## 🎯 Next Steps
 
 After Firebase setup complete:
+
 1. ✅ Backend upload endpoint working
 2. 🔄 Create frontend `ImageUpload` component (React)
 3. 🔄 Integrate with `CourseForm` (thumbnail upload)

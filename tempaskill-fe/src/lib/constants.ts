@@ -64,6 +64,9 @@ export const API_ENDPOINTS = {
     UPDATE_PROFILE: "/users/me",
     CHANGE_PASSWORD: "/users/me/password",
   },
+  UPLOAD: {
+    IMAGE: "/upload/image",
+  },
 } as const;
 
 // Difficulty levels
