@@ -197,19 +197,19 @@ test.describe("Admin CRUD Operations", () => {
       const lessonTitle = `Test Lesson ${Date.now()}`;
       await page.fill('input[name="title"]', lessonTitle);
 
-      // Fill content using textarea (not MDX editor for E2E simplicity)
-      // Look for textarea or contenteditable field
-      const contentField = page.locator('textarea[name="content"]');
-      if (await contentField.isVisible()) {
-        await contentField.fill(
-          "# Test Lesson Content\n\nThis is test content for the lesson. It contains enough characters to meet the minimum requirement of 50 characters."
-        );
-      }
+      // Fill content - MDXEditor uses contenteditable div
+      // Wait for editor to load and find the contenteditable area
+      const content =
+        "# Test Lesson Content\n\nThis is test content for the lesson. It contains enough characters to meet the minimum requirement.";
+      
+      const mdxEditor = page.locator('[contenteditable="true"]').first();
+      await mdxEditor.waitFor({ state: "visible", timeout: 5000 });
+      
+      // Use fill with force option for contenteditable
+      await mdxEditor.fill(content);
 
       // Set duration
-      await page.fill('input[name="duration"]', "30");
-
-      // Submit form - button text is "Buat Pelajaran" for new lesson
+      await page.fill('input[name="duration"]', "30");      // Submit form - button text is "Buat Pelajaran" for new lesson
       await page.click('button[type="submit"]:has-text("Buat Pelajaran")');
 
       // Wait for redirect back to lessons list
@@ -219,9 +219,12 @@ test.describe("Admin CRUD Operations", () => {
           timeout: 10000,
         }
       );
+      await page.waitForLoadState("networkidle");
 
       // Verify lesson appears
-      await expect(page.locator(`text=${lessonTitle}`)).toBeVisible();
+      await expect(page.locator(`text=${lessonTitle}`)).toBeVisible({
+        timeout: 10000,
+      });
     });
 
     test("should edit a lesson", async ({ page }) => {
