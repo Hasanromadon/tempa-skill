@@ -61,3 +61,14 @@ type CourseListResponse struct {
 	Courses    []*CourseResponse `json:"courses"`
 	Pagination PaginationMeta    `json:"pagination"`
 }
+
+// ReorderLessonsRequest represents payload for reordering lessons
+type ReorderLessonsRequest struct {
+	Updates []LessonOrderUpdate `json:"updates" binding:"required,min=1,dive"`
+}
+
+// LessonOrderUpdate represents a single lesson order update
+type LessonOrderUpdate struct {
+	LessonID   uint `json:"lesson_id" binding:"required,min=1"`
+	OrderIndex int  `json:"order_index" binding:"min=0"`
+}

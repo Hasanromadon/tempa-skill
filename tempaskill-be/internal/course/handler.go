@@ -384,6 +384,36 @@ func (h *Handler) DeleteLesson(c *gin.Context) {
 	})
 }
 
+// ReorderLessons handles PATCH /lessons/reorder
+func (h *Handler) ReorderLessons(c *gin.Context) {
+	var req ReorderLessonsRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Get user ID from JWT middleware
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	err := h.service.ReorderLessons(c.Request.Context(), userID.(uint), req.Updates)
+	if err != nil {
+		if err == ErrUnauthorized {
+			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Lessons reordered successfully",
+	})
+}
+
 // EnrollCourse handles POST /courses/:id/enroll
 func (h *Handler) EnrollCourse(c *gin.Context) {
 	courseID, err := strconv.ParseUint(c.Param("id"), 10, 32)

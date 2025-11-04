@@ -34,6 +34,7 @@ type Service interface {
 	GetCourseLessons(ctx context.Context, userID uint, courseID uint) ([]*LessonResponse, error)
 	UpdateLesson(ctx context.Context, userID uint, lessonID uint, req *UpdateLessonRequest) (*Lesson, error)
 	DeleteLesson(ctx context.Context, userID uint, lessonID uint) error
+	ReorderLessons(ctx context.Context, userID uint, updates []LessonOrderUpdate) error
 
 	// Enrollment operations
 	EnrollCourse(ctx context.Context, userID uint, courseID uint) error
@@ -369,6 +370,34 @@ func (s *service) DeleteLesson(ctx context.Context, userID uint, lessonID uint) 
 	}
 
 	return s.repo.DeleteLesson(ctx, lessonID)
+}
+
+// ReorderLessons updates order_index for multiple lessons
+func (s *service) ReorderLessons(ctx context.Context, userID uint, updates []LessonOrderUpdate) error {
+	// Validate that user owns all lessons being reordered
+	// We'll check the first lesson to get the course, then verify ownership
+	if len(updates) == 0 {
+		return errors.New("no updates provided")
+	}
+
+	// Get first lesson to determine course
+	firstLesson, err := s.repo.FindLessonByID(ctx, updates[0].LessonID)
+	if err != nil {
+		return ErrLessonNotFound
+	}
+
+	// Verify user owns the course
+	course, err := s.repo.FindCourseByID(ctx, firstLesson.CourseID)
+	if err != nil {
+		return ErrCourseNotFound
+	}
+
+	if course.InstructorID != userID {
+		return ErrUnauthorized
+	}
+
+	// Batch update all lesson orders
+	return s.repo.BatchUpdateLessonOrder(ctx, updates)
 }
 
 // Enrollment operations

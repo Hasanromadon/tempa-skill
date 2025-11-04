@@ -29,6 +29,7 @@ type Repository interface {
 	UpdateLesson(ctx context.Context, lesson *Lesson) error
 	DeleteLesson(ctx context.Context, id uint) error
 	CountLessonsByCourseID(ctx context.Context, courseID uint) (int, error)
+	BatchUpdateLessonOrder(ctx context.Context, updates []LessonOrderUpdate) error
 
 	// Enrollment operations
 	CreateEnrollment(ctx context.Context, enrollment *Enrollment) error
@@ -336,6 +337,26 @@ func (r *repository) CountLessonsByCourseID(ctx context.Context, courseID uint) 
 		return 0, err
 	}
 	return int(count), nil
+}
+
+// BatchUpdateLessonOrder updates order_index for multiple lessons in a transaction
+func (r *repository) BatchUpdateLessonOrder(ctx context.Context, updates []LessonOrderUpdate) error {
+	// Use transaction to ensure atomicity
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		for _, update := range updates {
+			if err := tx.Model(&Lesson{}).
+				Where("id = ?", update.LessonID).
+				Update("order_index", update.OrderIndex).Error; err != nil {
+				logger.Error("Failed to update lesson order",
+					zap.Error(err),
+					zap.Uint("lesson_id", update.LessonID),
+					zap.Int("order_index", update.OrderIndex),
+				)
+				return err
+			}
+		}
+		return nil
+	})
 }
 
 // Enrollment operations

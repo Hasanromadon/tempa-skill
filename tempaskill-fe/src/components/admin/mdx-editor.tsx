@@ -1,5 +1,7 @@
 "use client";
 
+import apiClient from "@/lib/api-client";
+import { API_ENDPOINTS } from "@/lib/constants";
 import {
   BlockTypeSelect,
   BoldItalicUnderlineToggles,
@@ -30,8 +32,6 @@ import {
 } from "@mdxeditor/editor";
 import "@mdxeditor/editor/style.css";
 import React from "react";
-import apiClient from "@/lib/api-client";
-import { API_ENDPOINTS } from "@/lib/constants";
 
 interface MDXEditorWrapperProps {
   markdown: string;

@@ -37,6 +37,7 @@ func RegisterRoutes(router *gin.RouterGroup, db *gorm.DB, authMiddleware *middle
 		protected.POST("/courses/:id/lessons", handler.CreateLesson)  // Create lesson
 		protected.PATCH("/lessons/:id", handler.UpdateLesson)          // Update lesson
 		protected.DELETE("/lessons/:id", handler.DeleteLesson)         // Delete lesson
+		protected.PATCH("/lessons/reorder", handler.ReorderLessons)    // Reorder lessons
 
 		// Enrollment (student)
 		protected.POST("/courses/:id/enroll", handler.EnrollCourse)    // Enroll in course
