@@ -49,6 +49,9 @@ export const API_ENDPOINTS = {
   },
   LESSONS: {
     DETAIL: (id: number) => `/lessons/${id}`,
+    CREATE: (courseId: number) => `/courses/${courseId}/lessons`,
+    UPDATE: (id: number) => `/lessons/${id}`,
+    DELETE: (id: number) => `/lessons/${id}`,
   },
   PROGRESS: {
     COURSE: (courseId: number) => `/progress/courses/${courseId}`,

@@ -19,7 +19,7 @@ interface DeleteCourseDialogProps {
 
 /**
  * DeleteCourseDialog - Confirmation dialog for course deletion
- * 
+ *
  * Features:
  * - Clear warning message in Indonesian
  * - Shows course name for context

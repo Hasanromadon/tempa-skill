@@ -34,11 +34,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  useCourses,
-  useDeleteCourse,
-  useTogglePublishCourse,
-} from "@/hooks";
+import { useCourses, useDeleteCourse, useTogglePublishCourse } from "@/hooks";
 import { DIFFICULTY_COLORS, DIFFICULTY_LABELS } from "@/lib/constants";
 import { formatCurrency } from "@/lib/utils";
 import {
@@ -84,7 +80,9 @@ export default function AdminCoursesPage() {
       toast.success(
         !currentStatus ? "Kursus dipublikasikan" : "Kursus di-unpublish",
         {
-          description: `"${courseTitle}" sekarang ${!currentStatus ? "aktif" : "tidak aktif"}.`,
+          description: `"${courseTitle}" sekarang ${
+            !currentStatus ? "aktif" : "tidak aktif"
+          }.`,
         }
       );
     } catch {

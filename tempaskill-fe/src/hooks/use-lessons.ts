@@ -1,7 +1,7 @@
 import apiClient from "@/lib/api-client";
 import { API_ENDPOINTS } from "@/lib/constants";
 import type { ApiResponse, Lesson } from "@/types/api";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 // Get lessons for a course
 export const useCourseLessons = (courseId: number) => {
@@ -30,5 +30,90 @@ export const useLesson = (lessonId: number) => {
     },
     enabled: !!lessonId,
     staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+};
+
+// Create lesson
+export const useCreateLesson = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      courseId,
+      data,
+    }: {
+      courseId: number;
+      data: {
+        title: string;
+        slug: string;
+        content: string;
+        order_index: number;
+        duration: number;
+        is_published: boolean;
+      };
+    }) => {
+      const response = await apiClient.post<ApiResponse<Lesson>>(
+        API_ENDPOINTS.LESSONS.CREATE(courseId),
+        data
+      );
+      return response.data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["lessons", variables.courseId],
+      });
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+    },
+  });
+};
+
+// Update lesson
+export const useUpdateLesson = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: number;
+      data: Partial<{
+        title: string;
+        slug: string;
+        content: string;
+        order_index: number;
+        duration: number;
+        is_published: boolean;
+      }>;
+    }) => {
+      const response = await apiClient.patch<ApiResponse<Lesson>>(
+        API_ENDPOINTS.LESSONS.UPDATE(id),
+        data
+      );
+      return response.data;
+    },
+    onSuccess: (data) => {
+      if (data.data) {
+        queryClient.invalidateQueries({
+          queryKey: ["lessons", data.data.course_id],
+        });
+        queryClient.invalidateQueries({ queryKey: ["lesson", data.data.id] });
+      }
+    },
+  });
+};
+
+// Delete lesson
+export const useDeleteLesson = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: number) => {
+      await apiClient.delete(API_ENDPOINTS.LESSONS.DELETE(id));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["lessons"] });
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+    },
   });
 };
