@@ -197,12 +197,12 @@ test.describe("Admin CRUD Operations", () => {
       const lessonTitle = `Test Lesson ${Date.now()}`;
       await page.fill('input[name="title"]', lessonTitle);
 
-      // Fill MDX content
-      const mdxEditor = page.locator('[contenteditable="true"]').first();
-      if (await mdxEditor.isVisible()) {
-        await mdxEditor.click();
-        await page.keyboard.type(
-          "# Test Lesson Content\n\nThis is test content for the lesson."
+      // Fill content using textarea (not MDX editor for E2E simplicity)
+      // Look for textarea or contenteditable field
+      const contentField = page.locator('textarea[name="content"]');
+      if (await contentField.isVisible()) {
+        await contentField.fill(
+          "# Test Lesson Content\n\nThis is test content for the lesson. It contains enough characters to meet the minimum requirement of 50 characters."
         );
       }
 
@@ -211,10 +211,14 @@ test.describe("Admin CRUD Operations", () => {
 
       // Submit form
       await page.click('button[type="submit"]:has-text("Simpan")');
-      await page.waitForTimeout(2000);
 
-      // Should redirect back to lessons list
-      expect(page.url()).toContain(`/admin/courses/${testCourseId}/lessons`);
+      // Wait for redirect back to lessons list
+      await page.waitForURL(
+        new RegExp(`/admin/courses/${testCourseId}/lessons`),
+        {
+          timeout: 10000,
+        }
+      );
 
       // Verify lesson appears
       await expect(page.locator(`text=${lessonTitle}`)).toBeVisible();
@@ -324,9 +328,9 @@ test.describe("Admin CRUD Operations", () => {
       await page.goto("/admin/dashboard");
       await page.waitForLoadState("networkidle");
 
-      // Check for dashboard heading
+      // Check for dashboard heading - use role selector to be specific
       await expect(
-        page.locator("text=/dashboard.*admin|admin.*dashboard/i")
+        page.getByRole("heading", { name: /dashboard admin/i })
       ).toBeVisible();
 
       // Check for statistics cards

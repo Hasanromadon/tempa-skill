@@ -139,7 +139,7 @@ export const useUpdateCourse = () => {
         thumbnail_url?: string;
       };
     }) => {
-      const response = await apiClient.put<ApiResponse<Course>>(
+      const response = await apiClient.patch<ApiResponse<Course>>(
         API_ENDPOINTS.COURSES.UPDATE(id),
         data
       );
