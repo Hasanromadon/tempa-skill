@@ -168,9 +168,9 @@ Konten ini akan ditampilkan dengan format MDX."
 
             <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
               <p className="text-sm text-orange-800">
-                <strong>💡 Tips:</strong> Gunakan Markdown untuk format teks
-                (# heading, **bold**, *italic*, `code`, dll). Editor MDX yang
-                lebih lengkap akan tersedia di Task 11.
+                <strong>💡 Tips:</strong> Gunakan Markdown untuk format teks (#
+                heading, **bold**, *italic*, `code`, dll). Editor MDX yang lebih
+                lengkap akan tersedia di Task 11.
               </p>
             </div>
           </CardContent>
