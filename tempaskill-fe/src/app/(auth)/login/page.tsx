@@ -41,8 +41,22 @@ function LoginForm() {
         toast.success(MESSAGES.AUTH.LOGIN_SUCCESS, {
           description: `Selamat datang kembali, ${result.data.user.name}!`,
         });
+        
         await new Promise((resolve) => setTimeout(resolve, 100));
-        router.push(redirectTo);
+        
+        // Redirect based on user role
+        const userRole = result.data.user.role;
+        
+        // If redirect parameter exists, use it (unless user is admin, always go to admin dashboard)
+        if (userRole === "admin" || userRole === "instructor") {
+          router.push("/admin/dashboard");
+        } else if (redirectTo && redirectTo !== ROUTES.DASHBOARD) {
+          // Use redirect parameter if it exists
+          router.push(redirectTo);
+        } else {
+          // Default redirect for students
+          router.push(ROUTES.DASHBOARD);
+        }
       }
     } catch (err) {
       const errorMessage =

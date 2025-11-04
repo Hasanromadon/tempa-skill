@@ -19,17 +19,19 @@ export async function login(page: Page, email: string, password: string) {
  */
 export async function loginAdmin(page: Page, email: string, password: string) {
   await page.goto("/login");
-  
+
   // Fill login form
   await page.fill('input[id="email"]', email);
   await page.fill('input[id="password"]', password);
-  
+
   // Click login button and wait for response
   const [response] = await Promise.all([
-    page.waitForResponse(response => 
-      response.url().includes('/api/v1/auth/login') && response.request().method() === 'POST'
+    page.waitForResponse(
+      (response) =>
+        response.url().includes("/api/v1/auth/login") &&
+        response.request().method() === "POST"
     ),
-    page.click('button[type="submit"]')
+    page.click('button[type="submit"]'),
   ]);
 
   // Check if login was successful
@@ -37,7 +39,9 @@ export async function loginAdmin(page: Page, email: string, password: string) {
   if (status !== 200) {
     console.error(`Login failed with status ${status}`);
     console.error(`Response URL: ${response.url()}`);
-    throw new Error(`Admin login failed with status ${status}. Check if admin user exists and backend is running.`);
+    throw new Error(
+      `Admin login failed with status ${status}. Check if admin user exists and backend is running.`
+    );
   }
 
   // Wait for redirect to admin area

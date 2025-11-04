@@ -49,7 +49,9 @@ test.describe("Admin CRUD Operations", () => {
       await page.locator('[role="option"]:has-text("Web Development")').click();
 
       // Select difficulty using Shadcn Select component
-      const difficultyTrigger = page.locator('button:has-text("Pilih tingkat kesulitan")');
+      const difficultyTrigger = page.locator(
+        'button:has-text("Pilih tingkat kesulitan")'
+      );
       await difficultyTrigger.click();
       await page.waitForTimeout(300);
       await page.locator('[role="option"]:has-text("Pemula")').click();
@@ -76,13 +78,13 @@ test.describe("Admin CRUD Operations", () => {
       await page.waitForLoadState("networkidle");
 
       // Find first course and click its dropdown menu
-      const firstRow = page.locator('tbody tr').first();
+      const firstRow = page.locator("tbody tr").first();
       const dropdownTrigger = firstRow.locator('button[aria-label*="Aksi"]');
-      
+
       if (await dropdownTrigger.isVisible()) {
         await dropdownTrigger.click();
         await page.waitForTimeout(300);
-        
+
         // Click Edit option in dropdown
         await page.locator('[role="menuitem"]:has-text("Edit")').click();
         await page.waitForLoadState("networkidle");
@@ -104,7 +106,8 @@ test.describe("Admin CRUD Operations", () => {
       } else {
         test.skip();
       }
-    });    test("should delete a course", async ({ page }) => {
+    });
+    test("should delete a course", async ({ page }) => {
       // First create a course to delete
       await page.goto("/admin/courses/new");
       await page.waitForLoadState("networkidle");
@@ -120,7 +123,9 @@ test.describe("Admin CRUD Operations", () => {
       await page.locator('[role="option"]:has-text("Web Development")').click();
 
       // Select difficulty
-      const difficultyTrigger = page.locator('button:has-text("Pilih tingkat kesulitan")');
+      const difficultyTrigger = page.locator(
+        'button:has-text("Pilih tingkat kesulitan")'
+      );
       await difficultyTrigger.click();
       await page.waitForTimeout(300);
       await page.locator('[role="option"]:has-text("Pemula")').click();
