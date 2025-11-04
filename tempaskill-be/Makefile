@@ -30,6 +30,7 @@ help: ## Show this help message
 	@echo   make db-status      - Show database status
 	@echo   make db-migrate     - Run specific migration file (FILE=xxx)
 	@echo   make db-migrate-mdx - Run MDX migration (007)
+	@echo   make db-seed-admin  - Seed admin user for E2E testing
 	@echo.
 	@echo DEVELOPMENT:
 	@echo   make run            - Run server
@@ -96,6 +97,17 @@ db-migrate-mdx: ## Run MDX content migration (007_update_lesson_to_mdx.sql)
 	@echo.
 	@echo "$(GREEN)Lesson 25 updated with MDX content$(NC)"
 	@echo "$(YELLOW)View at: http://localhost:3000/courses/ui-ux-design-fundamental/lessons/25$(NC)"
+
+.PHONY: db-seed-admin
+db-seed-admin: ## Seed admin user for E2E testing (email: admin@tempaskill.com, password: admin123)
+	@echo "$(YELLOW)Seeding admin user...$(NC)"
+	@"$(MYSQL_BIN)" -u root $(DB_NAME) < migrations/seed_admin.sql
+	@echo "$(GREEN)✓ Admin user created$(NC)"
+	@echo.
+	@echo "$(GREEN)Admin credentials:$(NC)"
+	@echo "  Email: admin@tempaskill.com"
+	@echo "  Password: admin123"
+	@echo "$(YELLOW)Use this account for E2E testing$(NC)"
 
 .PHONY: run
 run: ## Run server in development mode

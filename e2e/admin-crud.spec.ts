@@ -1,9 +1,9 @@
-import { test, expect } from "@playwright/test";
-import { login, generateTestUser } from "./helpers/test-helpers";
+import { expect, test } from "@playwright/test";
+import { login } from "./helpers/test-helpers";
 
 /**
  * E2E Tests for Admin CRUD Operations
- * 
+ *
  * Prerequisites:
  * - Backend running at http://localhost:8080
  * - Frontend running at http://localhost:3000
@@ -41,7 +41,7 @@ test.describe("Admin CRUD Operations", () => {
 
       await page.fill('input[name="title"]', courseTitle);
       await page.fill('textarea[name="description"]', courseDescription);
-      
+
       // Select category
       await page.click('button[role="combobox"]'); // Open category dropdown
       await page.waitForTimeout(300);
@@ -75,8 +75,10 @@ test.describe("Admin CRUD Operations", () => {
       await page.waitForLoadState("networkidle");
 
       // Find first course edit button
-      const editButton = page.locator('a[href*="/admin/courses/"][href*="/edit"]').first();
-      
+      const editButton = page
+        .locator('a[href*="/admin/courses/"][href*="/edit"]')
+        .first();
+
       if (await editButton.isVisible()) {
         await editButton.click();
         await page.waitForLoadState("networkidle");
@@ -108,11 +110,11 @@ test.describe("Admin CRUD Operations", () => {
       const courseTitle = `Course to Delete ${Date.now()}`;
       await page.fill('input[name="title"]', courseTitle);
       await page.fill('textarea[name="description"]', "This will be deleted");
-      
+
       await page.click('button[role="combobox"]');
       await page.waitForTimeout(300);
       await page.locator('div[role="option"]:has-text("Programming")').click();
-      
+
       await page.fill('input[name="price"]', "50000");
       await page.click('button[type="submit"]:has-text("Simpan")');
       await page.waitForTimeout(2000);
@@ -123,19 +125,21 @@ test.describe("Admin CRUD Operations", () => {
 
       // Find the course row
       const courseRow = page.locator(`tr:has-text("${courseTitle}")`);
-      
+
       if (await courseRow.isVisible()) {
         // Click delete button (usually in dropdown or direct button)
-        const deleteButton = courseRow.locator('button:has-text("Hapus")').first();
-        
+        const deleteButton = courseRow
+          .locator('button:has-text("Hapus")')
+          .first();
+
         if (await deleteButton.isVisible()) {
           await deleteButton.click();
-          
+
           // Confirm deletion in dialog
           await page.waitForTimeout(500);
           const confirmButton = page.locator('button:has-text("Ya")').first();
           await confirmButton.click();
-          
+
           await page.waitForTimeout(2000);
 
           // Verify course is removed
@@ -153,23 +157,32 @@ test.describe("Admin CRUD Operations", () => {
       await page.goto("/admin/courses");
       await page.waitForLoadState("networkidle");
 
-      const firstCourseLink = page.locator('a[href*="/admin/courses/"][href*="/lessons"]').first();
-      
+      const firstCourseLink = page
+        .locator('a[href*="/admin/courses/"][href*="/lessons"]')
+        .first();
+
       if (await firstCourseLink.isVisible()) {
         const href = await firstCourseLink.getAttribute("href");
-        testCourseId = href?.match(/\/admin\/courses\/(\d+)\/lessons/)?.[1] || "1";
+        testCourseId =
+          href?.match(/\/admin\/courses\/(\d+)\/lessons/)?.[1] || "1";
       } else {
         // Create a course if none exists
         await page.goto("/admin/courses/new");
-        await page.fill('input[name="title"]', `Course for Lessons ${Date.now()}`);
-        await page.fill('textarea[name="description"]', "Test course for lesson CRUD");
+        await page.fill(
+          'input[name="title"]',
+          `Course for Lessons ${Date.now()}`
+        );
+        await page.fill(
+          'textarea[name="description"]',
+          "Test course for lesson CRUD"
+        );
         await page.click('button[role="combobox"]');
         await page.waitForTimeout(300);
         await page.locator('div[role="option"]').first().click();
         await page.fill('input[name="price"]', "0");
         await page.click('button[type="submit"]');
         await page.waitForTimeout(2000);
-        
+
         // Extract ID from URL or page
         testCourseId = "1"; // fallback
       }
@@ -190,12 +203,14 @@ test.describe("Admin CRUD Operations", () => {
       // Fill lesson form
       const lessonTitle = `Test Lesson ${Date.now()}`;
       await page.fill('input[name="title"]', lessonTitle);
-      
+
       // Fill MDX content
       const mdxEditor = page.locator('[contenteditable="true"]').first();
       if (await mdxEditor.isVisible()) {
         await mdxEditor.click();
-        await page.keyboard.type("# Test Lesson Content\n\nThis is test content for the lesson.");
+        await page.keyboard.type(
+          "# Test Lesson Content\n\nThis is test content for the lesson."
+        );
       }
 
       // Set duration
@@ -219,7 +234,7 @@ test.describe("Admin CRUD Operations", () => {
 
       // Click first edit button
       const editButton = page.locator('a[href*="/edit"]').first();
-      
+
       if (await editButton.isVisible()) {
         await editButton.click();
         await page.waitForLoadState("networkidle");
@@ -247,11 +262,13 @@ test.describe("Admin CRUD Operations", () => {
       await page.waitForLoadState("networkidle");
 
       // Look for publish/unpublish button
-      const statusButton = page.locator('button:has-text("Terbitkan"), button:has-text("Sembunyikan")').first();
-      
+      const statusButton = page
+        .locator('button:has-text("Terbitkan"), button:has-text("Sembunyikan")')
+        .first();
+
       if (await statusButton.isVisible()) {
         const initialText = await statusButton.textContent();
-        
+
         // Click to toggle
         await statusButton.click();
         await page.waitForTimeout(1000);
@@ -259,10 +276,14 @@ test.describe("Admin CRUD Operations", () => {
         // Reload and verify status changed
         await page.reload();
         await page.waitForLoadState("networkidle");
-        
-        const newStatusButton = page.locator('button:has-text("Terbitkan"), button:has-text("Sembunyikan")').first();
+
+        const newStatusButton = page
+          .locator(
+            'button:has-text("Terbitkan"), button:has-text("Sembunyikan")'
+          )
+          .first();
         const newText = await newStatusButton.textContent();
-        
+
         expect(newText).not.toBe(initialText);
       }
     });
@@ -280,18 +301,24 @@ test.describe("Admin CRUD Operations", () => {
         await page.waitForLoadState("networkidle");
 
         // Check if drag-drop interface is present
-        const dragHandle = page.locator('[class*="cursor-move"], [class*="grip"]').first();
-        
+        const dragHandle = page
+          .locator('[class*="cursor-move"], [class*="grip"]')
+          .first();
+
         if (await dragHandle.isVisible()) {
           // Get initial order
-          const firstLesson = page.locator('[data-testid="lesson-card"]').first();
+          const firstLesson = page
+            .locator('[data-testid="lesson-card"]')
+            .first();
           const firstLessonText = await firstLesson.textContent();
 
           // Note: Actual drag-drop testing requires more complex setup
           // For now, verify the drag handles are present
           await expect(dragHandle).toBeVisible();
-          
-          console.log("Drag-drop interface verified. Actual drag testing requires advanced Playwright setup.");
+
+          console.log(
+            "Drag-drop interface verified. Actual drag testing requires advanced Playwright setup."
+          );
         } else {
           console.log("No lessons available for drag-drop test");
         }
@@ -305,14 +332,18 @@ test.describe("Admin CRUD Operations", () => {
       await page.waitForLoadState("networkidle");
 
       // Check for dashboard heading
-      await expect(page.locator("text=/dashboard.*admin|admin.*dashboard/i")).toBeVisible();
+      await expect(
+        page.locator("text=/dashboard.*admin|admin.*dashboard/i")
+      ).toBeVisible();
 
       // Check for statistics cards
       const statsCards = page.locator('[class*="rounded"][class*="border"]');
       expect(await statsCards.count()).toBeGreaterThan(0);
     });
 
-    test("should navigate to courses from admin dashboard", async ({ page }) => {
+    test("should navigate to courses from admin dashboard", async ({
+      page,
+    }) => {
       await page.goto("/admin/dashboard");
       await page.waitForLoadState("networkidle");
 
@@ -321,9 +352,11 @@ test.describe("Admin CRUD Operations", () => {
       if (await coursesLink.isVisible()) {
         await coursesLink.click();
         await page.waitForURL("/admin/courses");
-        
-        // Verify courses page loaded
-        await expect(page.locator("text=/kelola.*kursus|manage.*course/i")).toBeVisible();
+
+        // Verify courses page loaded - use heading role for specificity
+        await expect(
+          page.getByRole("heading", { name: /kelola kursus/i })
+        ).toBeVisible();
       }
     });
   });
@@ -336,13 +369,15 @@ test.describe("Admin CRUD Operations", () => {
 
       // Look for file upload input
       const fileInput = page.locator('input[type="file"]');
-      
+
       if (await fileInput.isVisible()) {
         // Note: Actual file upload testing requires a test image file
         // For now, verify the upload component exists
         await expect(fileInput).toBeVisible();
-        
-        console.log("Image upload component verified. Actual upload requires test image file.");
+
+        console.log(
+          "Image upload component verified. Actual upload requires test image file."
+        );
       }
     });
   });
@@ -354,8 +389,10 @@ test.describe("Admin CRUD Operations", () => {
       await page.waitForLoadState("networkidle");
 
       // Look for enrollment count or link
-      const enrollmentInfo = page.locator('text=/terdaftar|enrolled|siswa|students/i');
-      
+      const enrollmentInfo = page.locator(
+        "text=/terdaftar|enrolled|siswa|students/i"
+      );
+
       if (await enrollmentInfo.first().isVisible()) {
         await expect(enrollmentInfo.first()).toBeVisible();
         console.log("Enrollment information visible in admin interface");
