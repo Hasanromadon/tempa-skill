@@ -1,9 +1,11 @@
 "use client";
 
-import { FormField, TextareaField } from "@/components/common";
+import { MDXEditorWrapper } from "@/components/admin/mdx-editor";
+import { FormField } from "@/components/common";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { createLessonSchema } from "@/lib/validators";
 import { Lesson } from "@/types/api";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -145,11 +147,12 @@ export function LessonForm({
             <CardTitle>Konten Pelajaran</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <TextareaField
-              name="content"
-              label="Konten (MDX)"
-              rows={15}
-              placeholder="# Judul Pelajaran
+            <div className="space-y-2">
+              <Label htmlFor="content">Konten (MDX)</Label>
+              <MDXEditorWrapper
+                markdown={methods.watch("content") || ""}
+                onChange={(markdown) => methods.setValue("content", markdown)}
+                placeholder="# Judul Pelajaran
 
 Tulis konten pelajaran menggunakan Markdown/MDX...
 
@@ -162,15 +165,25 @@ console.log(greeting);
 
 ## Penjelasan
 
-Konten ini akan ditampilkan dengan format MDX."
-              description="Konten pelajaran dalam format MDX. Editor yang lebih baik akan tersedia nanti."
-            />
+Gunakan toolbar di atas untuk format teks dengan mudah."
+              />
+              {methods.formState.errors.content && (
+                <p className="text-sm text-red-600">
+                  {methods.formState.errors.content.message}
+                </p>
+              )}
+              <p className="text-sm text-gray-600">
+                Konten pelajaran dalam format MDX. Gunakan toolbar untuk format
+                teks, tambah gambar, kode, tabel, dll.
+              </p>
+            </div>
 
             <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
               <p className="text-sm text-orange-800">
-                <strong>💡 Tips:</strong> Gunakan Markdown untuk format teks (#
-                heading, **bold**, *italic*, `code`, dll). Editor MDX yang lebih
-                lengkap akan tersedia di Task 11.
+                <strong>💡 Tips:</strong> Gunakan toolbar untuk format teks
+                dengan mudah. Toggle &ldquo;Source&rdquo; untuk melihat raw MDX.
+                Mendukung: heading, bold, italic, lists, links, images, code
+                blocks, tables.
               </p>
             </div>
           </CardContent>

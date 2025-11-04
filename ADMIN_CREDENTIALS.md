@@ -93,12 +93,10 @@ UPDATE users SET role = 'student' WHERE email = 'user@example.com';
    cd tempaskill-be
    make db-status
    ```
-   
 2. **Cek role user**:
    ```sql
    SELECT id, name, email, role FROM users WHERE email='admin@tempaskill.com';
    ```
-   
 3. **Re-run migration jika user tidak ada**:
    ```bash
    cd tempaskill-be
