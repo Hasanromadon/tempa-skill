@@ -8,11 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useCourseById } from "@/hooks/use-courses";
 import { useCourseLessons } from "@/hooks/use-lessons";
 import { ROUTES } from "@/lib/constants";
-import {
-  AlertCircle,
-  BookOpen,
-  Plus,
-} from "lucide-react";
+import { AlertCircle, BookOpen, Plus } from "lucide-react";
 import Link from "next/link";
 import { use } from "react";
 

@@ -109,15 +109,14 @@ CREATE TABLE lessons (
     title VARCHAR(200) NOT NULL,
     slug VARCHAR(250) NOT NULL,
     content_mdx TEXT NOT NULL,  -- Markdown/MDX content
-    `order` INTEGER NOT NULL,  -- Urutan lesson dalam course
+    order_index INTEGER NOT NULL DEFAULT 0,  -- Urutan lesson dalam course (for drag-drop reorder)
     duration_minutes INTEGER DEFAULT 0,
-    is_free BOOLEAN DEFAULT false,  -- Free preview lesson
+    is_published BOOLEAN DEFAULT true,  -- Published/Draft status
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_lessons_course (course_id),
-    INDEX idx_lessons_order (course_id, `order`),
+    INDEX idx_lessons_order (course_id, order_index),
     UNIQUE KEY unique_course_slug (course_id, slug),
-    UNIQUE KEY unique_course_order (course_id, `order`),
     FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ```
@@ -129,9 +128,11 @@ CREATE TABLE lessons (
 - `title`: Judul lesson
 - `slug`: URL-friendly identifier (unik per course)
 - `content_mdx`: Konten lesson dalam format MDX
-- `order`: Urutan lesson (1, 2, 3, ...)
+- `order_index`: Urutan lesson (0, 1, 2, ...) - supports drag-drop reordering
 - `duration_minutes`: Estimasi waktu belajar (menit)
-- `is_free`: Apakah lesson gratis (bisa diakses tanpa enroll)
+- `is_published`: Status publikasi (true = terbit, false = draft)
+
+**Note:** Changed from `is_free` to `is_published` to support draft/published workflow in admin panel.
 
 ---
 

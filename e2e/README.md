@@ -425,8 +425,23 @@ Test coverage meliputi:
 - ✅ **Enrollment**: Enroll, Unenroll
 - ✅ **Lesson Viewer**: Navigation, Content, Progress
 - ✅ **Dashboard**: Stats, Enrolled Courses, Continue Learning
+- ✅ **Admin CRUD (NEW)**: Course CRUD, Lesson CRUD, Drag-Drop Reorder, Image Upload, Admin Dashboard
 - ✅ **Mobile Responsive**: Sidebar toggle, Touch UI
 - ✅ **Bahasa Indonesia**: Semua UI text
+
+### Test Files
+
+- `auth.spec.ts` - Authentication flows (register, login, logout)
+- `courses.spec.ts` - Course browsing, filtering, search
+- `lessons.spec.ts` - Lesson viewer, navigation, completion
+- `dashboard.spec.ts` - User dashboard, enrolled courses, progress
+- `admin-crud.spec.ts` - **NEW** - Admin panel CRUD operations:
+  - Course creation, editing, deletion
+  - Lesson management with MDX editor
+  - Drag-drop lesson reordering
+  - Image upload functionality
+  - Admin dashboard statistics
+  - Enrollment management
 
 ## 🔄 Continuous Testing
 

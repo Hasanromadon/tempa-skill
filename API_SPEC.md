@@ -239,6 +239,50 @@ Response (200 OK):
 
 ---
 
+### Upload Image (Firebase Storage)
+
+**Admin/Instructor Only** - Upload images to Firebase Storage for course thumbnails and MDX content.
+
+```http
+POST /upload
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
+
+FormData:
+  file: <binary image data>
+  folder: "courses" | "lessons" | "avatars"
+
+Response (200 OK):
+{
+  "success": true,
+  "data": {
+    "url": "https://firebasestorage.googleapis.com/v0/b/tempaskill.appspot.com/o/courses%2Fuuid-filename.jpg?alt=media&token=xxx",
+    "path": "courses/uuid-filename.jpg"
+  },
+  "message": "Image uploaded successfully"
+}
+```
+
+**Validation Rules:**
+
+- `file`: Required, must be image (jpg, jpeg, png, webp, gif)
+- `folder`: Required, must be one of: "courses", "lessons", "avatars"
+- Max file size: 5 MB
+- Filename sanitized and prefixed with UUID
+
+**Authorization:**
+
+- User must be authenticated
+- Admin/Instructor role recommended
+
+**Use Cases:**
+
+- Course thumbnail upload
+- Inline images in MDX editor
+- User avatar upload (future)
+
+---
+
 ### Change Password
 
 ```http
@@ -504,6 +548,54 @@ Response (201 Created):
   "message": "Lesson created successfully"
 }
 ```
+
+---
+
+### Reorder Lessons
+
+**Admin/Instructor Only** - Batch update lesson order for drag-drop interface.
+
+```http
+PATCH /lessons/reorder
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "updates": [
+    {
+      "lesson_id": 101,
+      "order_index": 0
+    },
+    {
+      "lesson_id": 102,
+      "order_index": 1
+    },
+    {
+      "lesson_id": 103,
+      "order_index": 2
+    }
+  ]
+}
+
+Response (200 OK):
+{
+  "success": true,
+  "message": "Lessons reordered successfully"
+}
+```
+
+**Validation Rules:**
+
+- `updates`: Required, min 1 item
+- `lesson_id`: Required, must be > 0
+- `order_index`: Required, must be >= 0
+
+**Authorization:**
+
+- User must own the course (via first lesson in updates)
+- Transaction-based: All updates succeed or all fail
+
+**Use Case:** Admin drag-drops lessons in UI, frontend sends batch update
 
 ---
 

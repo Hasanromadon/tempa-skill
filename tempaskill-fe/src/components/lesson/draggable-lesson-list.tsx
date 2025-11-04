@@ -1,14 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import apiClient from "@/lib/api-client";
+import { API_ENDPOINTS } from "@/lib/constants";
 import {
-  DndContext,
   closestCenter,
+  DndContext,
+  DragEndEvent,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
-  DragEndEvent,
 } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -18,12 +22,8 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, FileText } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import apiClient from "@/lib/api-client";
-import { API_ENDPOINTS } from "@/lib/constants";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { FileText, GripVertical } from "lucide-react";
+import { useState } from "react";
 
 interface Lesson {
   id: number;
@@ -83,7 +83,7 @@ function SortableItem({ lesson, index }: SortableItemProps) {
 
           {/* Lesson Icon & Info */}
           <FileText className="h-5 w-5 text-gray-400 shrink-0" />
-          
+
           <div className="flex-1 min-w-0">
             <h4 className="font-medium text-gray-900 truncate">
               {lesson.title}
@@ -163,7 +163,7 @@ export function DraggableLessonList({
     } catch (err) {
       console.error("Failed to reorder lessons:", err);
       setError("Gagal menyimpan urutan. Silakan coba lagi.");
-      
+
       // Revert on error
       setLessons(initialLessons);
       if (onReorder) {
