@@ -30,6 +30,8 @@ import {
 } from "@mdxeditor/editor";
 import "@mdxeditor/editor/style.css";
 import React from "react";
+import apiClient from "@/lib/api-client";
+import { API_ENDPOINTS } from "@/lib/constants";
 
 interface MDXEditorWrapperProps {
   markdown: string;
@@ -72,15 +74,39 @@ export function MDXEditorWrapper({
           linkDialogPlugin(),
           imagePlugin({
             imageUploadHandler: async (file) => {
-              // TODO: Implement image upload to backend
-              // For now, return a placeholder URL
-              const reader = new FileReader();
-              return new Promise((resolve) => {
-                reader.onload = () => {
-                  resolve(reader.result as string);
-                };
-                reader.readAsDataURL(file);
-              });
+              try {
+                // Upload image to Firebase Storage via backend API
+                const formData = new FormData();
+                formData.append("file", file);
+                formData.append("folder", "lessons");
+
+                const response = await apiClient.post<{
+                  message: string;
+                  data: {
+                    url: string;
+                    filename: string;
+                    size: number;
+                    mime_type: string;
+                  };
+                }>(API_ENDPOINTS.UPLOAD.IMAGE, formData, {
+                  headers: {
+                    "Content-Type": "multipart/form-data",
+                  },
+                });
+
+                // Return Firebase Storage public URL
+                return response.data.data.url;
+              } catch (error) {
+                console.error("Image upload error:", error);
+                // Fallback to base64 if upload fails
+                const reader = new FileReader();
+                return new Promise((resolve) => {
+                  reader.onload = () => {
+                    resolve(reader.result as string);
+                  };
+                  reader.readAsDataURL(file);
+                });
+              }
             },
           }),
           tablePlugin(),
