@@ -42,22 +42,23 @@ test.describe("Admin CRUD Operations", () => {
       await page.fill('input[name="title"]', courseTitle);
       await page.fill('textarea[name="description"]', courseDescription);
 
-      // Select category
-      await page.click('button[role="combobox"]'); // Open category dropdown
+      // Select category using Shadcn Select component
+      const categoryTrigger = page.locator('button:has-text("Pilih kategori")');
+      await categoryTrigger.click();
       await page.waitForTimeout(300);
-      await page.locator('div[role="option"]:has-text("Programming")').click();
+      await page.locator('[role="option"]:has-text("Web Development")').click();
 
-      // Select difficulty
-      const difficultySelect = page.locator('select[name="difficulty"]');
-      if (await difficultySelect.isVisible()) {
-        await difficultySelect.selectOption("beginner");
-      }
+      // Select difficulty using Shadcn Select component
+      const difficultyTrigger = page.locator('button:has-text("Pilih tingkat kesulitan")');
+      await difficultyTrigger.click();
+      await page.waitForTimeout(300);
+      await page.locator('[role="option"]:has-text("Pemula")').click();
 
       // Set price
       await page.fill('input[name="price"]', "99000");
 
-      // Submit form
-      await page.click('button[type="submit"]:has-text("Simpan")');
+      // Submit form - button text is "Buat Kursus" for new course
+      await page.click('button[type="submit"]:has-text("Buat Kursus")');
 
       // Wait for success notification or redirect
       await page.waitForTimeout(2000);
@@ -74,13 +75,16 @@ test.describe("Admin CRUD Operations", () => {
       await page.goto("/admin/courses");
       await page.waitForLoadState("networkidle");
 
-      // Find first course edit button
-      const editButton = page
-        .locator('a[href*="/admin/courses/"][href*="/edit"]')
-        .first();
-
-      if (await editButton.isVisible()) {
-        await editButton.click();
+      // Find first course and click its dropdown menu
+      const firstRow = page.locator('tbody tr').first();
+      const dropdownTrigger = firstRow.locator('button[aria-label*="Aksi"]');
+      
+      if (await dropdownTrigger.isVisible()) {
+        await dropdownTrigger.click();
+        await page.waitForTimeout(300);
+        
+        // Click Edit option in dropdown
+        await page.locator('[role="menuitem"]:has-text("Edit")').click();
         await page.waitForLoadState("networkidle");
 
         // Modify title
@@ -90,8 +94,8 @@ test.describe("Admin CRUD Operations", () => {
 
         await titleInput.fill(updatedTitle);
 
-        // Submit form
-        await page.click('button[type="submit"]:has-text("Simpan")');
+        // Submit form - button text is "Perbarui Kursus" for edit mode
+        await page.click('button[type="submit"]:has-text("Perbarui Kursus")');
         await page.waitForTimeout(2000);
 
         // Verify update
@@ -100,9 +104,7 @@ test.describe("Admin CRUD Operations", () => {
       } else {
         test.skip();
       }
-    });
-
-    test("should delete a course", async ({ page }) => {
+    });    test("should delete a course", async ({ page }) => {
       // First create a course to delete
       await page.goto("/admin/courses/new");
       await page.waitForLoadState("networkidle");
@@ -111,12 +113,20 @@ test.describe("Admin CRUD Operations", () => {
       await page.fill('input[name="title"]', courseTitle);
       await page.fill('textarea[name="description"]', "This will be deleted");
 
-      await page.click('button[role="combobox"]');
+      // Select category
+      const categoryTrigger = page.locator('button:has-text("Pilih kategori")');
+      await categoryTrigger.click();
       await page.waitForTimeout(300);
-      await page.locator('div[role="option"]:has-text("Programming")').click();
+      await page.locator('[role="option"]:has-text("Web Development")').click();
+
+      // Select difficulty
+      const difficultyTrigger = page.locator('button:has-text("Pilih tingkat kesulitan")');
+      await difficultyTrigger.click();
+      await page.waitForTimeout(300);
+      await page.locator('[role="option"]:has-text("Pemula")').click();
 
       await page.fill('input[name="price"]', "50000");
-      await page.click('button[type="submit"]:has-text("Simpan")');
+      await page.click('button[type="submit"]:has-text("Buat Kursus")');
       await page.waitForTimeout(2000);
 
       // Now delete it
@@ -127,25 +137,25 @@ test.describe("Admin CRUD Operations", () => {
       const courseRow = page.locator(`tr:has-text("${courseTitle}")`);
 
       if (await courseRow.isVisible()) {
-        // Click delete button (usually in dropdown or direct button)
-        const deleteButton = courseRow
-          .locator('button:has-text("Hapus")')
-          .first();
+        // Click dropdown menu for that course
+        const dropdownTrigger = courseRow.locator('button[aria-label*="Aksi"]');
+        await dropdownTrigger.click();
+        await page.waitForTimeout(300);
 
-        if (await deleteButton.isVisible()) {
-          await deleteButton.click();
+        // Click Hapus option
+        await page.locator('[role="menuitem"]:has-text("Hapus")').click();
 
-          // Confirm deletion in dialog
-          await page.waitForTimeout(500);
-          const confirmButton = page.locator('button:has-text("Ya")').first();
-          await confirmButton.click();
+        // Confirm deletion in dialog - check DeleteCourseDialog component
+        await page.waitForTimeout(500);
+        const confirmButton = page.locator('button:has-text("Ya, Hapus")');
+        await confirmButton.click();
 
-          await page.waitForTimeout(2000);
+        await page.waitForTimeout(2000);
 
-          // Verify course is removed
-          await expect(page.locator(`text=${courseTitle}`)).not.toBeVisible();
-        }
+        // Verify course is removed
+        await expect(page.locator(`text=${courseTitle}`)).not.toBeVisible();
       }
+    });
     });
   });
 
