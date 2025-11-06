@@ -19,7 +19,7 @@ func RegisterRoutes(router *gin.RouterGroup, db *gorm.DB, authMiddleware *middle
 		// Apply OptionalAuth to support is_enrolled field for logged-in users
 		public.GET("/courses/slug/:slug", authMiddleware.OptionalAuth(), handler.GetCourseBySlug)     // Get course by slug (must be before :id)
 		public.GET("/courses/:id", handler.GetCourse)                  // Get course by ID
-		public.GET("/courses/:id/lessons", handler.GetCourseLessons)   // Get course lessons (public for curriculum preview)
+		public.GET("/courses/:id/lessons", authMiddleware.OptionalAuth(), handler.GetCourseLessons)   // Get course lessons (authenticated users see unpublished lessons)
 		// Apply OptionalAuth to include content for enrolled users
 		public.GET("/lessons/:id", authMiddleware.OptionalAuth(), handler.GetLesson)                  // Get lesson detail (public for preview)
 	}

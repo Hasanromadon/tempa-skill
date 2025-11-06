@@ -9,9 +9,9 @@
 ## 📊 Quick Stats
 
 - **Total Tasks**: 20
-- **Not Started**: 20
-- **In Progress**: 0
-- **Completed**: 0
+- **Not Started**: 18
+- **In Progress**: 1
+- **Completed**: 1
 
 ---
 
@@ -60,20 +60,20 @@ tempaskill-fe/src/components/admin/
 
 ### 2. Admin Panel - Lesson Management
 
-**Status**: ⏸️ Not Started  
+**Status**: ✅ Completed  
 **Estimated Time**: 6 hours  
 **Priority**: 🔴 Critical
 
 **Description**:
 Buat admin panel untuk CRUD lessons dengan fitur:
 
-- Create/edit/delete lesson
-- MDX editor dengan preview
-- Drag-and-drop reorder lessons
-- Set duration dan difficulty
-- Lesson preview mode
+- ✅ Create/edit/delete lesson
+- ✅ MDX editor dengan preview
+- ✅ Drag-and-drop reorder lessons
+- ✅ Set duration dan difficulty
+- ✅ Lesson preview mode
 
-**Files to Create**:
+**Files Created**:
 
 ```
 tempaskill-fe/src/app/admin/courses/[courseId]/lessons/
@@ -854,9 +854,9 @@ Based on dependencies and business value:
 
 ---
 
-**Last Updated**: November 3, 2025  
+**Last Updated**: November 6, 2025  
 **Total Estimated Time**: ~112 hours  
-**Progress**: 0/20 tasks completed (0%)
+**Progress**: 1/20 tasks completed (5%)
 
 ---
 

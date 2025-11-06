@@ -168,21 +168,23 @@ CREATE TABLE enrollments (
 
 ---
 
-### 5. progresses
+### 5. lesson_progress
 
 Menyimpan progress completion lesson per user
 
 ```sql
-CREATE TABLE progresses (
+CREATE TABLE lesson_progress (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
     lesson_id BIGINT NOT NULL,
     course_id BIGINT NOT NULL,
     completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_progresses_user (user_id),
-    INDEX idx_progresses_lesson (lesson_id),
-    INDEX idx_progresses_course (course_id),
-    INDEX idx_progresses_user_course (user_id, course_id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_lesson_progress_user (user_id),
+    INDEX idx_lesson_progress_lesson (lesson_id),
+    INDEX idx_lesson_progress_course (course_id),
+    INDEX idx_lesson_progress_user_course (user_id, course_id),
     UNIQUE KEY unique_user_lesson (user_id, lesson_id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (lesson_id) REFERENCES lessons(id) ON DELETE CASCADE,
@@ -197,6 +199,8 @@ CREATE TABLE progresses (
 - `lesson_id`: Foreign key ke `lessons`
 - `course_id`: Foreign key ke `courses` (denormalized untuk query performance)
 - `completed_at`: Waktu penyelesaian lesson
+- `created_at`: Waktu record dibuat
+- `updated_at`: Waktu record terakhir diupdate
 
 **Constraints:**
 

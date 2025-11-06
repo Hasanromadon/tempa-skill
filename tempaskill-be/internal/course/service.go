@@ -308,7 +308,6 @@ func (s *service) GetCourseLessons(ctx context.Context, userID uint, courseID ui
 			responses = append(responses, lesson.ToResponse(false))
 		}
 	}
-
 	return responses, nil
 }
 

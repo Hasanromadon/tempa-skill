@@ -604,21 +604,34 @@ Response (200 OK):
 ### Mark Lesson as Completed
 
 ```http
-POST /lessons/:id/complete
+POST /progress/lessons/:id/complete
 Authorization: Bearer <token>
+
+Request Body:
+{
+  "course_id": 1
+}
 
 Response (200 OK):
 {
   "success": true,
   "data": {
-    "lesson_id": 101,
+    "course_id": 1,
     "user_id": 5,
-    "completed_at": "2025-11-02T14:30:00Z",
-    "course_progress": {
-      "completed_lessons": 5,
-      "total_lessons": 20,
-      "percentage": 25
-    }
+    "completed_lessons": 5,
+    "total_lessons": 20,
+    "percentage": 25,
+    "completed_lesson_ids": [101, 102, 103, 104, 105],
+    "lessons": [
+      {
+        "lesson_id": 101,
+        "title": "Introduction to Go",
+        "is_completed": true,
+        "completed_at": "2025-11-02T14:30:00Z"
+      }
+    ],
+    "started_at": "2025-11-01T09:00:00Z",
+    "last_accessed": "2025-11-02T14:30:00Z"
   },
   "message": "Lesson marked as completed"
 }
@@ -629,13 +642,14 @@ Response (200 OK):
 - User must be enrolled in the course
 - Cannot mark the same lesson completed twice (idempotent)
 - Automatically updates course progress
+- Returns updated course progress data
 
 ---
 
 ### Get Course Progress
 
 ```http
-GET /courses/:id/progress
+GET /progress/courses/:id
 Authorization: Bearer <token>
 
 Response (200 OK):
@@ -672,7 +686,7 @@ Response (200 OK):
 ### Get All User Progress
 
 ```http
-GET /users/me/progress
+GET /progress/me
 Authorization: Bearer <token>
 
 Response (200 OK):
