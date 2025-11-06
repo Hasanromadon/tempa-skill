@@ -201,15 +201,15 @@ test.describe("Admin CRUD Operations", () => {
       // Wait for editor to load and find the contenteditable area
       const content =
         "# Test Lesson Content\n\nThis is test content for the lesson. It contains enough characters to meet the minimum requirement.";
-      
+
       const mdxEditor = page.locator('[contenteditable="true"]').first();
       await mdxEditor.waitFor({ state: "visible", timeout: 5000 });
-      
+
       // Use fill with force option for contenteditable
       await mdxEditor.fill(content);
 
       // Set duration
-      await page.fill('input[name="duration"]', "30");      // Submit form - button text is "Buat Pelajaran" for new lesson
+      await page.fill('input[name="duration"]', "30"); // Submit form - button text is "Buat Pelajaran" for new lesson
       await page.click('button[type="submit"]:has-text("Buat Pelajaran")');
 
       // Wait for redirect back to lessons list
@@ -244,15 +244,22 @@ test.describe("Admin CRUD Operations", () => {
         const newTitle = `Edited Lesson ${Date.now()}`;
         await titleInput.fill(newTitle);
 
+        // Modify content (MDXEditor)
+        const content =
+          "# Edited Lesson Content\n\nKonten pelajaran yang sudah diedit. Minimal 50 karakter untuk validasi.";
+        const mdxEditor = page.locator('[contenteditable="true"]').first();
+        await mdxEditor.waitFor({ state: "visible", timeout: 5000 });
+        await mdxEditor.fill(content);
+
         // Submit
-        await page.click('button[type="submit"]:has-text("Simpan")');
+        await page.click(
+          'button[type="submit"]:has-text("Perbarui Pelajaran")'
+        );
         await page.waitForTimeout(2000);
 
         // Verify
         await page.goto(`/admin/courses/${testCourseId}/lessons`);
         await expect(page.locator(`text=${newTitle}`)).toBeVisible();
-      } else {
-        test.skip();
       }
     });
 
