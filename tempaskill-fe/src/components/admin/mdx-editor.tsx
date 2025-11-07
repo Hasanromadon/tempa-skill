@@ -1,5 +1,7 @@
 "use client";
 
+import { MDXContent } from "@/components/mdx";
+import { Button } from "@/components/ui/button";
 import apiClient from "@/lib/api-client";
 import { API_ENDPOINTS } from "@/lib/constants";
 import {
@@ -9,8 +11,6 @@ import {
   codeMirrorPlugin,
   CodeToggle,
   CreateLink,
-  diffSourcePlugin,
-  DiffSourceToggleWrapper,
   headingsPlugin,
   imagePlugin,
   InsertCodeBlock,
@@ -23,15 +23,13 @@ import {
   ListsToggle,
   markdownShortcutPlugin,
   MDXEditor,
-  quotePlugin,
-  tablePlugin,
-  thematicBreakPlugin,
   toolbarPlugin,
   UndoRedo,
   type MDXEditorMethods,
 } from "@mdxeditor/editor";
 import "@mdxeditor/editor/style.css";
-import React from "react";
+import { Edit, Eye, SplitSquareHorizontal } from "lucide-react";
+import React, { useEffect, useState } from "react";
 
 interface MDXEditorWrapperProps {
   markdown: string;
@@ -39,120 +37,319 @@ interface MDXEditorWrapperProps {
   placeholder?: string;
 }
 
+interface MDXEditorWrapperProps {
+  markdown: string;
+  onChange: (markdown: string) => void;
+  placeholder?: string;
+  autoSave?: boolean;
+  onAutoSave?: (markdown: string) => void;
+  autoSaveDelay?: number;
+}
+
 /**
- * MDX Editor Component
+ * MDX Editor Component with Live Preview
  *
  * Komponen editor MDX dengan fitur lengkap untuk menulis konten lesson.
- * Mendukung: headings, bold, italic, lists, links, images, code blocks, tables.
+ * Mendukung: split view (editor + preview), syntax highlighting, toolbar,
+ * auto-save, dan template snippets.
  *
  * @param markdown - Konten MDX saat ini
  * @param onChange - Callback saat konten berubah
  * @param placeholder - Placeholder text
+ * @param autoSave - Enable auto-save functionality
+ * @param onAutoSave - Callback untuk auto-save
+ * @param autoSaveDelay - Delay untuk auto-save (ms)
  */
 export function MDXEditorWrapper({
   markdown,
   onChange,
   placeholder = "Tulis konten lesson di sini...",
+  autoSave = false,
+  onAutoSave,
+  autoSaveDelay = 2000,
 }: MDXEditorWrapperProps) {
+  const [viewMode, setViewMode] = useState<"editor" | "preview" | "split">(
+    "editor"
+  );
   const ref = React.useRef<MDXEditorMethods>(null);
+
+  // Auto-save functionality
+  useEffect(() => {
+    if (!autoSave || !onAutoSave) return;
+
+    const timeoutId = setTimeout(() => {
+      onAutoSave(markdown);
+    }, autoSaveDelay);
+
+    return () => clearTimeout(timeoutId);
+  }, [markdown, autoSave, onAutoSave, autoSaveDelay]);
+
+  // Debug logging
+  useEffect(() => {
+    console.log("MDXEditor markdown:", markdown);
+    console.log("MDXEditor viewMode:", viewMode);
+  }, [markdown, viewMode]);
+
+  const insertTemplate = (template: string) => {
+    if (ref.current) {
+      const currentMarkdown = ref.current.getMarkdown();
+      const newMarkdown = currentMarkdown + "\n\n" + template;
+      onChange(newMarkdown);
+    }
+  };
+
+  const templates = {
+    heading: "# Judul Section\n\nDeskripsi section...",
+    code: "```javascript\nconst example = 'Hello World';\nconsole.log(example);\n```",
+    list: "- Item 1\n- Item 2\n- Item 3",
+    link: "[Teks Link](https://example.com)",
+    image: "![Alt text](https://example.com/image.jpg)",
+    table:
+      "| Header 1 | Header 2 |\n|----------|----------|\n| Cell 1   | Cell 2   |",
+    tabs: `<Tabs>
+  <Tab label="Tab 1">
+    Konten untuk tab pertama
+  </Tab>
+  <Tab label="Tab 2">
+    Konten untuk tab kedua
+  </Tab>
+</Tabs>`,
+    quiz: `<Quiz
+  question="Apa itu JavaScript?"
+  options={[
+    { text: "Bahasa pemrograman untuk styling web", isCorrect: false },
+    { text: "Bahasa pemrograman untuk membuat halaman web interaktif", isCorrect: true },
+    { text: "Bahasa pemrograman untuk database", isCorrect: false },
+    { text: "Bahasa markup untuk struktur web", isCorrect: false }
+  ]}
+  explanation="JavaScript adalah bahasa pemrograman yang digunakan untuk membuat halaman web menjadi interaktif dan dinamis."
+/>`,
+    codeBlock: `<CodeBlock language="javascript" title="Contoh Fungsi JavaScript">
+function greetUser(name) {
+  return \`Hello, \${name}!\`;
+}
+
+console.log(greetUser("World"));
+</CodeBlock>`,
+  };
 
   return (
     <div className="mdx-editor-wrapper border rounded-lg overflow-hidden">
-      <MDXEditor
-        ref={ref}
-        markdown={markdown}
-        onChange={onChange}
-        placeholder={placeholder}
-        contentEditableClassName="prose prose-slate max-w-none min-h-[400px] p-4"
-        plugins={[
-          // Core plugins
-          headingsPlugin(),
-          listsPlugin(),
-          quotePlugin(),
-          thematicBreakPlugin(),
-          linkPlugin(),
-          linkDialogPlugin(),
-          imagePlugin({
-            imageUploadHandler: async (file) => {
-              try {
-                // Upload image to Firebase Storage via backend API
-                const formData = new FormData();
-                formData.append("file", file);
-                formData.append("folder", "lessons");
+      {/* View Mode Toggle */}
+      <div className="bg-gray-50 border-b px-4 py-2 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Button
+            variant={viewMode === "editor" ? "default" : "ghost"}
+            size="sm"
+            type="button"
+            onClick={() => setViewMode("editor")}
+            className="h-8"
+          >
+            <Edit className="h-4 w-4 mr-1" />
+            Editor
+          </Button>
+          <Button
+            variant={viewMode === "split" ? "default" : "ghost"}
+            size="sm"
+            type="button"
+            onClick={() => setViewMode("split")}
+            className="h-8"
+          >
+            <SplitSquareHorizontal className="h-4 w-4 mr-1" />
+            Split
+          </Button>
+          <Button
+            variant={viewMode === "preview" ? "default" : "ghost"}
+            size="sm"
+            type="button"
+            onClick={() => setViewMode("preview")}
+            className="h-8"
+          >
+            <Eye className="h-4 w-4 mr-1" />
+            Preview
+          </Button>
+        </div>
 
-                const response = await apiClient.post<{
-                  message: string;
-                  data: {
-                    url: string;
-                    filename: string;
-                    size: number;
-                    mime_type: string;
-                  };
-                }>(API_ENDPOINTS.UPLOAD.IMAGE, formData, {
-                  headers: {
-                    "Content-Type": "multipart/form-data",
+        {/* Template Snippets */}
+        <div className="flex items-center gap-1">
+          <span className="text-sm text-gray-600 mr-2">Templates:</span>
+          <Button
+            variant="outline"
+            size="sm"
+            type="button"
+            onClick={() => insertTemplate(templates.heading)}
+            className="h-8 text-xs"
+          >
+            Heading
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            type="button"
+            onClick={() => insertTemplate(templates.code)}
+            className="h-8 text-xs"
+          >
+            Code
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            type="button"
+            onClick={() => insertTemplate(templates.list)}
+            className="h-8 text-xs"
+          >
+            List
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            type="button"
+            onClick={() => insertTemplate(templates.tabs)}
+            className="h-8 text-xs"
+          >
+            Tabs
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            type="button"
+            onClick={() => insertTemplate(templates.quiz)}
+            className="h-8 text-xs"
+          >
+            Quiz
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            type="button"
+            onClick={() => insertTemplate(templates.codeBlock)}
+            className="h-8 text-xs"
+          >
+            CodeBlock
+          </Button>
+        </div>
+      </div>
+
+      {/* Editor Content */}
+      <div className={`min-h-[500px] ${viewMode === "split" ? "flex" : ""}`}>
+        {/* Editor Pane */}
+        {(viewMode === "editor" || viewMode === "split") && (
+          <div
+            className={`${viewMode === "split" ? "w-1/2 border-r" : "w-full"}`}
+          >
+            <MDXEditor
+              ref={ref}
+              markdown={markdown || ""}
+              onChange={onChange}
+              placeholder={placeholder}
+              contentEditableClassName="min-h-[400px] p-4 focus:outline-none"
+              plugins={[
+                // Core plugins
+                headingsPlugin(),
+                listsPlugin(),
+                linkPlugin(),
+                linkDialogPlugin(),
+                imagePlugin({
+                  imageUploadHandler: async (file) => {
+                    try {
+                      // Upload image to Firebase Storage via backend API
+                      const formData = new FormData();
+                      formData.append("file", file);
+                      formData.append("folder", "lessons");
+
+                      const response = await apiClient.post<{
+                        message: string;
+                        data: {
+                          url: string;
+                          filename: string;
+                          size: number;
+                          mime_type: string;
+                        };
+                      }>(API_ENDPOINTS.UPLOAD.IMAGE, formData, {
+                        headers: {
+                          "Content-Type": "multipart/form-data",
+                        },
+                      });
+
+                      // Return Firebase Storage public URL
+                      return response.data.data.url;
+                    } catch (error) {
+                      console.error("Image upload error:", error);
+                      // Fallback to base64 if upload fails
+                      const reader = new FileReader();
+                      return new Promise((resolve) => {
+                        reader.onload = () => {
+                          resolve(reader.result as string);
+                        };
+                        reader.readAsDataURL(file);
+                      });
+                    }
                   },
-                });
+                }),
+                codeBlockPlugin({ defaultCodeBlockLanguage: "javascript" }),
+                codeMirrorPlugin({
+                  codeBlockLanguages: {
+                    javascript: "JavaScript",
+                    typescript: "TypeScript",
+                    jsx: "JSX",
+                    tsx: "TSX",
+                    python: "Python",
+                    go: "Go",
+                    java: "Java",
+                    css: "CSS",
+                    html: "HTML",
+                    sql: "SQL",
+                    bash: "Bash",
+                    json: "JSON",
+                    yaml: "YAML",
+                    markdown: "Markdown",
+                  },
+                }),
+                markdownShortcutPlugin(),
+                // Toolbar
+                toolbarPlugin({
+                  toolbarContents: () => (
+                    <>
+                      <UndoRedo />
+                      <BlockTypeSelect />
+                      <BoldItalicUnderlineToggles />
+                      <CodeToggle />
+                      <CreateLink />
+                      <InsertImage />
+                      <InsertTable />
+                      <InsertThematicBreak />
+                      <ListsToggle />
+                      <InsertCodeBlock />
+                    </>
+                  ),
+                }),
+              ]}
+            />
+          </div>
+        )}
 
-                // Return Firebase Storage public URL
-                return response.data.data.url;
-              } catch (error) {
-                console.error("Image upload error:", error);
-                // Fallback to base64 if upload fails
-                const reader = new FileReader();
-                return new Promise((resolve) => {
-                  reader.onload = () => {
-                    resolve(reader.result as string);
-                  };
-                  reader.readAsDataURL(file);
-                });
-              }
-            },
-          }),
-          tablePlugin(),
-          codeBlockPlugin({ defaultCodeBlockLanguage: "javascript" }),
-          codeMirrorPlugin({
-            codeBlockLanguages: {
-              javascript: "JavaScript",
-              typescript: "TypeScript",
-              jsx: "JSX",
-              tsx: "TSX",
-              python: "Python",
-              go: "Go",
-              java: "Java",
-              css: "CSS",
-              html: "HTML",
-              sql: "SQL",
-              bash: "Bash",
-              json: "JSON",
-              yaml: "YAML",
-              markdown: "Markdown",
-            },
-          }),
-          diffSourcePlugin({
-            viewMode: "rich-text",
-            diffMarkdown: markdown,
-          }),
-          markdownShortcutPlugin(),
-          // Toolbar
-          toolbarPlugin({
-            toolbarContents: () => (
-              <DiffSourceToggleWrapper>
-                <UndoRedo />
-                <BlockTypeSelect />
-                <BoldItalicUnderlineToggles />
-                <CodeToggle />
-                <CreateLink />
-                <InsertImage />
-                <InsertTable />
-                <InsertThematicBreak />
-                <ListsToggle />
-                <InsertCodeBlock />
-              </DiffSourceToggleWrapper>
-            ),
-          }),
-        ]}
-      />
+        {/* Preview Pane */}
+        {(viewMode === "preview" || viewMode === "split") && (
+          <div
+            className={`${viewMode === "split" ? "w-1/2" : "w-full"} bg-white`}
+          >
+            <div className="p-4 border-b bg-gray-50">
+              <h3 className="text-sm font-medium text-gray-700">
+                Live Preview
+              </h3>
+            </div>
+            <div className="p-4 max-h-[400px] overflow-y-auto">
+              {markdown ? (
+                <MDXContent content={markdown} />
+              ) : (
+                <div className="text-gray-500 italic">
+                  No content to preview
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

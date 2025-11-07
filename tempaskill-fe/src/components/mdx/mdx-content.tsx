@@ -2,12 +2,16 @@
 
 import { MDXRemote, MDXRemoteSerializeResult } from "next-mdx-remote";
 import { serialize } from "next-mdx-remote/serialize";
-import type { HTMLAttributes } from "react";
-import { useEffect, useState } from "react";
+import type { HTMLAttributes, ReactNode } from "react";
+import React, { useEffect, useState } from "react";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeHighlight from "rehype-highlight";
 import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
+import { Callout } from "./callout";
+import { CodeBlock } from "./code-block";
+import { Quiz } from "./quiz";
+import { Tab, Tabs } from "./tabs";
 
 // Custom components for MDX
 const components = {
@@ -22,13 +26,37 @@ const components = {
     <h3 className="text-2xl font-semibold mt-6 mb-3 text-gray-900" {...props} />
   ),
 
-  // Code blocks with better styling
-  pre: (props: HTMLAttributes<HTMLPreElement>) => (
-    <pre
-      className="bg-gray-900 rounded-lg p-4 overflow-x-auto my-4"
-      {...props}
-    />
-  ),
+  // Code blocks with enhanced styling and copy functionality
+  pre: (props: HTMLAttributes<HTMLPreElement>) => {
+    const { children, ...rest } = props;
+    // Check if this is a code block (has code child)
+    if (React.isValidElement(children) && children.type === "code") {
+      try {
+        const codeElement = children as React.ReactElement<{
+          className?: string;
+          children?: ReactNode;
+        }>;
+        const language =
+          codeElement.props.className?.replace("language-", "") || "";
+        const codeContent = codeElement.props.children;
+
+        if (typeof codeContent === "string") {
+          return <CodeBlock language={language}>{codeContent}</CodeBlock>;
+        }
+      } catch (err) {
+        console.warn("Error processing code block:", err);
+      }
+    }
+    // Fallback for non-code pre elements
+    return (
+      <pre
+        className="bg-gray-900 rounded-lg p-4 overflow-x-auto my-4 text-sm"
+        {...rest}
+      >
+        {children}
+      </pre>
+    );
+  },
   code: (props: HTMLAttributes<HTMLElement>) => (
     <code className="text-sm font-mono" {...props} />
   ),
@@ -79,6 +107,13 @@ const components = {
   td: (props: HTMLAttributes<HTMLTableCellElement>) => (
     <td className="px-4 py-2 border-t" {...props} />
   ),
+
+  // Custom components
+  Callout,
+  Tabs,
+  Tab,
+  Quiz,
+  CodeBlock,
 };
 
 interface MDXContentProps {
@@ -94,6 +129,12 @@ export function MDXContent({ content }: MDXContentProps) {
   useEffect(() => {
     async function compileMDX() {
       try {
+        if (!content || content.trim() === "") {
+          setMdxSource(null);
+          setError(null);
+          return;
+        }
+
         const serialized = await serialize(content, {
           mdxOptions: {
             remarkPlugins: [remarkGfm],
@@ -109,12 +150,11 @@ export function MDXContent({ content }: MDXContentProps) {
       } catch (err) {
         console.error("Error compiling MDX:", err);
         setError("Failed to render content");
+        setMdxSource(null);
       }
     }
 
-    if (content) {
-      compileMDX();
-    }
+    compileMDX();
   }, [content]);
 
   if (error) {
@@ -122,6 +162,14 @@ export function MDXContent({ content }: MDXContentProps) {
       <div className="text-red-600 p-4 bg-red-50 rounded-lg">
         <p className="font-semibold">Error rendering content</p>
         <p className="text-sm">{error}</p>
+      </div>
+    );
+  }
+
+  if (!content || content.trim() === "") {
+    return (
+      <div className="text-gray-500 italic text-center py-8">
+        Tidak ada konten untuk ditampilkan
       </div>
     );
   }
