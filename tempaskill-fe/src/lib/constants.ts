@@ -79,6 +79,17 @@ export const API_ENDPOINTS = {
     CHECK_STATUS: (orderId: string) => `/payment/status/${orderId}`,
     WEBHOOK: "/payment/webhook",
   },
+  REVIEWS: {
+    LIST: "/reviews",
+    DETAIL: (id: number) => `/reviews/${id}`,
+    CREATE: "/reviews",
+    UPDATE: (id: number) => `/reviews/${id}`,
+    DELETE: (id: number) => `/reviews/${id}`,
+    BY_USER: "/reviews/user",
+    BY_COURSE: (courseId: number) => `/reviews/courses/${courseId}`,
+    COURSE_SUMMARY: (courseId: number) =>
+      `/reviews/courses/${courseId}/summary`,
+  },
   SESSIONS: {
     LIST: "/sessions",
     DETAIL: (id: number) => `/sessions/${id}`,

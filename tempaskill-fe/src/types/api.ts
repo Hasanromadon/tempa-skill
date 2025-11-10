@@ -238,3 +238,64 @@ export interface SessionListResponse {
     total_pages: number;
   };
 }
+
+// Review Types
+export interface Review {
+  id: number;
+  user_id: number;
+  course_id: number;
+  rating: number; // 1-5 stars
+  comment?: string;
+  is_verified_purchase: boolean;
+  created_at: string;
+  updated_at?: string;
+  user?: {
+    id: number;
+    name: string;
+    avatar_url?: string;
+  };
+}
+
+export interface CourseReviewSummary {
+  course_id: number;
+  average_rating: number;
+  total_reviews: number;
+  rating_distribution: {
+    1: number;
+    2: number;
+    3: number;
+    4: number;
+    5: number;
+  };
+}
+
+export interface CreateReviewRequest {
+  course_id: number;
+  rating: number; // 1-5
+  comment?: string;
+}
+
+export interface UpdateReviewRequest {
+  rating?: number; // 1-5
+  comment?: string;
+}
+
+export interface ReviewListQuery {
+  page?: number;
+  limit?: number;
+  course_id?: number;
+  user_id?: number;
+  rating?: number; // Filter by specific rating
+  sort_by?: "created_at" | "rating" | "helpful";
+  sort_order?: "asc" | "desc";
+}
+
+export interface ReviewListResponse {
+  items: Review[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
+  };
+}

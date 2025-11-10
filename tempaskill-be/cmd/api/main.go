@@ -12,6 +12,7 @@ import (
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/middleware"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/payment"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/progress"
+	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/review"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/session"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/upload"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/user"
@@ -61,6 +62,7 @@ func main() {
 		&course.Enrollment{},
 		&payment.PaymentTransaction{},
 		&progress.LessonProgress{},
+		&review.CourseReview{},
 	); err != nil {
 		logger.Fatal("Failed to migrate database", zap.Error(err))
 	}
@@ -190,6 +192,14 @@ func main() {
 			}
 			c.Next()
 		})
+
+		// Initialize review module
+		reviewRepo := review.NewRepository(db)
+		reviewService := review.NewService(reviewRepo)
+		reviewHandler := review.NewHandler(reviewService)
+
+		// Register review routes
+		review.RegisterRoutes(router, reviewHandler, authMiddleware.RequireAuth())
 	}
 
 	// Start server

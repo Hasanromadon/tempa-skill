@@ -3,6 +3,7 @@
 import { LoadingScreen } from "@/components/common";
 import { LessonList } from "@/components/lesson";
 import { PaymentModal } from "@/components/payment/payment-modal";
+import { ReviewForm, ReviewList } from "@/components/review";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   AlertDialog,
@@ -70,6 +71,7 @@ export default function CourseDetailPage({ params }: PageProps) {
   const unenrollCourse = useUnenrollCourse();
   const [enrollError, setEnrollError] = useState("");
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
 
   const handleEnroll = async () => {
     if (!isAuthenticated) {
@@ -367,6 +369,38 @@ export default function CourseDetailPage({ params }: PageProps) {
                 </CardContent>
               </Card>
             )}
+
+            {/* Reviews Section */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Ulasan Kursus</CardTitle>
+                  {course?.is_enrolled && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowReviewForm(!showReviewForm)}
+                      className="text-orange-600 border-orange-600 hover:bg-orange-50"
+                    >
+                      {showReviewForm ? "Batal" : "Tulis Ulasan"}
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Review Form */}
+                {showReviewForm && course?.is_enrolled && (
+                  <ReviewForm
+                    courseId={course.id}
+                    onSuccess={() => setShowReviewForm(false)}
+                    onCancel={() => setShowReviewForm(false)}
+                  />
+                )}
+
+                {/* Review List */}
+                <ReviewList courseId={course?.id || 0} />
+              </CardContent>
+            </Card>
           </div>
 
           {/* Right Column - Enrollment Card */}
