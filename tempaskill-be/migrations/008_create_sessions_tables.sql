@@ -5,9 +5,9 @@ USE tempaskill;
 
 -- Sessions table
 CREATE TABLE IF NOT EXISTS sessions (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    course_id BIGINT NOT NULL,
-    instructor_id BIGINT NOT NULL,
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    course_id BIGINT UNSIGNED NOT NULL,
+    instructor_id BIGINT UNSIGNED NOT NULL,
     title VARCHAR(200) NOT NULL,
     description TEXT,
     scheduled_at TIMESTAMP NOT NULL,
@@ -28,8 +28,8 @@ CREATE TABLE IF NOT EXISTS sessions (
 
 -- Session participants table
 CREATE TABLE IF NOT EXISTS session_participants (
-    session_id BIGINT NOT NULL,
-    user_id BIGINT NOT NULL,
+    session_id BIGINT UNSIGNED NOT NULL,
+    user_id BIGINT UNSIGNED NOT NULL,
     registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     attended_at TIMESTAMP NULL,
     PRIMARY KEY (session_id, user_id),
