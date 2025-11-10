@@ -2,6 +2,7 @@
 
 import { LoadingScreen } from "@/components/common";
 import { LessonList } from "@/components/lesson";
+import { PaymentModal } from "@/components/payment/payment-modal";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   AlertDialog,
@@ -68,6 +69,7 @@ export default function CourseDetailPage({ params }: PageProps) {
   const enrollCourse = useEnrollCourse();
   const unenrollCourse = useUnenrollCourse();
   const [enrollError, setEnrollError] = useState("");
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const handleEnroll = async () => {
     if (!isAuthenticated) {
@@ -77,6 +79,13 @@ export default function CourseDetailPage({ params }: PageProps) {
 
     if (!course) return;
 
+    // If course is paid, show payment modal
+    if (course.price > 0) {
+      setShowPaymentModal(true);
+      return;
+    }
+
+    // Free course - enroll directly
     setEnrollError("");
     try {
       await enrollCourse.mutateAsync(course.id);
@@ -93,6 +102,11 @@ export default function CourseDetailPage({ params }: PageProps) {
         description: errorMessage,
       });
     }
+  };
+
+  const handlePaymentSuccess = () => {
+    // Refresh the page to show enrolled status
+    window.location.reload();
   };
 
   const handleUnenroll = async () => {
@@ -141,7 +155,7 @@ export default function CourseDetailPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-orange-600 to-orange-700 text-white">
+      <div className="bg-linear-to-r from-orange-600 to-orange-700 text-white">
         <div className="container mx-auto px-4 py-8">
           <Link
             href={ROUTES.COURSES}
@@ -516,6 +530,18 @@ export default function CourseDetailPage({ params }: PageProps) {
           </div>
         </div>
       </div>
+
+      {/* Payment Modal */}
+      {course && (
+        <PaymentModal
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          courseId={course.id}
+          courseTitle={course.title}
+          coursePrice={course.price}
+          onSuccess={handlePaymentSuccess}
+        />
+      )}
     </div>
   );
 }

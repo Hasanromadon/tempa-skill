@@ -10,6 +10,7 @@ import (
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/course"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/middleware"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/progress"
+	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/session"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/upload"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/user"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/database"
@@ -144,6 +145,9 @@ func main() {
 
 		// Register course routes
 		course.RegisterRoutes(v1, db, authMiddleware)
+
+		// Register session routes
+		session.RegisterRoutes(v1, db, authMiddleware)
 
 		// Initialize progress module
 		courseRepo := course.NewRepository(db)

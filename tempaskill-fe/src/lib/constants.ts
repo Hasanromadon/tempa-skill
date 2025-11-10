@@ -12,12 +12,16 @@ export const ROUTES = {
   DASHBOARD: "/dashboard",
   PROFILE: "/profile",
   COURSES: "/courses",
+  PAYMENTS: "/payments",
+  SESSIONS: "/sessions",
   COURSE_DETAIL: (slug: string) => `/courses/${slug}`,
   LESSON_DETAIL: (courseSlug: string, lessonSlug: string) =>
     `/courses/${courseSlug}/lessons/${lessonSlug}`,
+  SESSION_DETAIL: (id: number) => `/sessions/${id}`,
   ADMIN: {
     DASHBOARD: "/admin/dashboard",
     COURSES: "/admin/courses",
+    PAYMENTS: "/admin/payments",
     COURSE_NEW: "/admin/courses/new",
     COURSE_EDIT: (id: number) => `/admin/courses/${id}/edit`,
     COURSE_LESSONS: (courseId: number) => `/admin/courses/${courseId}/lessons`,
@@ -67,6 +71,11 @@ export const API_ENDPOINTS = {
   },
   UPLOAD: {
     IMAGE: "/upload/image",
+  },
+  PAYMENT: {
+    CREATE_TRANSACTION: "/payment/create-transaction",
+    CHECK_STATUS: (orderId: string) => `/payment/status/${orderId}`,
+    WEBHOOK: "/payment/webhook",
   },
 } as const;
 

@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { useIsAuthenticated, useUserProgress } from "@/hooks";
 import { removeAuthToken } from "@/lib/auth-token";
 import { MESSAGES, ROUTES } from "@/lib/constants";
-import { BookOpen, LogOut, User } from "lucide-react";
+import { BookOpen, CreditCard, LogOut, User, Video } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -63,6 +63,26 @@ export default function DashboardPage() {
               >
                 <User className="h-4 w-4 mr-2" aria-hidden="true" />
                 Profil
+              </Button>
+            </Link>
+            <Link href={ROUTES.PAYMENTS}>
+              <Button
+                variant="outline"
+                className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                aria-label="Lihat riwayat pembayaran"
+              >
+                <CreditCard className="h-4 w-4 mr-2" aria-hidden="true" />
+                Pembayaran
+              </Button>
+            </Link>
+            <Link href={ROUTES.SESSIONS}>
+              <Button
+                variant="outline"
+                className="border-green-600 text-green-600 hover:bg-green-50"
+                aria-label="Lihat sesi live"
+              >
+                <Video className="h-4 w-4 mr-2" aria-hidden="true" />
+                Sesi Live
               </Button>
             </Link>
             <Link href={ROUTES.COURSES}>
