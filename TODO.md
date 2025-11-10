@@ -10,7 +10,7 @@
 
 **TempaSKill Platform** - Hybrid Course Learning Platform
 
-### ✅ **CORE MVP FEATURES COMPLETED** (60% Complete)
+### ✅ **CORE MVP FEATURES COMPLETED** (65% Complete)
 
 **Platform Foundation:**
 
@@ -43,11 +43,11 @@
 - ✅ Payment history tracking
 - ✅ Mobile-responsive design
 
-### 🚧 **REMAINING MVP FEATURES** (40% Remaining)
+### 🚧 **REMAINING MVP FEATURES** (35% Remaining)
 
 **Content Creation:**
 
-- ⏸️ MDX Editor with Live Preview (8 hours)
+- ✅ MDX Editor with Live Preview (8 hours)
 - ⏸️ Custom MDX Components (Callout, Tabs, Quiz)
 
 **Monetization:**
@@ -154,46 +154,49 @@ tempaskill-fe/src/components/admin/
 
 ### 3. MDX Editor dengan Live Preview
 
-**Status**: ⏸️ Not Started  
-**Estimated Time**: 8 hours  
+**Status**: ✅ Completed
+**Estimated Time**: 8 hours
 **Priority**: 🔴 Critical
 
 **Description**:
 Buat MDX editor component untuk instructor menulis content:
 
-- Split view (editor + preview)
-- Syntax highlighting (Monaco Editor)
-- Toolbar dengan shortcuts (bold, italic, code, heading)
-- Auto-save draft functionality
-- Template snippets
+- ✅ Split view (editor + preview)
+- ✅ Syntax highlighting (@mdxeditor/editor)
+- ✅ Toolbar dengan shortcuts (bold, italic, code, heading)
+- ✅ Auto-save draft functionality
+- ✅ Template snippets
 
-**Files to Create**:
+**Files Created**:
 
 ```
 tempaskill-fe/src/components/admin/
-├── mdx-editor.tsx            # Main editor component
-├── mdx-toolbar.tsx           # Editor toolbar
-├── mdx-preview.tsx           # Live preview pane
-└── mdx-templates.ts          # Code snippets/templates
+└── mdx-editor.tsx            # Main editor component with MDXEditorWrapper
 ```
 
-**NPM Packages to Install**:
+**NPM Packages Installed**:
 
 ```bash
-yarn add @monaco-editor/react
-yarn add @uiw/react-md-editor  # Alternative simpler option
+npm install @mdxeditor/editor
 ```
 
-**Features**:
+**Features Implemented**:
 
-- [ ] Monaco Editor integration
-- [ ] Split-pane layout
-- [ ] Live MDX compilation
-- [ ] Toolbar (H1-H3, bold, italic, code, link, image)
-- [ ] Auto-save to localStorage
-- [ ] Template insertion (code block, quiz, callout)
-- [ ] Keyboard shortcuts (Ctrl+B, Ctrl+I, etc.)
-- [ ] Full-screen mode
+- ✅ @mdxeditor/editor integration (better than Monaco)
+- ✅ Split-pane layout (editor/preview/full modes)
+- ✅ Live MDX compilation and preview
+- ✅ Toolbar (H1-H3, bold, italic, code, link, image, table, lists)
+- ✅ Auto-save functionality with configurable delay
+- ✅ Template insertion (heading, code, list, tabs, quiz, codeBlock)
+- ✅ Keyboard shortcuts and markdown shortcuts
+- ✅ Image upload to Firebase Storage
+- ✅ Syntax highlighting with CodeMirror
+- ✅ Full-screen editing capability
+
+**Integration**:
+- ✅ Integrated into lesson creation/editing forms
+- ✅ Used in admin lesson management pages
+- ✅ Supports all custom MDX components (Tabs, Quiz, CodeBlock, etc.)
 
 **Dependencies**: Lesson Management
 **Blocks**: Content Migration
@@ -914,9 +917,9 @@ Based on dependencies and business value:
 
 **Immediate Priority** (Start this week):
 
-1. [ ] **MDX Editor with Live Preview** - Rich text editor for instructors (8 hours)
-2. [ ] **Payment Integration - Midtrans** - Complete backend payment processing (6 hours)
-3. [ ] **Course Reviews & Ratings** - User feedback system (4 hours)
+1. [ ] **Payment Integration - Midtrans** - Complete backend payment processing (6 hours)
+2. [ ] **Course Reviews & Ratings** - User feedback system (4 hours)
+3. [ ] **Discussion Forum per Course** - Community interaction (8 hours)
 
 **Medium Priority** (Next 2 weeks):
 
