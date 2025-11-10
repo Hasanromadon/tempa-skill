@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"os"
 	"strings"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/auth"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/course"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/middleware"
+	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/payment"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/progress"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/session"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/upload"
@@ -57,6 +59,7 @@ func main() {
 		&course.Course{},
 		&course.Lesson{},
 		&course.Enrollment{},
+		&payment.PaymentTransaction{},
 		&progress.LessonProgress{},
 	); err != nil {
 		logger.Fatal("Failed to migrate database", zap.Error(err))
@@ -164,6 +167,29 @@ func main() {
 
 		// Register upload routes
 		upload.RegisterRoutes(v1, uploadHandler, authMiddleware)
+
+		// Initialize payment module
+		paymentRepo := payment.NewRepository(db)
+		paymentConfig := payment.MidtransConfig{
+			ServerKey:    cfg.Midtrans.ServerKey,
+			ClientKey:    cfg.Midtrans.ClientKey,
+			IsProduction: cfg.Midtrans.IsProduction,
+			BaseURL:      cfg.Midtrans.BaseURL,
+		}
+		paymentService := payment.NewPaymentService(paymentRepo, courseRepo, userRepo, paymentConfig)
+		paymentHandler := payment.NewPaymentHandler(paymentService)
+
+		// Register payment routes
+		payment.RegisterRoutes(router, paymentHandler, authMiddleware.RequireAuth(), func(c *gin.Context) {
+			// Simple admin middleware - check if user role is admin
+			userRole, exists := c.Get("userRole")
+			if !exists || userRole != "admin" {
+				c.JSON(http.StatusForbidden, gin.H{"error": "Admin access required"})
+				c.Abort()
+				return
+			}
+			c.Next()
+		})
 	}
 
 	// Start server

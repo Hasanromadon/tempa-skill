@@ -14,6 +14,7 @@ type Config struct {
 	Database DatabaseConfig
 	JWT      JWTConfig
 	CORS     CORSConfig
+	Midtrans MidtransConfig
 }
 
 type ServerConfig struct {
@@ -36,6 +37,13 @@ type JWTConfig struct {
 
 type CORSConfig struct {
 	AllowedOrigins string
+}
+
+type MidtransConfig struct {
+	ServerKey    string
+	ClientKey    string
+	IsProduction bool
+	BaseURL      string
 }
 
 // LoadConfig loads configuration from environment variables
@@ -69,6 +77,12 @@ func LoadConfig() (*Config, error) {
 		CORS: CORSConfig{
 			AllowedOrigins: getEnv("ALLOWED_ORIGINS", "http://localhost:3000"),
 		},
+		Midtrans: MidtransConfig{
+			ServerKey:    getEnv("MIDTRANS_SERVER_KEY", ""),
+			ClientKey:    getEnv("MIDTRANS_CLIENT_KEY", ""),
+			IsProduction: getEnv("MIDTRANS_IS_PRODUCTION", "false") == "true",
+			BaseURL:      getEnv("MIDTRANS_BASE_URL", "https://api.sandbox.midtrans.com"),
+		},
 	}
 
 	// Validate critical configurations
@@ -79,6 +93,14 @@ func LoadConfig() (*Config, error) {
 	// Enforce minimum JWT secret length for security
 	if len(config.JWT.Secret) < 32 {
 		return nil, fmt.Errorf("JWT_SECRET must be at least 32 characters long for security. Current length: %d. Generate a strong secret with: openssl rand -base64 64", len(config.JWT.Secret))
+	}
+
+	// Validate Midtrans configuration
+	if config.Midtrans.ServerKey == "" {
+		return nil, fmt.Errorf("MIDTRANS_SERVER_KEY is required")
+	}
+	if config.Midtrans.ClientKey == "" {
+		return nil, fmt.Errorf("MIDTRANS_CLIENT_KEY is required")
 	}
 
 	return config, nil
