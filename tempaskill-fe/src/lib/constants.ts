@@ -22,6 +22,8 @@ export const ROUTES = {
     DASHBOARD: "/admin/dashboard",
     COURSES: "/admin/courses",
     PAYMENTS: "/admin/payments",
+    SESSIONS: "/admin/sessions",
+    SESSIONS_NEW: "/admin/sessions/new",
     COURSE_NEW: "/admin/courses/new",
     COURSE_EDIT: (id: number) => `/admin/courses/${id}/edit`,
     COURSE_LESSONS: (courseId: number) => `/admin/courses/${courseId}/lessons`,
@@ -76,6 +78,18 @@ export const API_ENDPOINTS = {
     CREATE_TRANSACTION: "/payment/create-transaction",
     CHECK_STATUS: (orderId: string) => `/payment/status/${orderId}`,
     WEBHOOK: "/payment/webhook",
+  },
+  SESSIONS: {
+    LIST: "/sessions",
+    DETAIL: (id: number) => `/sessions/${id}`,
+    CREATE: "/sessions",
+    UPDATE: (id: number) => `/sessions/${id}`,
+    DELETE: (id: number) => `/sessions/${id}`,
+    REGISTER: (id: number) => `/sessions/${id}/register`,
+    UNREGISTER: (id: number) => `/sessions/${id}/register`,
+    PARTICIPANTS: (id: number) => `/sessions/${id}/participants`,
+    MARK_ATTENDANCE: (sessionId: number, participantId: number) =>
+      `/sessions/${sessionId}/attendance/${participantId}`,
   },
 } as const;
 

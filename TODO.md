@@ -13,6 +13,7 @@
 ### ✅ **CORE MVP FEATURES COMPLETED** (60% Complete)
 
 **Platform Foundation:**
+
 - ✅ Full-stack Go + Next.js application
 - ✅ MySQL database with migrations
 - ✅ JWT authentication system
@@ -21,6 +22,7 @@
 - ✅ Responsive UI with Shadcn components
 
 **Learning Management:**
+
 - ✅ Course catalog with search/filter
 - ✅ Individual course pages with enrollment
 - ✅ Lesson viewing with MDX content
@@ -28,12 +30,14 @@
 - ✅ User dashboard and profile
 
 **Admin Management:**
+
 - ✅ Complete course CRUD operations
 - ✅ Complete lesson CRUD operations
 - ✅ Live session scheduling system
 - ✅ Payment monitoring dashboard
 
 **User Experience:**
+
 - ✅ Authentication (login/register)
 - ✅ Profile management
 - ✅ Payment history tracking
@@ -42,18 +46,22 @@
 ### 🚧 **REMAINING MVP FEATURES** (40% Remaining)
 
 **Content Creation:**
+
 - ⏸️ MDX Editor with Live Preview (8 hours)
 - ⏸️ Custom MDX Components (Callout, Tabs, Quiz)
 
 **Monetization:**
+
 - ⏸️ Payment Integration - Midtrans Backend (6 hours)
 - ⏸️ Certificate Generation (4 hours)
 
 **Community:**
+
 - ⏸️ Discussion Forum per Course (8 hours)
 - ⏸️ Course Reviews & Ratings (4 hours)
 
 **Quality Assurance:**
+
 - ⏸️ Email Notifications (6 hours)
 - ⏸️ E2E Testing Suite (6 hours)
 - ⏸️ Performance Optimization (4 hours)
@@ -468,11 +476,13 @@ tempaskill-fe/src/hooks/
 ```
 
 **Database**:
+
 - ✅ sessions table with all required fields
 - ✅ session_participants table for enrollment tracking
 - ✅ Proper foreign key constraints and indexes
 
 **Features Implemented**:
+
 - ✅ Session CRUD operations
 - ✅ Participant registration/unregistration
 - ✅ Attendance marking
@@ -560,6 +570,7 @@ tempaskill-fe/src/components/profile/
 - ✅ PATCH /api/v1/users/me/password
 
 **Features Implemented**:
+
 - ✅ Profile information display
 - ✅ Profile editing with form validation
 - ✅ Password change functionality

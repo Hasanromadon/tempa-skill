@@ -5,8 +5,14 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useIsAuthenticated } from "@/hooks";
+import {
+  useIsAuthenticated,
+  useRegisterForSession,
+  useSessions,
+  useUnregisterFromSession,
+} from "@/hooks";
 import { ROUTES } from "@/lib/constants";
+import type { Session } from "@/types/api";
 import {
   Bell,
   Calendar,
@@ -18,77 +24,14 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-
-// Types
-interface LiveSession {
-  id: number;
-  title: string;
-  course_title: string;
-  course_slug: string;
-  instructor_name: string;
-  scheduled_at: string;
-  duration_minutes: number;
-  max_participants: number;
-  current_participants: number;
-  meeting_url: string;
-  description: string;
-  is_registered: boolean;
-}
-
-// Mock data for live sessions - in real app this would come from API
-const mockSessions = [
-  {
-    id: 1,
-    title: "Q&A: Pemrograman Web Modern dengan React",
-    course_title: "Pemrograman Web Modern dengan React & Next.js",
-    course_slug: "pemrograman-web-modern-react-nextjs",
-    instructor_name: "Ahmad Rahman",
-    scheduled_at: "2025-11-15T14:00:00Z",
-    duration_minutes: 90,
-    max_participants: 50,
-    current_participants: 23,
-    meeting_url: "https://zoom.us/j/example123",
-    description:
-      "Sesi tanya jawab langsung untuk kursus React. Bawa pertanyaan Anda tentang hooks, state management, dan best practices dalam pengembangan React.",
-    is_registered: true,
-  },
-  {
-    id: 2,
-    title: "Live Coding: Database Design & Optimization",
-    course_title: "Database Design & SQL Optimization",
-    course_slug: "database-design-sql-optimization",
-    instructor_name: "Siti Nurhaliza",
-    scheduled_at: "2025-11-20T16:00:00Z",
-    duration_minutes: 120,
-    max_participants: 40,
-    current_participants: 18,
-    meeting_url: "https://zoom.us/j/example456",
-    description:
-      "Sesi live coding dimana kita akan mendesain dan mengoptimalkan database untuk aplikasi skala besar.",
-    is_registered: false,
-  },
-  {
-    id: 3,
-    title: "Career Talk: Menjadi Full-Stack Developer",
-    course_title: "Full-Stack Development Bootcamp",
-    course_slug: "fullstack-development-bootcamp",
-    instructor_name: "Budi Santoso",
-    scheduled_at: "2025-11-25T13:00:00Z",
-    duration_minutes: 60,
-    max_participants: 100,
-    current_participants: 67,
-    meeting_url: "https://zoom.us/j/example789",
-    description:
-      "Diskusi karir dengan praktisi industri. Pelajari tentang skill yang dibutuhkan, gaji, dan tips sukses di dunia development.",
-    is_registered: true,
-  },
-];
+import { useEffect } from "react";
 
 export default function SessionsPage() {
   const router = useRouter();
   const { isAuthenticated, isLoading } = useIsAuthenticated();
-  const [sessions] = useState<LiveSession[]>(mockSessions);
+  const { data: sessionsData, isLoading: sessionsLoading } = useSessions();
+  const registerForSession = useRegisterForSession();
+  const unregisterFromSession = useUnregisterFromSession();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -96,11 +39,13 @@ export default function SessionsPage() {
     }
   }, [isAuthenticated, isLoading, router]);
 
-  if (isLoading) {
+  if (isLoading || sessionsLoading) {
     return <LoadingScreen message="Memuat sesi live..." />;
   }
 
   if (!isAuthenticated) return null;
+
+  const sessions = sessionsData?.items || [];
 
   const upcomingSessions = sessions.filter((session) => {
     const sessionTime = new Date(session.scheduled_at);
@@ -116,6 +61,21 @@ export default function SessionsPage() {
     (a, b) =>
       new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime()
   )[0];
+
+  const handleRegisterToggle = async (
+    sessionId: number,
+    isRegistered: boolean
+  ) => {
+    try {
+      if (isRegistered) {
+        await unregisterFromSession.mutateAsync(sessionId);
+      } else {
+        await registerForSession.mutateAsync(sessionId);
+      }
+    } catch (error) {
+      console.error("Failed to update registration:", error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -208,7 +168,13 @@ export default function SessionsPage() {
             ) : (
               <div className="grid gap-4">
                 {upcomingSessions.map((session) => (
-                  <SessionCard key={session.id} session={session} />
+                  <SessionCard
+                    key={session.id}
+                    session={session}
+                    onRegisterToggle={handleRegisterToggle}
+                    registerPending={registerForSession.isPending}
+                    unregisterPending={unregisterFromSession.isPending}
+                  />
                 ))}
               </div>
             )}
@@ -251,15 +217,27 @@ export default function SessionsPage() {
 function SessionCard({
   session,
   isPast = false,
+  onRegisterToggle,
+  registerPending = false,
+  unregisterPending = false,
 }: {
-  session: LiveSession;
+  session: Session;
   isPast?: boolean;
+  onRegisterToggle?: (sessionId: number, isRegistered: boolean) => void;
+  registerPending?: boolean;
+  unregisterPending?: boolean;
 }) {
   const sessionTime = new Date(session.scheduled_at);
   const now = new Date();
   const isUpcoming = sessionTime > now;
   const isLive =
     isUpcoming && sessionTime.getTime() - now.getTime() < 15 * 60 * 1000; // 15 minutes
+
+  const handleRegisterClick = () => {
+    if (onRegisterToggle) {
+      onRegisterToggle(session.id, session.is_registered);
+    }
+  };
 
   return (
     <Card
@@ -318,13 +296,35 @@ function SessionCard({
           <div className="ml-6 text-right">
             {isUpcoming ? (
               <div className="space-y-2">
-                <Button
-                  className="bg-orange-600 hover:bg-orange-700"
-                  onClick={() => window.open(session.meeting_url, "_blank")}
-                >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  {isLive ? "Gabung Sekarang" : "Gabung Sesi"}
-                </Button>
+                {session.is_registered ? (
+                  <Button
+                    className="bg-orange-600 hover:bg-orange-700"
+                    onClick={() => window.open(session.meeting_url, "_blank")}
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    {isLive ? "Gabung Sekarang" : "Gabung Sesi"}
+                  </Button>
+                ) : (
+                  <Button
+                    className="bg-orange-600 hover:bg-orange-700"
+                    onClick={handleRegisterClick}
+                    disabled={registerPending}
+                  >
+                    {registerPending ? "Mendaftar..." : "Daftar Sesi"}
+                  </Button>
+                )}
+                {session.is_registered && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRegisterClick}
+                    disabled={unregisterPending}
+                  >
+                    {unregisterPending
+                      ? "Membatalkan..."
+                      : "Batalkan Pendaftaran"}
+                  </Button>
+                )}
                 <p className="text-xs text-gray-500">
                   Durasi: {session.duration_minutes} menit
                 </p>

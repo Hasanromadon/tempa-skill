@@ -168,3 +168,73 @@ export interface Enrollment {
   enrolled_at: string;
   updated_at: string;
 }
+
+// Session Types
+export interface Session {
+  id: number;
+  course_id: number;
+  course_title: string;
+  course_slug: string;
+  instructor_id: number;
+  instructor_name: string;
+  title: string;
+  description: string;
+  scheduled_at: string;
+  duration_minutes: number;
+  max_participants: number;
+  current_participants: number;
+  meeting_url?: string;
+  recording_url?: string;
+  is_cancelled: boolean;
+  is_registered: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SessionParticipant {
+  user_id: number;
+  user_name: string;
+  user_email: string;
+  registered_at: string;
+  attended_at?: string;
+}
+
+export interface CreateSessionRequest {
+  course_id: number;
+  title: string;
+  description?: string;
+  scheduled_at: string; // ISO 8601 format
+  duration_minutes: number;
+  max_participants: number;
+  meeting_url?: string;
+}
+
+export interface UpdateSessionRequest {
+  title?: string;
+  description?: string;
+  scheduled_at?: string;
+  duration_minutes?: number;
+  max_participants?: number;
+  meeting_url?: string;
+  recording_url?: string;
+  is_cancelled?: boolean;
+}
+
+export interface SessionListQuery {
+  page?: number;
+  limit?: number;
+  course_id?: number;
+  user_id?: number;
+  upcoming?: boolean;
+  published?: boolean;
+}
+
+export interface SessionListResponse {
+  items: Session[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
+  };
+}
