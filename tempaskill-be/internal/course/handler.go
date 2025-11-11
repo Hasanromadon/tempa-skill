@@ -151,14 +151,20 @@ func (h *Handler) UpdateCourse(c *gin.Context) {
 		return
 	}
 
-	// Get user ID from JWT middleware
+	// Get user ID and role from JWT middleware
 	userID, exists := c.Get("userID")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
-	course, err := h.service.UpdateCourse(c.Request.Context(), userID.(uint), uint(id), &req)
+	userRole, exists := c.Get("userRole")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	course, err := h.service.UpdateCourse(c.Request.Context(), userID.(uint), userRole.(string), uint(id), &req)
 	if err != nil {
 		if err == ErrCourseNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
@@ -186,14 +192,20 @@ func (h *Handler) DeleteCourse(c *gin.Context) {
 		return
 	}
 
-	// Get user ID from JWT middleware
+	// Get user ID and role from JWT middleware
 	userID, exists := c.Get("userID")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
-	err = h.service.DeleteCourse(c.Request.Context(), userID.(uint), uint(id))
+	userRole, exists := c.Get("userRole")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	err = h.service.DeleteCourse(c.Request.Context(), userID.(uint), userRole.(string), uint(id))
 	if err != nil {
 		if err == ErrCourseNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})

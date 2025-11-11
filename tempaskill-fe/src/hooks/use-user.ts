@@ -47,7 +47,7 @@ export const useUpdateProfile = () => {
 export const useChangePassword = () => {
   return useMutation({
     mutationFn: async (data: ChangePasswordRequest) => {
-      const response = await apiClient.put<ApiResponse<{ message: string }>>(
+      const response = await apiClient.patch<ApiResponse<{ message: string }>>(
         API_ENDPOINTS.USERS.CHANGE_PASSWORD,
         data
       );

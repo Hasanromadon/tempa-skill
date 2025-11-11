@@ -186,7 +186,7 @@ export const useTogglePublishCourse = () => {
       id: number;
       isPublished: boolean;
     }) => {
-      const response = await apiClient.put<ApiResponse<Course>>(
+      const response = await apiClient.patch<ApiResponse<Course>>(
         API_ENDPOINTS.COURSES.UPDATE(id),
         { is_published: isPublished }
       );

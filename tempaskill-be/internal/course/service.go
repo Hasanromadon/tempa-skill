@@ -25,8 +25,8 @@ type Service interface {
 	GetCourseByID(ctx context.Context, userID uint, id uint) (*CourseResponse, error)
 	GetCourseBySlug(ctx context.Context, userID uint, slug string) (*CourseResponse, error)
 	ListCourses(ctx context.Context, userID uint, query *CourseListQuery) (*CourseListResponse, error)
-	UpdateCourse(ctx context.Context, userID uint, courseID uint, req *UpdateCourseRequest) (*Course, error)
-	DeleteCourse(ctx context.Context, userID uint, courseID uint) error
+	UpdateCourse(ctx context.Context, userID uint, userRole string, courseID uint, req *UpdateCourseRequest) (*Course, error)
+	DeleteCourse(ctx context.Context, userID uint, userRole string, courseID uint) error
 
 	// Lesson operations
 	CreateLesson(ctx context.Context, userID uint, courseID uint, req *CreateLessonRequest) (*Lesson, error)
@@ -165,14 +165,14 @@ func (s *service) ListCourses(ctx context.Context, userID uint, query *CourseLis
 	}, nil
 }
 
-func (s *service) UpdateCourse(ctx context.Context, userID uint, courseID uint, req *UpdateCourseRequest) (*Course, error) {
+func (s *service) UpdateCourse(ctx context.Context, userID uint, userRole string, courseID uint, req *UpdateCourseRequest) (*Course, error) {
 	course, err := s.repo.FindCourseByID(ctx, courseID)
 	if err != nil {
 		return nil, ErrCourseNotFound
 	}
 
-	// Check authorization
-	if course.InstructorID != userID {
+	// Check authorization - allow instructor or admin
+	if course.InstructorID != userID && userRole != "admin" {
 		return nil, ErrUnauthorized
 	}
 
@@ -207,14 +207,14 @@ func (s *service) UpdateCourse(ctx context.Context, userID uint, courseID uint, 
 	return course, nil
 }
 
-func (s *service) DeleteCourse(ctx context.Context, userID uint, courseID uint) error {
+func (s *service) DeleteCourse(ctx context.Context, userID uint, userRole string, courseID uint) error {
 	course, err := s.repo.FindCourseByID(ctx, courseID)
 	if err != nil {
 		return ErrCourseNotFound
 	}
 
-	// Check authorization
-	if course.InstructorID != userID {
+	// Check authorization - allow instructor or admin
+	if course.InstructorID != userID && userRole != "admin" {
 		return ErrUnauthorized
 	}
 
