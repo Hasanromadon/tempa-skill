@@ -250,7 +250,7 @@ export interface Review {
   user_id: number;
   course_id: number;
   rating: number; // 1-5 stars
-  comment?: string;
+  review_text?: string;
   is_verified_purchase: boolean;
   created_at: string;
   updated_at?: string;
@@ -277,12 +277,12 @@ export interface CourseReviewSummary {
 export interface CreateReviewRequest {
   course_id: number;
   rating: number; // 1-5
-  comment?: string;
+  review_text?: string;
 }
 
 export interface UpdateReviewRequest {
   rating?: number; // 1-5
-  comment?: string;
+  review_text?: string;
 }
 
 export interface ReviewListQuery {

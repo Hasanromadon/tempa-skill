@@ -14,7 +14,7 @@ import { StarRating } from "./star-rating";
 
 const reviewSchema = z.object({
   rating: z.number().min(1, "Rating minimal 1").max(5, "Rating maksimal 5"),
-  comment: z.string().optional(),
+  review_text: z.string().optional(),
 });
 
 type ReviewFormData = z.infer<typeof reviewSchema>;
@@ -50,11 +50,11 @@ export function ReviewForm({
     resolver: zodResolver(reviewSchema),
     defaultValues: {
       rating: existingReview?.rating || 0,
-      comment: existingReview?.comment || "",
+      review_text: existingReview?.review_text || "",
     },
   });
 
-  const comment = watch("comment");
+  const review_text = watch("review_text");
 
   const onSubmit = async (data: ReviewFormData) => {
     if (rating === 0) {
@@ -67,14 +67,14 @@ export function ReviewForm({
           reviewId: existingReview.id,
           data: {
             rating,
-            comment: data.comment,
+            review_text: data.review_text,
           },
         });
       } else {
         await createReview.mutateAsync({
           course_id: courseId,
           rating,
-          comment: data.comment,
+          review_text: data.review_text,
         });
       }
 
@@ -124,20 +124,22 @@ export function ReviewForm({
 
           {/* Comment */}
           <div className="space-y-2">
-            <label htmlFor="comment" className="text-sm font-medium">
+            <label htmlFor="review_text" className="text-sm font-medium">
               Komentar (Opsional)
             </label>
             <Textarea
-              id="comment"
+              id="review_text"
               placeholder="Bagikan pengalaman Anda dengan kursus ini..."
               className="min-h-[100px]"
-              {...register("comment")}
+              {...register("review_text")}
             />
             <div className="flex justify-between text-xs text-gray-500">
-              <span>{comment?.length || 0}/500 karakter</span>
+              <span>{review_text?.length || 0}/500 karakter</span>
             </div>
-            {errors.comment && (
-              <p className="text-sm text-red-500">{errors.comment.message}</p>
+            {errors.review_text && (
+              <p className="text-sm text-red-500">
+                {errors.review_text.message}
+              </p>
             )}
           </div>
 

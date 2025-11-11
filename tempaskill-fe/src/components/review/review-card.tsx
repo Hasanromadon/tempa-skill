@@ -66,8 +66,10 @@ export function ReviewCard({
             <StarRating rating={review.rating} size="sm" />
 
             {/* Comment */}
-            {review.comment && (
-              <p className="text-gray-700 leading-relaxed">{review.comment}</p>
+            {review.review_text && (
+              <p className="text-gray-700 leading-relaxed">
+                {review.review_text}
+              </p>
             )}
 
             {/* Course Info (if needed) */}
