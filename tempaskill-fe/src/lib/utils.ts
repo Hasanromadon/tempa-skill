@@ -6,6 +6,14 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
+ * Generate a unique request ID for API tracing
+ * @returns Unique request ID string
+ */
+export function generateRequestId(): string {
+  return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+}
+
+/**
  * Format date to Indonesian locale
  * @param date - Date string or Date object
  * @returns Formatted date string (e.g., "3 November 2025")

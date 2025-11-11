@@ -164,7 +164,7 @@ export default function LessonPage() {
           </div>
           {progress && (
             <Progress
-              value={progress.progress_percentage}
+              value={progress.percentage}
               className="h-1 rounded-none"
             />
           )}
