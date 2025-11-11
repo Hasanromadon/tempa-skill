@@ -35,6 +35,11 @@ import {
   useUnenrollCourse,
   useUser,
 } from "@/hooks";
+import {
+  useCertificate,
+  useDownloadCertificate,
+  useIssueCertificate,
+} from "@/hooks/use-certificate";
 import { DIFFICULTY_COLORS, DIFFICULTY_LABELS, ROUTES } from "@/lib/constants";
 import { formatCurrency } from "@/lib/utils";
 import {
@@ -72,6 +77,13 @@ export default function CourseDetailPage({ params }: PageProps) {
   const [enrollError, setEnrollError] = useState("");
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const issueCertificate = useIssueCertificate();
+  const downloadCertificate = useDownloadCertificate();
+  const { data: certificate, refetch: refetchCertificate } = useCertificate(
+    course?.id
+  );
+  const [certificateError, setCertificateError] = useState("");
+  const [downloading, setDownloading] = useState(false);
 
   const handleEnroll = async () => {
     if (!isAuthenticated) {
@@ -253,10 +265,10 @@ export default function CourseDetailPage({ params }: PageProps) {
                         {progress.total_lessons} pelajaran selesai
                       </span>
                       <span className="text-sm font-medium">
-                        {progress.progress_percentage}%
+                        {progress.percentage}%
                       </span>
                     </div>
-                    <Progress value={progress.progress_percentage} />
+                    <Progress value={progress.percentage} />
                   </div>
                   {progress.is_completed && (
                     <Alert className="bg-green-50 border-green-200">
@@ -424,6 +436,96 @@ export default function CourseDetailPage({ params }: PageProps) {
                   <Alert variant="destructive">
                     <AlertDescription>{enrollError}</AlertDescription>
                   </Alert>
+                )}
+
+                {course.is_enrolled && progress?.percentage === 100 && (
+                  <div className="space-y-3">
+                    {certificate?.certificate ? (
+                      <Button
+                        className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+                        size="lg"
+                        disabled={downloading}
+                        onClick={async () => {
+                          setDownloading(true);
+                          setCertificateError("");
+                          try {
+                            const certId =
+                              certificate.certificate?.certificate_id;
+                            if (!certId) {
+                              setCertificateError(
+                                "ID sertifikat tidak ditemukan."
+                              );
+                              setDownloading(false);
+                              return;
+                            }
+                            const pdf = await downloadCertificate.mutateAsync(
+                              certId
+                            );
+                            const url = window.URL.createObjectURL(
+                              new Blob([pdf], { type: "application/pdf" })
+                            );
+                            const link = document.createElement("a");
+                            link.href = url;
+                            link.setAttribute("download", "sertifikat.pdf");
+                            document.body.appendChild(link);
+                            link.click();
+                            link.remove();
+                          } catch {
+                            setCertificateError(
+                              "Gagal mengunduh sertifikat. Silakan coba lagi."
+                            );
+                          }
+                          setDownloading(false);
+                        }}
+                      >
+                        {downloading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Mengunduh Sertifikat...
+                          </>
+                        ) : (
+                          "Unduh Sertifikat PDF"
+                        )}
+                      </Button>
+                    ) : certificate?.eligible ? (
+                      <Button
+                        className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+                        size="lg"
+                        disabled={issueCertificate.isPending}
+                        onClick={async () => {
+                          setCertificateError("");
+                          try {
+                            await issueCertificate.mutateAsync(course.id);
+                            toast.success("Sertifikat berhasil dibuat!");
+                            refetchCertificate();
+                          } catch {
+                            setCertificateError(
+                              "Gagal membuat sertifikat. Silakan coba lagi."
+                            );
+                          }
+                        }}
+                      >
+                        {issueCertificate.isPending ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Memproses Sertifikat...
+                          </>
+                        ) : (
+                          "Ambil Sertifikat"
+                        )}
+                      </Button>
+                    ) : (
+                      <div className="text-center text-gray-500">
+                        {certificate?.message ||
+                          "Memeriksa status sertifikat..."}
+                      </div>
+                    )}
+                    {certificateError && (
+                      <Alert variant="destructive">
+                        <AlertDescription>{certificateError}</AlertDescription>
+                      </Alert>
+                    )}
+                  </div>
                 )}
 
                 {!course.is_enrolled ? (

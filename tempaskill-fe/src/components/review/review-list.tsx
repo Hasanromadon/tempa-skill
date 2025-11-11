@@ -103,9 +103,9 @@ export function ReviewList({
             <div className="mt-4 space-y-2">
               {[5, 4, 3, 2, 1].map((rating) => {
                 const count =
-                  summaryData.rating_distribution[
+                  summaryData?.rating_distribution?.[
                     rating as keyof typeof summaryData.rating_distribution
-                  ];
+                  ] ?? 0;
                 const percentage =
                   summaryData.total_reviews > 0
                     ? (count / summaryData.total_reviews) * 100
@@ -191,7 +191,8 @@ export function ReviewList({
               </CardContent>
             </Card>
           ))
-        ) : reviewsData?.items.length === 0 ? (
+        ) : Array.isArray(reviewsData?.items) &&
+          reviewsData.items.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center">
               <p className="text-gray-600">
@@ -199,11 +200,11 @@ export function ReviewList({
               </p>
             </CardContent>
           </Card>
-        ) : (
-          reviewsData?.items.map((review) => (
+        ) : Array.isArray(reviewsData?.items) ? (
+          reviewsData.items.map((review) => (
             <ReviewCard key={review.id} review={review} />
           ))
-        )}
+        ) : null}
       </div>
 
       {/* Pagination */}

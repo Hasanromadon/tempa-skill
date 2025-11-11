@@ -4,7 +4,9 @@ import { Page, expect } from "@playwright/test";
  * Test helper untuk login user
  */
 export async function login(page: Page, email: string, password: string) {
-  await page.goto("/login");
+  await page.goto("/masuk");
+  await page.waitForLoadState("networkidle");
+  await page.waitForSelector('input[id="email"]', { timeout: 10000 });
   await page.fill('input[id="email"]', email);
   await page.fill('input[id="password"]', password);
   await page.click('button[type="submit"]');
@@ -57,11 +59,13 @@ export async function register(
   email: string,
   password: string
 ) {
-  await page.goto("/register");
+  await page.goto("/daftar");
+  await page.waitForLoadState("networkidle");
+  await page.waitForSelector('input[name="name"]', { timeout: 10000 });
   await page.fill('input[name="name"]', name);
   await page.fill('input[name="email"]', email);
   await page.fill('input[name="password"]', password);
-  await page.fill('input[name="password_confirmation"]', password);
+  await page.fill('input[name="confirmPassword"]', password);
 
   // Click submit button
   await page.click('button[type="submit"]');

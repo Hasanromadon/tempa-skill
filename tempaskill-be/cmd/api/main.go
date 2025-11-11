@@ -16,6 +16,7 @@ import (
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/session"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/upload"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/user"
+	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/certificate"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/database"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/firebase"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/logger"
@@ -162,6 +163,12 @@ func main() {
 
 		// Register progress routes
 		progress.RegisterRoutes(v1, progressHandler, authMiddleware)
+
+		// Initialize certificate module
+		certificateRepo := certificate.NewCertificateRepository(db)
+	certificateService := certificate.NewCertificateServiceFull(certificateRepo, progressService, userRepo, courseRepo)
+	certificateHandler := certificate.NewCertificateHandler(certificateService)
+	certificate.RegisterCertificateRoutes(router, certificateHandler, authMiddleware.RequireAuth())
 
 		// Initialize upload module
 		uploadService := upload.NewService()

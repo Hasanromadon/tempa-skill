@@ -133,7 +133,7 @@ export interface CourseProgress {
   user_id: number;
   total_lessons: number;
   completed_lessons: number;
-  progress_percentage: number;
+  percentage: number;
   is_completed: boolean;
   completed_lesson_ids: number[];
   last_activity: string;
@@ -303,4 +303,20 @@ export interface ReviewListResponse {
     total: number;
     total_pages: number;
   };
+}
+
+// Certificate Types
+export interface Certificate {
+  certificate_id: string;
+  user_name: string;
+  course_title: string;
+  issued_at: string;
+  download_url: string;
+}
+
+export interface CertificateEligibilityResponse {
+  eligible: boolean;
+  certificate?: Certificate;
+  progress: number;
+  message: string;
 }

@@ -1180,31 +1180,87 @@ Full guidelines available at: `docs/FRONTEND_ARCHITECTURE.md`
 
 ## �🧪 Testing Standards
 
+test.describe("Course Browsing", () => {
+
 ### E2E Testing (Playwright)
 
-#### Test Structure
+#### Struktur & Best Practices
+
+**Folder:** `e2e/` (di root)
+
+**Config:**
+
+- Semua test di `e2e/` otomatis terdeteksi oleh Playwright
+- Config di `playwright.config.ts` sudah auto-start frontend (port 3000)
+- Backend harus running manual di port 8080
+
+**Helper Usage:**
+
+- Gunakan helpers dari `e2e/helpers/test-helpers.ts` untuk login, register, logout, API waits, dsb
+- Gunakan `generateTestUser()` untuk test isolation
+
+**Bahasa Indonesia:**
+
+- Semua selector dan assertion gunakan text Bahasa Indonesia (contoh: `text=Daftar`, `text=Ambil Sertifikat`)
+
+**Contoh Test Sertifikat:**
 
 ```typescript
-// ✅ GOOD: Descriptive test names, proper setup
 import { test, expect } from "@playwright/test";
+import { login } from "./helpers/test-helpers";
 
-test.describe("Course Browsing", () => {
-  test("should display course list with search", async ({ page }) => {
-    // Arrange
-    await page.goto("/courses");
-    await page.waitForLoadState("networkidle");
-
-    // Act
-    await page.fill('input[placeholder*="Cari"]', "React");
-    await page.waitForTimeout(500); // Debounce
-
-    // Assert
-    const courses = page.locator('[data-testid="course-card"]');
-    await expect(courses.first()).toBeVisible();
-    await expect(courses.first()).toContainText(/React/i);
-  });
+test("user dapat mengeluarkan dan mengunduh sertifikat setelah menyelesaikan kursus", async ({
+  page,
+}) => {
+  await login(page, "user@example.com", "password123");
+  await page.goto("/courses/pemrograman-web-modern-react-nextjs");
+  await expect(page.locator("text=Ambil Sertifikat")).toBeVisible();
+  await page.click("text=Ambil Sertifikat");
+  await expect(page.locator("text=Unduh Sertifikat PDF")).toBeVisible();
+  await page.click("text=Unduh Sertifikat PDF");
 });
 ```
+
+#### Test Isolation
+
+- Setiap test harus membuat user baru (gunakan `generateTestUser()`)
+- Jangan bergantung pada data existing
+- Tests bisa dijalankan paralel/urutan apapun
+
+#### Wait Strategies
+
+- Gunakan waits yang robust:
+  - `await page.waitForLoadState("networkidle")`
+  - `await expect(page.locator("text=..."))`
+  - `await page.waitForURL("/dashboard")`
+- Hindari fixed timeouts kecuali animasi
+
+#### Reporting
+
+- Setelah test run, report HTML di `playwright-report/`
+- Screenshots, video, trace otomatis pada failure
+
+#### CI/CD
+
+- Config sudah siap untuk CI (retries, single worker, report artifact)
+
+#### Troubleshooting
+
+- Pastikan backend & frontend running
+- Cek CORS config jika error
+- Gunakan UI mode untuk debug: `yarn test:e2e:ui`
+
+#### Coverage
+
+- Semua fitur utama (auth, course, lesson, dashboard, admin, sertifikat) harus ada E2E test
+
+#### Contributing
+
+1. Tambah test di `e2e/` dengan descriptive name
+2. Gunakan helpers
+3. Selector Bahasa Indonesia
+4. Test isolation
+5. Error scenarios & mobile responsive
 
 #### Test Helpers
 

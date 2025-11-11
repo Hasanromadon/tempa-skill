@@ -1,3 +1,9 @@
+# Run all migration files in order
+.PHONY: db-migrate-up
+db-migrate-up: ## Run all migration files in migrations/
+	@echo "$(YELLOW)Running all migrations...$(NC)"
+	@for %f in (..\migrations\*.sql) do "$(MYSQL_BIN)" -u root $(DB_NAME) < "%f"
+	@echo "$(GREEN)✓ All migrations completed$(NC)"
 # TempaSKill Backend Makefile
 # Commands untuk development workflow
 
