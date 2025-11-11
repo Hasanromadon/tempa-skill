@@ -103,132 +103,141 @@ d:\non-bri\tempa-skill\                    # Monorepo Root
     │   │
     │   ├── 📁 app/                        # Next.js App Router
     │   │   │
-    │   │   ├── 📁 (auth)/                 # Auth route group (no URL segment)
+    │   │   ├── 📁 (auth)/                 # Auth route group
     │   │   │   ├── 📁 login/
     │   │   │   │   └── 📄 page.tsx        # /login
     │   │   │   └── 📁 register/
     │   │   │       └── 📄 page.tsx        # /register
     │   │   │
-    │   │   ├── 📁 (dashboard)/            # Protected route group
-    │   │   │   ├── 📄 layout.tsx          # Dashboard layout
+    │   │   ├── 📁 admin/                  # Admin panel
+    │   │   │   ├── 📄 layout.tsx          # Admin layout
+    │   │   │   ├── 📁 courses/
+    │   │   │   │   └── 📄 page.tsx        # /admin/courses
     │   │   │   ├── 📁 dashboard/
-    │   │   │   │   └── 📄 page.tsx        # /dashboard
-    │   │   │   └── 📁 profile/
-    │   │   │       └── 📄 page.tsx        # /profile
+    │   │   │   │   └── 📄 page.tsx        # /admin/dashboard
+    │   │   │   ├── 📁 payments/
+    │   │   │   │   └── 📄 page.tsx        # /admin/payments
+    │   │   │   └── 📁 sessions/
+    │   │   │       └── 📄 page.tsx        # /admin/sessions
     │   │   │
     │   │   ├── 📁 courses/                # Course routes
     │   │   │   ├── 📄 page.tsx            # /courses (catalog)
-    │   │   │   └── 📁 [id]/
-    │   │   │       ├── 📄 page.tsx        # /courses/[id] (detail)
+    │   │   │   ├── 📄 CoursesPageContent.tsx
+    │   │   │   └── 📁 [slug]/
+    │   │   │       ├── 📄 page.tsx        # /courses/[slug] (detail)
     │   │   │       └── 📁 lessons/
-    │   │   │           └── 📁 [lessonId]/
-    │   │   │               └── 📄 page.tsx # /courses/[id]/lessons/[lessonId]
+    │   │   │           └── 📁 [id]/
+    │   │   │               └── 📄 page.tsx # /courses/[slug]/lessons/[id]
+    │   │   │
+    │   │   ├── � dashboard/              # User dashboard
+    │   │   │   └── 📄 page.tsx            # /dashboard
+    │   │   │
+    │   │   ├── 📁 payments/               # Payment pages
+    │   │   │   └── 📄 page.tsx            # /payments
+    │   │   │
+    │   │   ├── � profile/                # User profile
+    │   │   │   └── 📄 page.tsx            # /profile
+    │   │   │
+    │   │   ├── 📁 sessions/               # Live sessions
+    │   │   │   └── 📄 page.tsx            # /sessions
     │   │   │
     │   │   ├── 📄 layout.tsx              # Root layout
     │   │   ├── 📄 page.tsx                # Homepage (/)
-    │   │   ├── 📄 loading.tsx             # Global loading UI
-    │   │   ├── 📄 error.tsx               # Global error UI
-    │   │   ├── 📄 not-found.tsx           # 404 page
-    │   │   └── 📄 globals.css             # Global styles
+    │   │   ├── 📄 globals.css             # Global styles
+    │   │   └── 📄 favicon.ico
     │   │
-    │   ├── 📁 components/
+    │   ├── 📁 components/                 # Reusable components
     │   │   │
-    │   │   ├── 📁 ui/                     # Shadcn/ui components (atomic)
+    │   │   ├── 📁 ui/                     # Shadcn/ui components
     │   │   │   ├── 📄 button.tsx
     │   │   │   ├── 📄 card.tsx
     │   │   │   ├── 📄 input.tsx
-    │   │   │   ├── 📄 form.tsx
-    │   │   │   ├── 📄 badge.tsx
-    │   │   │   ├── 📄 avatar.tsx
     │   │   │   ├── 📄 dialog.tsx
-    │   │   │   ├── 📄 dropdown-menu.tsx
+    │   │   │   ├── 📄 badge.tsx
     │   │   │   ├── 📄 skeleton.tsx
     │   │   │   └── ...
     │   │   │
-    │   │   ├── 📁 shared/                 # Reusable components (molecules/organisms)
-    │   │   │   ├── 📄 navbar.tsx
-    │   │   │   ├── 📄 footer.tsx
+    │   │   ├── � common/                 # Business components
+    │   │   │   ├── 📄 page-header.tsx
+    │   │   │   ├── 📄 loading-screen.tsx
+    │   │   │   ├── � empty-state.tsx
+    │   │   │   └── ...
+    │   │   │
+    │   │   ├── � course/                 # Course components
     │   │   │   ├── 📄 course-card.tsx
-    │   │   │   ├── 📄 lesson-sidebar.tsx
-    │   │   │   ├── 📄 progress-bar.tsx
-    │   │   │   └── 📄 error-message.tsx
+    │   │   │   ├── 📄 course-grid.tsx
+    │   │   │   ├── 📄 progress-ring.tsx
+    │   │   │   └── ...
     │   │   │
-    │   │   ├── 📁 layout/                 # Layout components
-    │   │   │   ├── 📄 auth-layout.tsx
-    │   │   │   └── 📄 dashboard-layout.tsx
+    │   │   ├── 📁 payment/                # Payment components
+    │   │   │   └── 📄 payment-modal.tsx
     │   │   │
-    │   │   └── 📁 forms/                  # Complex form components
-    │   │       ├── 📄 login-form.tsx
-    │   │       ├── 📄 register-form.tsx
-    │   │       └── 📄 profile-form.tsx
+    │   │   ├── 📁 review/                 # Review components
+    │   │   │   ├── 📄 review-card.tsx
+    │   │   │   ├── 📄 review-form.tsx
+    │   │   │   └── ...
+    │   │   │
+    │   │   ├── 📁 admin/                  # Admin components
+    │   │   │   └── 📄 mdx-editor.tsx
+    │   │   │
+    │   │   ├── � mdx/                    # MDX rendering
+    │   │   │   ├── 📄 mdx-content.tsx
+    │   │   │   └── ...
+    │   │   │
+    │   │   └── 📁 layout/                 # Layout components
+    │   │       ├── 📄 navbar.tsx
+    │   │       ├── 📄 sidebar.tsx
+    │   │       └── ...
+    │   │
+    │   ├── 📁 hooks/                      # Custom React hooks
+    │   │   ├── 📄 use-auth.ts             # Authentication
+    │   │   ├── 📄 use-courses.ts          # Course management
+    │   │   ├── 📄 use-lessons.ts          # Lesson handling
+    │   │   ├── 📄 use-progress.ts         # Progress tracking
+    │   │   ├── � use-payment.ts          # Payment transactions
+    │   │   ├── 📄 use-reviews.ts          # Course reviews
+    │   │   ├── 📄 use-sessions.ts         # Live sessions
+    │   │   └── 📄 index.ts                # Hook exports
     │   │
     │   ├── 📁 lib/                        # Utilities & configurations
-    │   │   ├── 📄 api.ts                  # Axios/Fetch client setup
-    │   │   ├── 📄 utils.ts                # Utility functions (cn, formatters)
-    │   │   ├── 📄 constants.ts            # App constants
-    │   │   ├── 📄 queryClient.ts          # TanStack Query config
-    │   │   │
-    │   │   └── 📁 hooks/                  # Custom React hooks
-    │   │       ├── 📄 use-auth.ts
-    │   │       ├── 📄 use-media-query.ts
-    │   │       └── 📄 use-toast.ts
+    │   │   ├── 📄 api-client.ts           # Axios client
+    │   │   ├── 📄 auth-token.ts           # Token management
+    │   │   ├── 📄 constants.ts            # App constants & routes
+    │   │   ├── 📄 utils.ts                # Utility functions
+    │   │   ├── � validators.ts           # Zod schemas
+    │   │   └── 📄 query-client.ts         # React Query config
     │   │
-    │   ├── 📁 queries/                    # TanStack Query hooks (API calls)
-    │   │   ├── 📄 auth.queries.ts         # useLogin, useRegister
-    │   │   ├── 📄 course.queries.ts       # useCourses, useCourse
-    │   │   ├── 📄 lesson.queries.ts       # useLesson, useCompleteLesson
-    │   │   ├── 📄 user.queries.ts         # useUser, useUpdateProfile
-    │   │   └── 📄 progress.queries.ts     # useProgress
-    │   │
-    │   ├── 📁 store/                      # Zustand stores (client state)
-    │   │   ├── 📄 auth.store.ts           # Auth token & user
-    │   │   ├── 📄 ui.store.ts             # UI state (sidebar, modals)
-    │   │   └── 📄 index.ts                # Store exports
-    │   │
-    │   ├── 📁 types/                      # TypeScript type definitions
-    │   │   ├── 📄 api.types.ts            # API response types
-    │   │   ├── 📄 course.types.ts         # Course, Lesson types
-    │   │   ├── 📄 user.types.ts           # User, Profile types
+    │   ├── � types/                      # TypeScript definitions
+    │   │   ├── � api.ts                  # API response types
+    │   │   ├── � common.ts               # Shared types
     │   │   └── 📄 index.ts                # Type exports
     │   │
-    │   └── 📁 schemas/                    # Zod validation schemas
-    │       ├── 📄 auth.schema.ts          # Login, Register schemas
-    │       ├── 📄 course.schema.ts        # Course creation schema
-    │       └── 📄 profile.schema.ts       # Profile update schema
+    │   └── 📁 styles/                     # Additional styles
+    │       └── 📄 animations.ts
     │
-    ├── 📁 content/                        # MDX course content
-    │   ├── 📁 courses/
-    │   │   ├── 📁 golang-fundamentals/
-    │   │   │   ├── 📄 metadata.json
-    │   │   │   ├── 📄 01-introduction.mdx
-    │   │   │   ├── 📄 02-variables.mdx
-    │   │   │   └── ...
-    │   │   └── 📁 nextjs-mastery/
-    │   │       └── ...
-    │   └── 📄 velite.config.ts            # MDX processing config
+    ├── 📁 e2e/                            # End-to-end tests
+    │   ├── 📁 helpers/
+    │   │   └── 📄 test-helpers.ts         # Test utilities
+    │   └── 📁 tests/
+    │       ├── 📄 auth.spec.ts
+    │       ├── � courses.spec.ts
+    │       └── ...
     │
     ├── 📁 public/                         # Static assets
-    │   ├── 📁 images/
-    │   │   ├── logo.svg
-    │   │   └── hero-bg.jpg
-    │   ├── 📁 icons/
-    │   └── 📄 favicon.ico
-    │
-    ├── 📁 tests/                          # Tests
-    │   ├── 📁 unit/
-    │   └── 📁 e2e/
+    │   ├── � favicon.ico
+    │   └── ...
     │
     ├── 📄 .env.example                    # Environment template
-    ├── 📄 .env.local                      # Local environment (gitignored)
+    ├── 📄 .env.local                      # Local environment
     ├── 📄 .gitignore
-    ├── 📄 .eslintrc.json                  # ESLint config
-    ├── 📄 next.config.js                  # Next.js configuration
-    ├── 📄 tailwind.config.ts              # Tailwind configuration
-    ├── 📄 tsconfig.json                   # TypeScript configuration
-    ├── 📄 components.json                 # Shadcn/ui configuration
+    ├── 📄 next.config.js                  # Next.js config
+    ├── 📄 tailwind.config.ts              # Tailwind config
+    ├── 📄 tsconfig.json                   # TypeScript config
+    ├── 📄 components.json                 # Shadcn/ui config
     ├── 📄 package.json                    # Dependencies
     ├── 📄 package-lock.json
-    └── 📄 README.md                       # Frontend-specific docs
+    ├── 📄 playwright.config.ts            # E2E test config
+    └── 📄 README.md                       # Frontend docs
 ```
 
 ---

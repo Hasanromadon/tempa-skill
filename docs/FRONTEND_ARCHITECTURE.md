@@ -11,10 +11,18 @@
 ```
 tempaskill-fe/src/
 ├── app/                        # Next.js 15 App Router
-│   ├── (auth)/                # Auth route group
-│   ├── (dashboard)/           # Protected routes
-│   ├── courses/               # Public course pages
-│   └── admin/                 # Admin panel (future)
+│   ├── (auth)/                # Auth route group (login, register)
+│   ├── admin/                 # Admin panel pages
+│   ├── courses/               # Course catalog and detail pages
+│   ├── dashboard/             # User dashboard
+│   ├── payments/              # Payment pages
+│   ├── profile/               # User profile pages
+│   ├── sessions/              # Live session pages
+│   ├── test-mdx/              # MDX testing page
+│   ├── favicon.ico
+│   ├── globals.css
+│   ├── layout.tsx             # Root layout
+│   └── page.tsx               # Homepage
 │
 ├── components/
 │   ├── ui/                    # Shadcn atomic components
@@ -23,18 +31,35 @@ tempaskill-fe/src/
 │   │   ├── input.tsx
 │   │   └── ...
 │   │
-│   ├── common/                # NEW: Reusable business components
-│   │   ├── page-header.tsx   # Page header with breadcrumb
+│   ├── common/                # Reusable business components
+│   │   ├── page-header.tsx    # Page header with breadcrumb
 │   │   ├── loading-screen.tsx # Full screen loader
-│   │   ├── empty-state.tsx   # Empty state component
-│   │   └── error-boundary.tsx # Error boundary wrapper
+│   │   ├── empty-state.tsx    # Empty state component
+│   │   ├── progress-ring.tsx  # Progress ring component
+│   │   ├── form-field.tsx     # Form field wrapper
+│   │   ├── form-wrapper.tsx   # Form wrapper component
+│   │   ├── submit-button.tsx  # Submit button component
+│   │   └── image-upload.tsx   # Image upload component
 │   │
-│   ├── course/                # NEW: Course-specific components
-│   │   ├── course-card.tsx
-│   │   ├── course-grid.tsx
-│   │   ├── course-filter.tsx
-│   │   ├── lesson-list.tsx
-│   │   └── progress-ring.tsx
+│   ├── course/                # Course-specific components
+│   │   ├── course-card.tsx    # Course card display
+│   │   ├── course-form.tsx    # Course creation/editing form
+│   │   ├── filter-sidebar.tsx # Course filtering sidebar
+│   │   ├── search-bar.tsx     # Course search bar
+│   │   ├── sort-dropdown.tsx  # Course sorting dropdown
+│   │   └── delete-course-dialog.tsx # Course deletion confirmation
+│   │
+│   ├── payment/               # Payment components
+│   │   └── payment-modal.tsx  # Payment transaction modal
+│   │
+│   ├── review/                # Review components
+│   │   ├── review-card.tsx    # Individual review display
+│   │   ├── review-form.tsx    # Review submission form
+│   │   ├── review-list.tsx    # Review list component
+│   │   └── star-rating.tsx    # Star rating component
+│   │
+│   ├── admin/                 # Admin components
+│   │   └── mdx-editor.tsx     # MDX content editor
 │   │
 │   ├── mdx/                   # MDX rendering components
 │   │   ├── mdx-content.tsx
@@ -42,7 +67,7 @@ tempaskill-fe/src/
 │   │   ├── quiz.tsx (future)
 │   │   └── index.ts
 │   │
-│   ├── layout/                # NEW: Layout components
+│   ├── layout/                # Layout components
 │   │   ├── navbar.tsx
 │   │   ├── sidebar.tsx
 │   │   ├── footer.tsx
@@ -56,6 +81,10 @@ tempaskill-fe/src/
 │   ├── use-lessons.ts
 │   ├── use-progress.ts
 │   ├── use-user.ts
+│   ├── use-certificate.ts     # Certificate management
+│   ├── use-payment.ts         # Payment transactions
+│   ├── use-reviews.ts         # Course reviews
+│   ├── use-sessions.ts        # Live sessions
 │   └── index.ts
 │
 ├── lib/                       # Utilities & helpers
@@ -444,7 +473,7 @@ export function CourseCard({ course, enrolled, progress }: CourseCardProps) {
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader>
-        <div className="aspect-video bg-gradient-to-br from-orange-100 to-orange-200 rounded-lg mb-4" />
+        <div className="aspect-video bg-linear-to-br from-orange-100 to-orange-200 rounded-lg mb-4" />
         <h3 className="font-semibold text-lg line-clamp-2">{course.title}</h3>
       </CardHeader>
 
@@ -575,28 +604,85 @@ export const ROUTES = {
   REGISTER: "/register",
   DASHBOARD: "/dashboard",
   COURSES: "/courses",
+  COURSE_DETAIL: (slug: string) => `/courses/${slug}`,
+  LESSON_DETAIL: (courseSlug: string, lessonId: string) =>
+    `/courses/${courseSlug}/lessons/${lessonId}`,
   PROFILE: "/profile",
-  ADMIN: "/admin",
+  PAYMENTS: "/payments",
+  SESSIONS: "/sessions",
+  ADMIN: {
+    DASHBOARD: "/admin/dashboard",
+    COURSES: "/admin/courses",
+    PAYMENTS: "/admin/payments",
+    SESSIONS: "/admin/sessions",
+  },
 } as const;
 
 export const API_ENDPOINTS = {
   AUTH: {
-    REGISTER: "/auth/register",
     LOGIN: "/auth/login",
-    ME: "/users/me",
+    REGISTER: "/auth/register",
+    LOGOUT: "/auth/logout",
+    ME: "/auth/me",
   },
   COURSES: {
     LIST: "/courses",
     DETAIL: (slug: string) => `/courses/slug/${slug}`,
+    BY_ID: (id: number) => `/courses/${id}`,
+    CREATE: "/courses",
+    UPDATE: (id: number) => `/courses/${id}`,
+    DELETE: (id: number) => `/courses/${id}`,
     ENROLL: (id: number) => `/courses/${id}/enroll`,
+    LESSONS: (id: number) => `/courses/${id}/lessons`,
   },
   LESSONS: {
-    LIST: (courseId: number) => `/courses/${courseId}/lessons`,
     DETAIL: (id: number) => `/lessons/${id}`,
+    CREATE: (courseId: number) => `/courses/${courseId}/lessons`,
+    UPDATE: (id: number) => `/lessons/${id}`,
+    DELETE: (id: number) => `/lessons/${id}`,
+    REORDER: "/lessons/reorder",
   },
   PROGRESS: {
     COURSE: (courseId: number) => `/progress/courses/${courseId}`,
-    COMPLETE: (lessonId: number) => `/progress/lessons/${lessonId}/complete`,
+    USER: "/progress/me",
+    COMPLETE_LESSON: (lessonId: number) =>
+      `/progress/lessons/${lessonId}/complete`,
+  },
+  USERS: {
+    DETAIL: (id: number) => `/users/${id}`,
+    UPDATE_PROFILE: "/users/me",
+    CHANGE_PASSWORD: "/users/me/password",
+  },
+  UPLOAD: {
+    IMAGE: "/upload/image",
+  },
+  PAYMENT: {
+    CREATE_TRANSACTION: "/payment/create-transaction",
+    CHECK_STATUS: (orderId: string) => `/payment/status/${orderId}`,
+    WEBHOOK: "/payment/webhook",
+  },
+  REVIEWS: {
+    LIST: "/reviews",
+    DETAIL: (id: number) => `/reviews/${id}`,
+    CREATE: "/reviews",
+    UPDATE: (id: number) => `/reviews/${id}`,
+    DELETE: (id: number) => `/reviews/${id}`,
+    BY_USER: "/reviews/user",
+    BY_COURSE: (courseId: number) => `/reviews/courses/${courseId}`,
+    COURSE_SUMMARY: (courseId: number) =>
+      `/reviews/courses/${courseId}/summary`,
+  },
+  SESSIONS: {
+    LIST: "/sessions",
+    DETAIL: (id: number) => `/sessions/${id}`,
+    CREATE: "/sessions",
+    UPDATE: (id: number) => `/sessions/${id}`,
+    DELETE: (id: number) => `/sessions/${id}`,
+    REGISTER: (id: number) => `/sessions/${id}/register`,
+    UNREGISTER: (id: number) => `/sessions/${id}/register`,
+    PARTICIPANTS: (id: number) => `/sessions/${id}/participants`,
+    MARK_ATTENDANCE: (sessionId: number, participantId: number) =>
+      `/sessions/${sessionId}/attendance/${participantId}`,
   },
 } as const;
 
@@ -864,12 +950,30 @@ const ORANGE_COLORS = {
 - [ ] Extract `LessonList`
 - [ ] Update course pages
 
+### ✅ COMPLETED FEATURES
+
+- [x] **Authentication System** - Login, register, JWT handling
+- [x] **Course Management** - Catalog, detail pages, enrollment
+- [x] **Lesson System** - MDX content rendering, progress tracking
+- [x] **Payment Integration** - Midtrans payment gateway
+- [x] **Review System** - Course reviews and ratings
+- [x] **Live Sessions** - Session scheduling and management
+- [x] **Admin Panel** - Course, payment, session management
+- [x] **Responsive Design** - Mobile-first approach
+- [x] **TypeScript Integration** - Full type safety
+- [x] **API Integration** - Complete REST API client
+- [x] **Component Library** - Shadcn/ui components
+- [x] **State Management** - React Query + Zustand
+- [x] **Form Handling** - React Hook Form + Zod validation
+- [x] **File Upload** - Image upload functionality
+- [x] **Progress Tracking** - Lesson completion and course progress
+
 ### Phase 3: Utilities & Types (Week 3)
 
-- [ ] Create `lib/constants.ts`
-- [ ] Create `lib/validators.ts`
-- [ ] Create `types/common.ts`
-- [ ] Update imports across codebase
+- [x] Create `lib/constants.ts` - Complete with all routes and API endpoints
+- [x] Create `lib/validators.ts` - Zod schemas for form validation
+- [x] Create `types/common.ts` - Shared TypeScript types
+- [x] Update imports across codebase - All imports organized and optimized
 
 ---
 
