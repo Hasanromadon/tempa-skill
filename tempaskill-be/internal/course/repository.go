@@ -178,6 +178,19 @@ func (r *repository) FindAllCoursesWithMeta(ctx context.Context, userID uint, qu
 		db = db.Where("is_published = ?", *query.Published)
 	}
 
+	// Add new filters to count query
+	if query.MinPrice > 0 {
+		db = db.Where("price >= ?", query.MinPrice)
+	}
+
+	if query.MaxPrice > 0 {
+		db = db.Where("price <= ?", query.MaxPrice)
+	}
+
+	if query.InstructorID > 0 {
+		db = db.Where("instructor_id = ?", query.InstructorID)
+	}
+
 	// Count total
 	if err := db.Count(&total).Error; err != nil {
 		return nil, 0, err
@@ -248,11 +261,58 @@ func (r *repository) FindAllCoursesWithMeta(ctx context.Context, userID uint, qu
 		db = db.Where("courses.is_published = ?", *query.Published)
 	}
 
+	// Add new filters
+	if query.MinPrice > 0 {
+		db = db.Where("courses.price >= ?", query.MinPrice)
+	}
+
+	if query.MaxPrice > 0 {
+		db = db.Where("courses.price <= ?", query.MaxPrice)
+	}
+
+	if query.InstructorID > 0 {
+		db = db.Where("courses.instructor_id = ?", query.InstructorID)
+	}
+
 	// Add WHERE for soft deletes
 	db = db.Where("courses.deleted_at IS NULL")
 
+	// Apply sorting
+	sortBy := query.SortBy
+	if sortBy == "" {
+		sortBy = "created_at" // default sort
+	}
+
+	sortOrder := query.SortOrder
+	if sortOrder == "" {
+		sortOrder = "desc" // default order
+	}
+
+	// Build order clause
+	var orderClause string
+	switch sortBy {
+	case "title":
+		orderClause = "courses.title " + sortOrder
+	case "price":
+		orderClause = "courses.price " + sortOrder
+	case "rating":
+		// For rating, we need to join with review summary or calculate on the fly
+		// For now, we'll sort by enrolled_count as a proxy for popularity
+		orderClause = "courses.enrolled_count " + sortOrder
+	case "popularity":
+		orderClause = "courses.enrolled_count " + sortOrder
+	case "enrollment_count":
+		orderClause = "courses.enrolled_count " + sortOrder
+	case "updated_at":
+		orderClause = "courses.updated_at " + sortOrder
+	case "created_at":
+		fallthrough
+	default:
+		orderClause = "courses.created_at " + sortOrder
+	}
+
 	// Fetch courses with metadata
-	if err := db.Order("courses.created_at DESC").Limit(limit).Offset(offset).Scan(&coursesWithMeta).Error; err != nil {
+	if err := db.Order(orderClause).Limit(limit).Offset(offset).Scan(&coursesWithMeta).Error; err != nil {
 		logger.Error("Database error fetching courses with metadata",
 			zap.Error(err),
 			zap.Uint("user_id", userID),

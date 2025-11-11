@@ -40,12 +40,17 @@ type UpdateLessonRequest struct {
 
 // CourseListQuery represents query parameters for listing courses
 type CourseListQuery struct {
-	Page       int    `form:"page" binding:"omitempty,min=1"`
-	Limit      int    `form:"limit" binding:"omitempty,min=1,max=100"`
-	Search     string `form:"search"`
-	Category   string `form:"category" binding:"omitempty,oneof=programming design business marketing"`
-	Difficulty string `form:"difficulty" binding:"omitempty,oneof=beginner intermediate advanced"`
-	Published  *bool  `form:"published"`
+	Page         int     `form:"page" binding:"omitempty,min=1"`
+	Limit        int     `form:"limit" binding:"omitempty,min=1,max=100"`
+	Search       string  `form:"search"`
+	Category     string  `form:"category" binding:"omitempty,oneof=programming design business marketing"`
+	Difficulty   string  `form:"difficulty" binding:"omitempty,oneof=beginner intermediate advanced"`
+	Published    *bool   `form:"published"`
+	SortBy       string  `form:"sort_by" binding:"omitempty,oneof=created_at updated_at title price rating popularity enrollment_count"`
+	SortOrder    string  `form:"sort_order" binding:"omitempty,oneof=asc desc"`
+	MinPrice     float64 `form:"min_price" binding:"omitempty,min=0"`
+	MaxPrice     float64 `form:"max_price" binding:"omitempty,min=0"`
+	InstructorID uint    `form:"instructor_id" binding:"omitempty,min=1"`
 }
 
 // PaginationMeta represents pagination metadata

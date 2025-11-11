@@ -89,6 +89,11 @@ export interface CourseListQuery {
   search?: string;
   category?: string;
   difficulty?: "beginner" | "intermediate" | "advanced";
+  sortBy?: string;
+  sortOrder?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  instructorId?: number;
   published?: boolean;
 }
 

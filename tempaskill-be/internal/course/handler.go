@@ -113,6 +113,12 @@ func (h *Handler) ListCourses(c *gin.Context) {
 	if query.Limit == 0 {
 		query.Limit = 10
 	}
+	if query.SortBy == "" {
+		query.SortBy = "created_at"
+	}
+	if query.SortOrder == "" {
+		query.SortOrder = "desc"
+	}
 
 	// Get user ID if authenticated (optional)
 	var userID uint

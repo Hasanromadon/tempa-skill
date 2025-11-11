@@ -208,7 +208,8 @@ colors: {
 - [x] ✅ **Frontend**: Setup TanStack Query + Axios client
 - [x] ✅ **Frontend**: Brand identity implementation (orange #ea580c)
 
-### Phase 2: Core Features (Week 3-4) - ✅ 85% COMPLETED
+
+### Phase 2: Core Features (Week 3-4) - ✅ 90% COMPLETED
 
 **Backend** (✅ 100% Complete):
 
@@ -218,11 +219,12 @@ colors: {
 - [x] ✅ Performance optimization (N+1 query fix, 100x faster)
 - [x] ✅ Security features (rate limiting, request ID tracing)
 
-**Frontend** (🚧 70% Complete):
+**Frontend** (✅ 90% Complete):
 
 - [x] ✅ Authentication pages (Login, Register) with validation
 - [x] ✅ Landing page with brand colors
-- [x] ✅ Course listing with search & pagination
+- [x] ✅ Course listing with search, filter, sort & pagination (Courses Page Integration)
+- [x] ✅ Sort Dropdown component for course sorting
 - [x] ✅ Course detail page (521 lines, full functionality)
 - [x] ✅ User dashboard with enrolled courses
 - [x] ✅ Custom hooks (useAuth, useCourses, useLessons, useProgress, useUser)

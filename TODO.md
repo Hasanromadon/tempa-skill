@@ -6,37 +6,44 @@
 
 ---
 
-## 📊 Project Status Summary
+## � Project Status Summary
 
 **TempaSKill Platform** - Hybrid Course Learning Platform
 
-### ✅ **CORE MVP FEATURES COMPLETED** (75% Complete)
+### ✅ **CORE MVP FEATURES COMPLETED** (80% Complete)
 
 **Platform Foundation:**
 
-- ✅ Full-stack Go + Next.js application
-- ✅ MySQL database with migrations
-- ✅ JWT authentication system
-- ✅ RESTful API architecture
-- ✅ TypeScript + React Query frontend
-- ✅ Responsive UI with Shadcn components
+- [x] Full-stack Go + Next.js application
+- [x] MySQL database with migrations
+- [x] JWT authentication system
+- [x] RESTful API architecture
+- [x] TypeScript + React Query frontend
+- [x] Responsive UI with Shadcn components
 
 **Learning Management:**
 
-- ✅ Course catalog with search/filter
-- ✅ Individual course pages with enrollment
-- ✅ Lesson viewing with MDX content
-- ✅ Progress tracking system
-- ✅ User dashboard and profile
+- [x] Course catalog with search/filter/sort/pagination (Courses Page Integration)
+- [x] Sort Dropdown Component for course sorting
+- [x] Individual course pages with enrollment
+- [x] Lesson viewing with MDX content
+- [x] Progress tracking system
+- [x] User dashboard and profile
 
 **Admin Management:**
 
-- ✅ Complete course CRUD operations
-- ✅ Complete lesson CRUD operations
-- ✅ Live session scheduling system
-- ✅ Payment monitoring dashboard
+- [x] Complete course CRUD operations
+- [x] Complete lesson CRUD operations
+- [x] Live session scheduling system
+- [x] Payment monitoring dashboard
 
 **User Experience:**
+
+---
+
+### Documentation Updated
+
+- [x] README.md: Roadmap and features marked complete for Courses Page Integration and Sort Dropdown
 
 - ✅ Authentication (login/register)
 - ✅ Profile management
@@ -600,39 +607,62 @@ tempaskill-fe/src/components/profile/
 
 ### 13. Course Reviews & Ratings
 
-**Status**: ⏸️ Not Started  
+**Status**: ✅ Completed  
 **Estimated Time**: 4 hours  
 **Priority**: 🟡 Medium
 
 **Description**:
 Sistem review dan rating course:
 
-- Submit review (rating 1-5 + text)
-- Display reviews on course page
-- Rating aggregation
-- Filter reviews
+- ✅ Submit review (rating 1-5 + text)
+- ✅ Display reviews on course page
+- ✅ Rating aggregation
+- ✅ Filter reviews
 
 **Backend Files**:
 
 ```
 tempaskill-be/internal/review/
-├── model.go                  # Review model
-├── dto.go
-├── repository.go
-├── service.go
-├── handler.go
-└── routes.go
+├── model.go                  # Review model ✅
+├── dto.go                    # Request/Response DTOs ✅
+├── repository.go             # Database operations ✅
+├── service.go                # Business logic ✅
+├── handler.go                # HTTP handlers ✅
+└── routes.go                 # Route registration ✅
 ```
 
 **Frontend Files**:
 
 ```
-tempaskill-fe/src/components/course/
-├── review-form.tsx
-├── review-list.tsx
-├── rating-stars.tsx
-└── rating-summary.tsx
+tempaskill-fe/src/components/review/
+├── star-rating.tsx           # Star rating component ✅
+├── review-card.tsx           # Individual review display ✅
+├── review-form.tsx           # Review submission form ✅
+├── review-list.tsx           # Paginated review list ✅
+└── index.ts                  # Component exports ✅
+
+tempaskill-fe/src/hooks/
+└── use-reviews.ts            # Review API hooks ✅
 ```
+
+**Database Migration**:
+
+```
+migrations/010_create_course_reviews_table.sql ✅
+```
+
+**Features Implemented**:
+
+- ✅ Course review submission with rating (1-5 stars)
+- ✅ Review display on course detail pages
+- ✅ Rating aggregation and summary statistics
+- ✅ Review filtering and pagination
+- ✅ Verified purchase badges
+- ✅ Indonesian UI text throughout
+- ✅ Orange brand color consistency
+- ✅ React Query integration for state management
+- ✅ Form validation with Zod
+- ✅ Responsive design
 
 **Dependencies**: Enrollment system ✅
 **Blocks**: None

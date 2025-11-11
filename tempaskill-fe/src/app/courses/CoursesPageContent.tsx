@@ -24,17 +24,9 @@ import { BookOpen, Filter, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-export default function CoursesPage() {
-  return (
-    <Suspense fallback={<LoadingScreen message="Memuat..." />}>
-      <CoursesPageContent />
-    </Suspense>
-  );
-}
-
-function CoursesPageContent() {
+export default function CoursesPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -75,7 +67,6 @@ function CoursesPageContent() {
     if (search) params.set("search", search);
     if (page > 1) params.set("page", page.toString());
     if (sortBy !== "created_at") params.set("sort_by", sortBy);
-
     if (sortOrder !== "desc") params.set("sort_order", sortOrder);
 
     if (filters.category) params.set("category", filters.category);
@@ -327,7 +318,6 @@ function CoursesPageContent() {
                     >
                       Selanjutnya
                     </Button>
-                    *** End Patch
                   </div>
                 )}
               </>
