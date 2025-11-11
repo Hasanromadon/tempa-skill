@@ -14,6 +14,23 @@
                    │    ┌──────────────┐    │    ┌─────────────┐
                    └────│  progresses  │    └────│   lessons   │
                         └──────────────┘         └─────────────┘
+                   │                        │
+                   │    ┌──────────────┐    │    ┌─────────────┐
+                   └────│ certificates │    └────│   reviews   │
+                        └──────────────┘         └─────────────┘
+                   │                        │
+                   │    ┌────────────────────┐   │
+                   └────│ payment_transactions │─┘
+                        └────────────────────┘
+                   │
+                   │    ┌─────────────┐
+                   └────│  sessions   │
+                        └─────────────┘
+                              │
+                              │
+                        ┌─────────────┐
+                        │participants│
+                        └─────────────┘
 ```
 
 ---
@@ -205,6 +222,212 @@ CREATE TABLE lesson_progress (
 **Constraints:**
 
 - Unique constraint pada `(user_id, lesson_id)` → idempotent (tidak bisa complete 2x)
+
+---
+
+### 6. certificates
+
+Menyimpan data sertifikat yang dikeluarkan untuk kursus yang telah diselesaikan
+
+```sql
+CREATE TABLE certificates (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
+    course_id INT UNSIGNED NOT NULL,
+    issued_at DATETIME NOT NULL,
+    certificate_id VARCHAR(32) NOT NULL UNIQUE,
+    INDEX idx_user_course (user_id, course_id),
+    INDEX idx_certificate_id (certificate_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+**Fields:**
+
+- `id`: Primary key
+- `user_id`: Foreign key ke `users`
+- `course_id`: Foreign key ke `courses`
+- `issued_at`: Tanggal dan waktu sertifikat dikeluarkan
+- `certificate_id`: ID unik sertifikat untuk verifikasi (format: CERT-{user_id}-{course_id}-{timestamp})
+
+**Constraints:**
+
+- Unique constraint pada `certificate_id`
+- Index pada `(user_id, course_id)` untuk query cepat
+
+---
+
+### 7. payment_transactions
+
+Menyimpan data transaksi pembayaran menggunakan Midtrans
+
+```sql
+CREATE TABLE payment_transactions (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
+    course_id INT UNSIGNED NOT NULL,
+    order_id VARCHAR(100) NOT NULL UNIQUE,
+    gross_amount DECIMAL(15,2) NOT NULL,
+    payment_type VARCHAR(50) DEFAULT 'bank_transfer',
+    transaction_status VARCHAR(50) NOT NULL DEFAULT 'pending',
+    transaction_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    settlement_time TIMESTAMP NULL,
+    payment_url TEXT NULL,
+    midtrans_response TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_payment_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_payment_course FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+    INDEX idx_user_id (user_id),
+    INDEX idx_course_id (course_id),
+    INDEX idx_order_id (order_id),
+    INDEX idx_transaction_status (transaction_status),
+    INDEX idx_transaction_time (transaction_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+**Fields:**
+
+- `id`: Primary key
+- `user_id`: Foreign key ke `users`
+- `course_id`: Foreign key ke `courses`
+- `order_id`: Order ID dari Midtrans (unique)
+- `gross_amount`: Jumlah pembayaran
+- `payment_type`: Tipe pembayaran (gopay, bank_transfer, credit_card, qris)
+- `transaction_status`: Status transaksi (pending, settlement, expire, cancel, failure)
+- `transaction_time`: Waktu transaksi dimulai
+- `settlement_time`: Waktu settlement (jika berhasil)
+- `payment_url`: URL pembayaran dari Midtrans
+- `midtrans_response`: Response lengkap dari Midtrans (JSON)
+
+**Constraints:**
+
+- Foreign key ke `users` dan `courses`
+- Unique constraint pada `order_id`
+
+---
+
+### 8. course_reviews
+
+Menyimpan ulasan dan rating kursus dari pengguna
+
+```sql
+CREATE TABLE course_reviews (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
+    course_id INT UNSIGNED NOT NULL,
+    rating TINYINT UNSIGNED NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    review_text TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_reviews_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_reviews_course FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_user_course_review (user_id, course_id),
+    INDEX idx_reviews_course_id (course_id),
+    INDEX idx_reviews_user_id (user_id),
+    INDEX idx_reviews_rating (rating),
+    INDEX idx_reviews_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+**Fields:**
+
+- `id`: Primary key
+- `user_id`: Foreign key ke `users`
+- `course_id`: Foreign key ke `courses`
+- `rating`: Rating 1-5 bintang
+- `review_text`: Teks ulasan (optional)
+- `created_at`: Waktu ulasan dibuat
+- `updated_at`: Waktu ulasan diupdate
+
+**Constraints:**
+
+- Foreign key ke `users` dan `courses`
+- Unique constraint pada `(user_id, course_id)` → satu ulasan per user per kursus
+- Check constraint pada rating (1-5)
+
+---
+
+### 9. sessions
+
+Menyimpan data sesi live streaming untuk kursus
+
+```sql
+CREATE TABLE sessions (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    course_id BIGINT UNSIGNED NOT NULL,
+    instructor_id BIGINT UNSIGNED NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    description TEXT,
+    scheduled_at TIMESTAMP NOT NULL,
+    duration_minutes INT NOT NULL DEFAULT 60,
+    max_participants INT NOT NULL DEFAULT 50,
+    meeting_url VARCHAR(500),
+    recording_url VARCHAR(500),
+    is_cancelled BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+    FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_course (course_id),
+    INDEX idx_instructor (instructor_id),
+    INDEX idx_scheduled_at (scheduled_at),
+    INDEX idx_cancelled (is_cancelled)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+**Fields:**
+
+- `id`: Primary key
+- `course_id`: Foreign key ke `courses`
+- `instructor_id`: Foreign key ke `users` (instructor)
+- `title`: Judul sesi
+- `description`: Deskripsi sesi
+- `scheduled_at`: Waktu sesi dijadwalkan
+- `duration_minutes`: Durasi sesi dalam menit
+- `max_participants`: Jumlah maksimal peserta
+- `meeting_url`: URL meeting (Zoom, Google Meet, dll)
+- `recording_url`: URL rekaman sesi (setelah selesai)
+- `is_cancelled`: Flag apakah sesi dibatalkan
+- `created_at`: Waktu record dibuat
+- `updated_at`: Waktu record diupdate
+
+**Constraints:**
+
+- Foreign key ke `courses` dan `users`
+- Index pada course_id, instructor_id, scheduled_at, is_cancelled
+
+---
+
+### 10. session_participants
+
+Menyimpan data peserta yang terdaftar dalam sesi live
+
+```sql
+CREATE TABLE session_participants (
+    session_id BIGINT UNSIGNED NOT NULL,
+    user_id BIGINT UNSIGNED NOT NULL,
+    registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    attended_at TIMESTAMP NULL,
+    PRIMARY KEY (session_id, user_id),
+    FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_session (session_id),
+    INDEX idx_user (user_id),
+    INDEX idx_registered_at (registered_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+**Fields:**
+
+- `session_id`: Foreign key ke `sessions`
+- `user_id`: Foreign key ke `users`
+- `registered_at`: Waktu pendaftaran
+- `attended_at`: Waktu kehadiran (null jika belum hadir)
+
+**Constraints:**
+
+- Composite primary key pada `(session_id, user_id)`
+- Foreign key ke `sessions` dan `users`
 
 ---
 

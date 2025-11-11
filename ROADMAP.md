@@ -494,7 +494,7 @@ See detailed breakdown in [Phase 5: Advanced Features](#-phase-5-advanced-featur
   ├─ <VideoEmbed> - YouTube/Vimeo embed helper
   └─ Integration testing with MDX content
 
-□ Task 5.9: Certificate Generation (4 hours)
+✅ Task 5.9: Certificate Generation (4 hours)
   ├─ Certificate template design (PDF)
   ├─ Dynamic data insertion (name, course, date)
   ├─ Certificate verification API
