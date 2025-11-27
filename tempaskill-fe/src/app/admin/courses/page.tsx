@@ -2,13 +2,12 @@
 
 import {
   ActiveFilters,
+  ColumnDef,
+  DataTable,
   LimitSelect,
   Pagination,
-  ResultsSummary,
   SearchFilterInput,
   SelectFilter,
-  SortHeader,
-  TableStatus,
 } from "@/components/common";
 import { DeleteCourseDialog } from "@/components/course/delete-course-dialog";
 import { Badge } from "@/components/ui/badge";
@@ -28,14 +27,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
   useDeleteCourse,
   useServerTable,
   useTogglePublishCourse,
@@ -49,23 +40,16 @@ import { formatCurrency } from "@/lib/utils";
 import type { Course } from "@/types/api";
 import { Edit, Eye, EyeOff, MoreVertical, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 /**
  * Admin Courses List Page
  *
- * Demonstrates useServerTable with auto-detect parser
- * The hook automatically detects 'courses' key in response
- *
- * Alternative with explicit parser:
- * ```tsx
- * import { COMMON_PARSERS } from "@/lib/table-response-parsers";
- * const table = useServerTable<Course>({
- *   responseParser: COMMON_PARSERS.courses,
- *   ...
- * });
- * ```
+ * Demonstrates:
+ * - useServerTable hook with auto-detect parser
+ * - DataTable component with column definitions
+ * - Reusable pattern for other admin list pages
  */
 export default function AdminCoursesPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -89,62 +73,211 @@ export default function AdminCoursesPage() {
   const deleteCourse = useDeleteCourse();
 
   // Handle publish/unpublish
-  const handleTogglePublish = async (
-    courseId: number,
-    currentStatus: boolean,
-    courseTitle: string
-  ) => {
-    try {
-      await togglePublish.mutateAsync({
-        id: courseId,
-        isPublished: !currentStatus,
-      });
+  const handleTogglePublish = useCallback(
+    async (
+      courseId: number,
+      currentStatus: boolean,
+      courseTitle: string
+    ) => {
+      try {
+        await togglePublish.mutateAsync({
+          id: courseId,
+          isPublished: !currentStatus,
+        });
 
-      toast.success(
-        !currentStatus ? "Kursus dipublikasikan" : "Kursus di-unpublish",
-        {
-          description: `"${courseTitle}" sekarang ${
-            !currentStatus ? "aktif" : "tidak aktif"
-          }.`,
-        }
-      );
+        toast.success(
+          !currentStatus ? "Kursus dipublikasikan" : "Kursus di-unpublish",
+          {
+            description: `"${courseTitle}" sekarang ${
+              !currentStatus ? "aktif" : "tidak aktif"
+            }.`,
+          }
+        );
 
-      // Refetch courses
-      table.refetch();
-    } catch {
-      toast.error("Gagal mengubah status kursus", {
-        description: "Silakan coba lagi.",
-      });
-    }
-  };
+        // Refetch courses
+        table.refetch();
+      } catch {
+        toast.error("Gagal mengubah status kursus", {
+          description: "Silakan coba lagi.",
+        });
+      }
+    },
+    [togglePublish, table]
+  );
 
   // Handle delete
-  const handleDeleteClick = (courseId: number, courseTitle: string) => {
-    setCourseToDelete({ id: courseId, title: courseTitle });
-    setDeleteDialogOpen(true);
-  };
+  const handleDeleteClick = useCallback(
+    (courseId: number, courseTitle: string) => {
+      setCourseToDelete({ id: courseId, title: courseTitle });
+      setDeleteDialogOpen(true);
+    },
+    []
+  );
 
-  const handleDeleteConfirm = async () => {
-    if (!courseToDelete) return;
+  const handleDeleteConfirm = useCallback(
+    async () => {
+      if (!courseToDelete) return;
 
-    try {
-      await deleteCourse.mutateAsync(courseToDelete.id);
+      try {
+        await deleteCourse.mutateAsync(courseToDelete.id);
 
-      toast.success("Kursus berhasil dihapus", {
-        description: `"${courseToDelete.title}" telah dihapus dari platform.`,
-      });
+        toast.success("Kursus berhasil dihapus", {
+          description: `"${courseToDelete.title}" telah dihapus dari platform.`,
+        });
 
-      setDeleteDialogOpen(false);
-      setCourseToDelete(null);
+        setDeleteDialogOpen(false);
+        setCourseToDelete(null);
 
-      // Refetch courses
-      table.refetch();
-    } catch {
-      toast.error("Gagal menghapus kursus", {
-        description: "Silakan coba lagi.",
-      });
-    }
-  };
+        // Refetch courses
+        table.refetch();
+      } catch {
+        toast.error("Gagal menghapus kursus", {
+          description: "Silakan coba lagi.",
+        });
+      }
+    },
+    [courseToDelete, deleteCourse, table]
+  );
+
+  // Column definitions untuk DataTable
+  const columns = useMemo<ColumnDef<Course>[]>(
+    () => [
+      {
+        id: "title",
+        accessor: "title",
+        header: "Judul",
+        enableSorting: true,
+        sortKey: "title",
+      },
+      {
+        id: "category",
+        accessor: "category",
+        header: "Kategori",
+      },
+      {
+        id: "difficulty",
+        accessor: "difficulty",
+        header: "Tingkat",
+        enableSorting: true,
+        sortKey: "difficulty",
+        cell: (ctx) => {
+          const difficulty = ctx.getValue() as string;
+          return (
+            <Badge
+              className={
+                DIFFICULTY_COLORS[
+                  difficulty as keyof typeof DIFFICULTY_COLORS
+                ]
+              }
+            >
+              {DIFFICULTY_LABELS[difficulty as keyof typeof DIFFICULTY_LABELS]}
+            </Badge>
+          );
+        },
+      },
+      {
+        id: "price",
+        accessor: "price",
+        header: "Harga",
+        enableSorting: true,
+        sortKey: "price",
+        cell: (ctx) => formatCurrency(ctx.getValue() as number),
+      },
+      {
+        id: "enrolled_count",
+        accessor: "enrolled_count",
+        header: "Siswa",
+        enableSorting: true,
+        sortKey: "enrollment_count",
+        cell: (ctx) => <>{ctx.getValue() || 0}</>,
+      },
+      {
+        id: "is_published",
+        accessor: "is_published",
+        header: "Status",
+        cell: (ctx) => {
+          const isPublished = ctx.getValue() as boolean;
+          return (
+            <Badge
+              variant={isPublished ? "default" : "secondary"}
+              className={
+                isPublished
+                  ? "bg-green-100 text-green-800"
+                  : "bg-gray-100 text-gray-800"
+              }
+            >
+              {isPublished ? "Aktif" : "Draft"}
+            </Badge>
+          );
+        },
+      },
+      {
+        id: "actions",
+        header: "Aksi",
+        cell: (ctx) => {
+          const course = ctx.row.original;
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={`Aksi untuk ${course.title}`}
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link href={`/admin/courses/${course.id}/edit`}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href={`/admin/courses/${course.id}/lessons`}>
+                    <Eye className="h-4 w-4 mr-2" />
+                    Kelola Pelajaran
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() =>
+                    handleTogglePublish(
+                      course.id,
+                      course.is_published,
+                      course.title
+                    )
+                  }
+                  disabled={togglePublish.isPending}
+                >
+                  {course.is_published ? (
+                    <>
+                      <EyeOff className="h-4 w-4 mr-2" />
+                      Unpublish
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="h-4 w-4 mr-2" />
+                      Publish
+                    </>
+                  )}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="text-red-600"
+                  onClick={() => handleDeleteClick(course.id, course.title)}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Hapus
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        },
+      },
+    ],
+    [handleTogglePublish, handleDeleteClick, togglePublish.isPending]
+  );
 
   return (
     <div className="space-y-6">
@@ -249,173 +382,22 @@ export default function AdminCoursesPage() {
 
       {/* Courses Table */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0">
-          <div>
-            <CardTitle>Daftar Kursus</CardTitle>
-            {!table.isLoading && (
-              <CardDescription className="mt-1">
-                <ResultsSummary
-                  total={table.total}
-                  page={table.filters.page}
-                  limit={table.filters.limit}
-                />
-              </CardDescription>
-            )}
-          </div>
+        <CardHeader>
+          <CardTitle>Daftar Kursus</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>
-                    <SortHeader
-                      label="Judul"
-                      sortKey="title"
-                      currentSort={table.filters.sortBy}
-                      currentOrder={table.filters.sortOrder}
-                      onSort={table.filters.toggleSort}
-                    />
-                  </TableHead>
-                  <TableHead>Kategori</TableHead>
-                  <TableHead>
-                    <SortHeader
-                      label="Tingkat"
-                      sortKey="difficulty"
-                      currentSort={table.filters.sortBy}
-                      currentOrder={table.filters.sortOrder}
-                      onSort={table.filters.toggleSort}
-                    />
-                  </TableHead>
-                  <TableHead>
-                    <SortHeader
-                      label="Harga"
-                      sortKey="price"
-                      currentSort={table.filters.sortBy}
-                      currentOrder={table.filters.sortOrder}
-                      onSort={table.filters.toggleSort}
-                    />
-                  </TableHead>
-                  <TableHead>
-                    <SortHeader
-                      label="Siswa"
-                      sortKey="enrollment_count"
-                      currentSort={table.filters.sortBy}
-                      currentOrder={table.filters.sortOrder}
-                      onSort={table.filters.toggleSort}
-                    />
-                  </TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Aksi</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {table.data.map((course) => (
-                  <TableRow key={course.id}>
-                    <TableCell className="font-medium">
-                      {course.title}
-                    </TableCell>
-                    <TableCell>{course.category}</TableCell>
-                    <TableCell>
-                      <Badge
-                        className={
-                          DIFFICULTY_COLORS[
-                            course.difficulty as keyof typeof DIFFICULTY_COLORS
-                          ]
-                        }
-                      >
-                        {
-                          DIFFICULTY_LABELS[
-                            course.difficulty as keyof typeof DIFFICULTY_LABELS
-                          ]
-                        }
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{formatCurrency(course.price)}</TableCell>
-                    <TableCell>{course.enrolled_count || 0}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={course.is_published ? "default" : "secondary"}
-                        className={
-                          course.is_published
-                            ? "bg-green-100 text-green-800"
-                            : "bg-gray-100 text-gray-800"
-                        }
-                      >
-                        {course.is_published ? "Aktif" : "Draft"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            aria-label={`Aksi untuk ${course.title}`}
-                          >
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem asChild>
-                            <Link href={`/admin/courses/${course.id}/edit`}>
-                              <Edit className="h-4 w-4 mr-2" />
-                              Edit
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <Link href={`/admin/courses/${course.id}/lessons`}>
-                              <Eye className="h-4 w-4 mr-2" />
-                              Kelola Pelajaran
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() =>
-                              handleTogglePublish(
-                                course.id,
-                                course.is_published,
-                                course.title
-                              )
-                            }
-                            disabled={togglePublish.isPending}
-                          >
-                            {course.is_published ? (
-                              <>
-                                <EyeOff className="h-4 w-4 mr-2" />
-                                Unpublish
-                              </>
-                            ) : (
-                              <>
-                                <Eye className="h-4 w-4 mr-2" />
-                                Publish
-                              </>
-                            )}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-red-600"
-                            onClick={() =>
-                              handleDeleteClick(course.id, course.title)
-                            }
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Hapus
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-
-          {/* Table Status (Loading, Error, Empty) */}
-          <TableStatus
+          <DataTable<Course>
+            columns={columns}
+            data={table.data}
+            page={table.filters.page}
+            limit={table.filters.limit}
+            total={table.total}
+            totalPages={table.totalPages}
             isLoading={table.isLoading}
             isError={table.isError}
-            isEmpty={table.data.length === 0}
-            errorMessage="Gagal memuat daftar kursus. Silakan coba lagi."
+            sortBy={table.filters.sortBy}
+            sortOrder={table.filters.sortOrder}
+            onSort={table.filters.toggleSort}
             emptyMessage={
               table.filters.hasActiveFilters || table.filters.search
                 ? "Tidak ada kursus yang sesuai dengan filter"

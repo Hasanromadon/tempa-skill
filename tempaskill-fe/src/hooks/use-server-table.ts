@@ -134,7 +134,7 @@ export function useServerTable<T>(
   const defaultParser: ResponseParserOptions<T> = {
     getItems: (res: unknown) => {
       const data = res as Record<string, unknown>;
-      
+
       // Try common keys first (courses, users, lessons, enrollments, etc)
       const commonKeys = [
         "courses",

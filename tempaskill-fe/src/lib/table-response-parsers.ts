@@ -54,11 +54,15 @@ export function createPaginatedParser<T>(
     },
     getPage: (res: unknown) => {
       const data = res as Record<string, unknown>;
-      return ((data?.pagination as Record<string, unknown>)?.page as number) ?? 1;
+      return (
+        ((data?.pagination as Record<string, unknown>)?.page as number) ?? 1
+      );
     },
     getLimit: (res: unknown) => {
       const data = res as Record<string, unknown>;
-      return ((data?.pagination as Record<string, unknown>)?.limit as number) ?? 10;
+      return (
+        ((data?.pagination as Record<string, unknown>)?.limit as number) ?? 10
+      );
     },
   };
 }

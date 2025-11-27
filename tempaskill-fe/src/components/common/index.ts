@@ -23,3 +23,7 @@ export {
   SortHeader,
   TableStatus,
 } from "./filter-table";
+
+// Generic reusable data table
+export { DataTable } from "./data-table";
+export type { ColumnDef, DataTableProps, CellContext, HeaderContext } from "./data-table";
