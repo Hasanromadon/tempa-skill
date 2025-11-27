@@ -299,7 +299,7 @@ export default function AdminCoursesPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {/* Search Input */}
+            {/* Search Input - Full Width */}
             <SearchFilterInput
               value={table.filters.search}
               onChange={table.filters.setSearch}
@@ -308,42 +308,52 @@ export default function AdminCoursesPage() {
               disabled={table.isLoading}
             />
 
-            {/* Filters Row */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Filters Grid - Responsive & Structured */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Category Filter */}
-              <SelectFilter
-                value={String(table.filters.filters.category || "")}
-                onChange={(value) =>
-                  table.filters.setFilter("category", value || "")
-                }
-                options={[
-                  { value: "", label: "Semua Kategori" },
-                  { value: "Web Development", label: "Web Development" },
-                  { value: "Mobile Development", label: "Mobile Development" },
-                  { value: "Data Science", label: "Data Science" },
-                  { value: "DevOps", label: "DevOps" },
-                ]}
-                placeholder="Semua Kategori"
-                disabled={table.isLoading}
-                aria="Filter berdasarkan kategori"
-              />
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                  Kategori
+                </label>
+                <SelectFilter
+                  value={String(table.filters.filters.category || "")}
+                  onChange={(value) =>
+                    table.filters.setFilter("category", value || "")
+                  }
+                  options={[
+                    { value: "", label: "Semua Kategori" },
+                    { value: "Web Development", label: "Web Development" },
+                    { value: "Mobile Development", label: "Mobile Development" },
+                    { value: "Data Science", label: "Data Science" },
+                    { value: "DevOps", label: "DevOps" },
+                  ]}
+                  placeholder="Semua Kategori"
+                  disabled={table.isLoading}
+                  aria="Filter berdasarkan kategori"
+                />
+              </div>
 
               {/* Difficulty Filter */}
-              <SelectFilter
-                value={String(table.filters.filters.difficulty || "")}
-                onChange={(value) =>
-                  table.filters.setFilter("difficulty", value || "")
-                }
-                options={[
-                  { value: "", label: "Semua Tingkat" },
-                  { value: "beginner", label: "Pemula" },
-                  { value: "intermediate", label: "Menengah" },
-                  { value: "advanced", label: "Lanjutan" },
-                ]}
-                placeholder="Semua Tingkat"
-                disabled={table.isLoading}
-                aria="Filter berdasarkan tingkat kesulitan"
-              />
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                  Tingkat Kesulitan
+                </label>
+                <SelectFilter
+                  value={String(table.filters.filters.difficulty || "")}
+                  onChange={(value) =>
+                    table.filters.setFilter("difficulty", value || "")
+                  }
+                  options={[
+                    { value: "", label: "Semua Tingkat" },
+                    { value: "beginner", label: "Pemula" },
+                    { value: "intermediate", label: "Menengah" },
+                    { value: "advanced", label: "Lanjutan" },
+                  ]}
+                  placeholder="Semua Tingkat"
+                  disabled={table.isLoading}
+                  aria="Filter berdasarkan tingkat kesulitan"
+                />
+              </div>
             </div>
 
             {/* Active Filters */}

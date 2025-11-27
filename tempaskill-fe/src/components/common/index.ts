@@ -11,6 +11,12 @@ export { FormField, SelectField, TextareaField } from "./form-field";
 export { FormWrapper } from "./form-wrapper";
 export { NumberInput } from "./number-input";
 export { SubmitButton } from "./submit-button";
+export {
+  FilterForm,
+  FilterFormField,
+  FilterFormGrid,
+  FilterFormSection,
+} from "./filter-form";
 
 // Filter table components
 export {
