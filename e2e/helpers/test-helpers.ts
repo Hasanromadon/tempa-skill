@@ -4,7 +4,7 @@ import { Page, expect } from "@playwright/test";
  * Test helper untuk login user
  */
 export async function login(page: Page, email: string, password: string) {
-  await page.goto("/masuk");
+  await page.goto("/login");
   await page.waitForLoadState("networkidle");
   await page.waitForSelector('input[id="email"]', { timeout: 10000 });
   await page.fill('input[id="email"]', email);

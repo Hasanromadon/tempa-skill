@@ -303,6 +303,7 @@ export default function AdminCoursesPage() {
             {/* Search Input - Full Width */}
             {/* UNCONTROLLED: Component manage its own state, NOT dependent on parent */}
             <SearchFilterInput
+              key="search-input"
               onChange={table.filters.setSearch}
               onClear={table.filters.clearSearch}
               placeholder="Cari berdasarkan judul kursus..."
