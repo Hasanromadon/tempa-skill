@@ -8,7 +8,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ReactNode } from "react";
+import { ChevronUp, ChevronDown } from "lucide-react";
 
 /**
  * Cell rendering context - provides access to row data and utilities
@@ -46,9 +48,7 @@ export interface ColumnDef<TData, TValue = unknown> {
   accessor?: keyof TData | ((row: TData) => TValue);
 
   // Column header label or render function
-  header?:
-    | string
-    | ((context: HeaderContext<TData>) => ReactNode);
+  header?: string | ((context: HeaderContext<TData>) => ReactNode);
 
   // Cell render function
   cell?: (context: CellContext<TData, TValue>) => ReactNode;
@@ -157,12 +157,42 @@ export function DataTable<TData>({
   // Show loading state
   if (isLoading) {
     return (
-      <div className="w-full py-8 text-center">
-        <div className="inline-flex items-center gap-2 text-gray-600">
-          <div className="animate-spin">
-            <div className="h-4 w-4 border-2 border-orange-600 border-t-transparent rounded-full" />
-          </div>
-          <span>{loadingMessage}</span>
+      <div className="space-y-4">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                {columns.map((column) => {
+                  const columnId = column.id || (column.accessor as string);
+                  return (
+                    <TableHead
+                      key={columnId}
+                      className={`bg-gray-50 ${column.headerClassName}`}
+                    >
+                      <Skeleton className="h-4 w-20" />
+                    </TableHead>
+                  );
+                })}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {[...Array(5)].map((_, rowIdx) => (
+                <TableRow key={rowIdx} className="hover:bg-transparent">
+                  {columns.map((column) => {
+                    const columnId = column.id || (column.accessor as string);
+                    return (
+                      <TableCell key={columnId} className="py-4">
+                        <Skeleton className="h-4 w-full" />
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+        <div className="text-center py-4 text-gray-500 text-sm">
+          {loadingMessage}
         </div>
       </div>
     );
@@ -171,8 +201,32 @@ export function DataTable<TData>({
   // Show error state
   if (isError) {
     return (
-      <div className="w-full py-8 text-center">
-        <p className="text-red-600">Gagal memuat data. Silakan coba lagi.</p>
+      <div className="overflow-x-auto rounded-lg border border-red-200 bg-red-50">
+        <div className="w-full py-12 text-center">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+              <svg
+                className="w-6 h-6 text-red-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+            <div>
+              <p className="font-semibold text-red-900">Gagal memuat data</p>
+              <p className="text-sm text-red-700 mt-1">
+                Silakan coba lagi atau hubungi dukungan jika masalah berlanjut
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -180,8 +234,34 @@ export function DataTable<TData>({
   // Show empty state
   if (data.length === 0) {
     return (
-      <div className="w-full py-8 text-center">
-        <p className="text-gray-600">{emptyMessage}</p>
+      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-linear-to-b from-gray-50 to-white">
+        <div className="w-full py-16 text-center">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center">
+              <svg
+                className="w-8 h-8 text-orange-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+            </div>
+            <div>
+              <p className="font-semibold text-gray-900 text-lg">
+                {emptyMessage}
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                Tidak ada data yang sesuai dengan kriteria pencarian Anda
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -192,26 +272,27 @@ export function DataTable<TData>({
 
   return (
     <div className="space-y-4">
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
         <Table>
-          <TableHeader>
-            <TableRow>
+          <TableHeader className="bg-linear-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+            <TableRow className="hover:bg-transparent">
               {columns.map((column) => {
                 const columnId = column.id || (column.accessor as string);
-                const sortKey =
-                  column.sortKey || columnId;
+                const sortKey = column.sortKey || columnId;
                 const isSorted = sortBy === sortKey;
                 const isSortable = column.enableSorting && onSort;
 
                 return (
                   <TableHead
                     key={columnId}
-                    className={column.headerClassName}
+                    className={`font-semibold text-gray-700 text-sm uppercase tracking-wide ${
+                      column.headerClassName || ""
+                    }`}
                   >
                     {isSortable ? (
                       <button
                         onClick={() => onSort(sortKey)}
-                        className="flex items-center gap-2 hover:text-orange-600 transition-colors"
+                        className="inline-flex items-center gap-2 font-semibold text-gray-700 hover:text-orange-600 transition-colors duration-200"
                         aria-label={`Sort by ${columnId}`}
                       >
                         {typeof column.header === "function" ? (
@@ -227,7 +308,8 @@ export function DataTable<TData>({
                                       getContext: () => ({
                                         column: { id: columnId },
                                         header: {
-                                          getContext: () => ({} as HeaderContext<TData>),
+                                          getContext: () =>
+                                            ({} as HeaderContext<TData>),
                                         },
                                       }),
                                     },
@@ -240,8 +322,12 @@ export function DataTable<TData>({
                           <span>{column.header}</span>
                         )}
                         {isSorted && (
-                          <span className="text-sm">
-                            {sortOrder === "asc" ? "↑" : "↓"}
+                          <span className="inline-flex">
+                            {sortOrder === "asc" ? (
+                              <ChevronUp className="w-4 h-4 text-orange-600" />
+                            ) : (
+                              <ChevronDown className="w-4 h-4 text-orange-600" />
+                            )}
                           </span>
                         )}
                       </button>
@@ -257,7 +343,8 @@ export function DataTable<TData>({
                                   getContext: () => ({
                                     column: { id: columnId },
                                     header: {
-                                      getContext: () => ({} as HeaderContext<TData>),
+                                      getContext: () =>
+                                        ({} as HeaderContext<TData>),
                                     },
                                   }),
                                 },
@@ -276,13 +363,21 @@ export function DataTable<TData>({
           </TableHeader>
           <TableBody>
             {data.map((row, rowIndex) => (
-              <TableRow key={rowIndex}>
+              <TableRow
+                key={rowIndex}
+                className="border-b border-gray-100 hover:bg-orange-50 transition-colors duration-150 group"
+              >
                 {columns.map((column) => {
                   const columnId = column.id || (column.accessor as string);
                   const value = getValueByAccessor(row, column.accessor);
 
                   return (
-                    <TableCell key={columnId} className={column.className}>
+                    <TableCell
+                      key={columnId}
+                      className={`py-4 text-gray-700 group-hover:text-gray-900 transition-colors ${
+                        column.className || ""
+                      }`}
+                    >
                       {column.cell ? (
                         column.cell({
                           getValue: () => value,
@@ -292,7 +387,7 @@ export function DataTable<TData>({
                           },
                         })
                       ) : (
-                        <>{value}</>
+                        <>{value || "-"}</>
                       )}
                     </TableCell>
                   );
@@ -303,10 +398,17 @@ export function DataTable<TData>({
         </Table>
       </div>
 
-      {/* Results summary */}
-      <div className="flex justify-between items-center text-sm text-gray-600">
-        <div>
-          Menampilkan {startRow}-{endRow} dari {total} data
+      {/* Results summary - Enhanced */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-1">
+        <p className="text-sm text-gray-600 font-medium">
+          <span className="text-orange-600 font-semibold">
+            {startRow}-{endRow}
+          </span>{" "}
+          dari{" "}
+          <span className="text-orange-600 font-semibold">{total}</span> data
+        </p>
+        <div className="text-xs text-gray-500">
+          Halaman {page} dari {Math.max(1, Math.ceil(total / limit))}
         </div>
       </div>
     </div>

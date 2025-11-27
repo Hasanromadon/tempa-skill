@@ -26,4 +26,9 @@ export {
 
 // Generic reusable data table
 export { DataTable } from "./data-table";
-export type { ColumnDef, DataTableProps, CellContext, HeaderContext } from "./data-table";
+export type {
+  CellContext,
+  ColumnDef,
+  DataTableProps,
+  HeaderContext,
+} from "./data-table";

@@ -74,11 +74,7 @@ export default function AdminCoursesPage() {
 
   // Handle publish/unpublish
   const handleTogglePublish = useCallback(
-    async (
-      courseId: number,
-      currentStatus: boolean,
-      courseTitle: string
-    ) => {
+    async (courseId: number, currentStatus: boolean, courseTitle: string) => {
       try {
         await togglePublish.mutateAsync({
           id: courseId,
@@ -114,30 +110,27 @@ export default function AdminCoursesPage() {
     []
   );
 
-  const handleDeleteConfirm = useCallback(
-    async () => {
-      if (!courseToDelete) return;
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!courseToDelete) return;
 
-      try {
-        await deleteCourse.mutateAsync(courseToDelete.id);
+    try {
+      await deleteCourse.mutateAsync(courseToDelete.id);
 
-        toast.success("Kursus berhasil dihapus", {
-          description: `"${courseToDelete.title}" telah dihapus dari platform.`,
-        });
+      toast.success("Kursus berhasil dihapus", {
+        description: `"${courseToDelete.title}" telah dihapus dari platform.`,
+      });
 
-        setDeleteDialogOpen(false);
-        setCourseToDelete(null);
+      setDeleteDialogOpen(false);
+      setCourseToDelete(null);
 
-        // Refetch courses
-        table.refetch();
-      } catch {
-        toast.error("Gagal menghapus kursus", {
-          description: "Silakan coba lagi.",
-        });
-      }
-    },
-    [courseToDelete, deleteCourse, table]
-  );
+      // Refetch courses
+      table.refetch();
+    } catch {
+      toast.error("Gagal menghapus kursus", {
+        description: "Silakan coba lagi.",
+      });
+    }
+  }, [courseToDelete, deleteCourse, table]);
 
   // Column definitions untuk DataTable
   const columns = useMemo<ColumnDef<Course>[]>(
@@ -165,9 +158,7 @@ export default function AdminCoursesPage() {
           return (
             <Badge
               className={
-                DIFFICULTY_COLORS[
-                  difficulty as keyof typeof DIFFICULTY_COLORS
-                ]
+                DIFFICULTY_COLORS[difficulty as keyof typeof DIFFICULTY_COLORS]
               }
             >
               {DIFFICULTY_LABELS[difficulty as keyof typeof DIFFICULTY_LABELS]}
