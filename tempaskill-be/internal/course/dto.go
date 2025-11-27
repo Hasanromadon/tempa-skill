@@ -23,10 +23,11 @@ type UpdateCourseRequest struct {
 
 // CreateLessonRequest represents lesson creation payload
 type CreateLessonRequest struct {
-	Title      string `json:"title" binding:"required,min=3,max=200"`
-	Content    string `json:"content" binding:"required,min=10"`
-	OrderIndex int    `json:"order_index" binding:"omitempty,min=0"`
-	Duration   int    `json:"duration" binding:"omitempty,min=0"`
+	Title       string `json:"title" binding:"required,min=3,max=200"`
+	Content     string `json:"content" binding:"required,min=10"`
+	OrderIndex  int    `json:"order_index" binding:"omitempty,min=0"`
+	Duration    int    `json:"duration" binding:"omitempty,min=0"`
+	IsPublished bool   `json:"is_published" binding:"omitempty"`
 }
 
 // UpdateLessonRequest represents lesson update payload

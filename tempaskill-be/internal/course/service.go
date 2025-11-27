@@ -243,7 +243,7 @@ func (s *service) CreateLesson(ctx context.Context, userID uint, courseID uint, 
 		Content:     req.Content,
 		OrderIndex:  req.OrderIndex,
 		Duration:    req.Duration,
-		IsPublished: false,
+		IsPublished: req.IsPublished,
 	}
 
 	if err := s.repo.CreateLesson(ctx, lesson); err != nil {
