@@ -38,7 +38,7 @@ import { formatCurrency } from "@/lib/utils";
 import type { Course } from "@/types/api";
 import { Edit, Eye, EyeOff, MoreVertical, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useMemo, useState, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { toast } from "sonner";
 
 /**
@@ -56,7 +56,7 @@ export default function AdminCoursesPage() {
     title: string;
   } | null>(null);
 
-  // Local search state for immediate UI feedback (prevents focus blur)
+  // Local search state for input (never triggers re-render for search API)
   const [localSearch, setLocalSearch] = useState("");
 
   // Server-side table with filters
@@ -70,14 +70,27 @@ export default function AdminCoursesPage() {
     },
   });
 
-  // Debounce search to prevent rapid API calls
-  // Sync localSearch to table.filters.search after 300ms pause
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      table.filters.setSearch(localSearch);
-    }, 300);
+  // Debounce search using useCallback + useRef for proper timing
+  // This updates the actual filter without causing input focus loss
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-    return () => clearTimeout(timer);
+  useEffect(() => {
+    // Clear previous timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Set new timer - only update table search after user stops typing
+    debounceTimerRef.current = setTimeout(() => {
+      table.filters.setSearch(localSearch);
+    }, 500); // Increased to 500ms for more stable debounce
+
+    // Cleanup
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
   }, [localSearch, table.filters]);
 
   const togglePublish = useTogglePublishCourse();
