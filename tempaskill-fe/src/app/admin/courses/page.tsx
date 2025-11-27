@@ -1,10 +1,7 @@
 "use client";
 
-import {
-  ColumnDef,
-  DataTable,
-} from "@/components/common";
 import { SearchAndFilters } from "@/components/admin/search-and-filters";
+import { ColumnDef, DataTable } from "@/components/common";
 import { DeleteCourseDialog } from "@/components/course/delete-course-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -60,10 +57,7 @@ export default function AdminCoursesPage() {
     queryKey: ["admin-courses"],
     endpoint: API_ENDPOINTS.COURSES.LIST,
     initialLimit: 10,
-    initialFilters: {
-      category: "",
-      difficulty: "",
-    },
+    initialFilters: {}, // Start with no filters
   });
 
   const togglePublish = useTogglePublishCourse();

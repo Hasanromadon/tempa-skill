@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  SearchFilterInput,
-  SelectFilter,
-} from "@/components/common";
+import { SearchFilterInput, SelectFilter } from "@/components/common";
 import { X } from "lucide-react";
 import { useMemo } from "react";
 
@@ -45,7 +42,8 @@ export function SearchAndFilters({
   const activeFilterBadges = useMemo(() => {
     const badges = [];
 
-    if (filters.category) {
+    // Only add badge if value is not empty string and is truthy
+    if (filters.category && String(filters.category).trim()) {
       badges.push({
         label: "Kategori",
         value: String(filters.category),
@@ -53,7 +51,7 @@ export function SearchAndFilters({
       });
     }
 
-    if (filters.difficulty) {
+    if (filters.difficulty && String(filters.difficulty).trim()) {
       badges.push({
         label: "Tingkat",
         value: String(filters.difficulty),

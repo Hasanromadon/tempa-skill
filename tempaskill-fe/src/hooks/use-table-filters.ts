@@ -184,8 +184,12 @@ export function useTableFilters(
     setPage(1);
   }, []);
 
+  // Check if there are any non-empty filter values
+  // Only count filters that have truthy values (not empty strings, 0, false, etc)
   const hasActiveFilters = useMemo(() => {
-    return Object.keys(filters).length > 0;
+    return Object.values(filters).some(
+      (value) => value !== "" && value !== null && value !== undefined
+    );
   }, [filters]);
 
   // Sort handlers
