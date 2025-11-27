@@ -121,11 +121,6 @@ export function Pagination({
         className
       )}
     >
-      {/* Items info */}
-      <div className="text-sm text-gray-600">
-        Menampilkan {startItem}-{endItem} dari {totalItems} item
-      </div>
-
       {/* Center section - Page size and navigation */}
       <div className="flex items-center gap-4">
         {/* Page size selector */}
