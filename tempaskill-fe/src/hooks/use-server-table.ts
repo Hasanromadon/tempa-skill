@@ -110,21 +110,28 @@ export function useServerTable<T>(
   } = useQuery({
     queryKey: [...queryKey, cleanQueryParams],
     queryFn: async () => {
-      const response = await apiClient.get<ApiResponse<ServerTableResponse<T>>>(
-        endpoint,
-        {
-          params: cleanQueryParams,
-        }
-      );
+      const response = await apiClient.get<
+        ApiResponse<{
+          courses: T[];
+          pagination: {
+            page: number;
+            limit: number;
+            total: number;
+            total_pages: number;
+          };
+        }>
+      >(endpoint, {
+        params: cleanQueryParams,
+      });
       return response.data.data;
     },
     enabled: enabled,
     staleTime: 1000 * 60, // 1 minute
   });
 
-  const data = responseData?.data ?? [];
-  const total = responseData?.total ?? 0;
-  const totalPages = Math.ceil(total / filters.limit) || 1;
+  const data = responseData?.courses ?? [];
+  const total = responseData?.pagination?.total ?? 0;
+  const totalPages = responseData?.pagination?.total_pages ?? 1;
   const hasNextPage = filters.page < totalPages;
   const hasPrevPage = filters.page > 1;
 
