@@ -1,5 +1,6 @@
 "use client";
 
+import { Pagination } from "@/components/common/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -108,6 +109,22 @@ export interface DataTableProps<TData> {
 
   // Callback when sort header clicked
   onSort?: (sortKey: string) => void;
+
+  // Pagination callbacks
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (limit: number) => void;
+
+  // Page size options
+  pageSizeOptions?: number[];
+
+  // Show pagination at bottom
+  showPagination?: boolean;
+
+  // Show page size selector
+  showPageSizeSelector?: boolean;
+
+  // Show page numbers
+  showPageNumbers?: boolean;
 }
 
 /**
@@ -153,6 +170,12 @@ export function DataTable<TData>({
   sortBy,
   sortOrder,
   onSort,
+  onPageChange,
+  onPageSizeChange,
+  pageSizeOptions = [10, 20, 50, 100],
+  showPagination = true,
+  showPageSizeSelector = true,
+  showPageNumbers = true,
 }: DataTableProps<TData>) {
   // Show loading state
   if (isLoading) {
@@ -398,19 +421,30 @@ export function DataTable<TData>({
         </Table>
       </div>
 
-      {/* Results summary - Enhanced */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-1">
-        <p className="text-sm text-gray-600 font-medium">
-          <span className="text-orange-600 font-semibold">
-            {startRow}-{endRow}
-          </span>{" "}
-          dari <span className="text-orange-600 font-semibold">{total}</span>{" "}
-          data
-        </p>
-        <div className="text-xs text-gray-500">
-          Halaman {page} dari {Math.max(1, Math.ceil(total / limit))}
+      {/* Results summary + Pagination - Built-in */}
+      {showPagination && data.length > 0 && onPageChange && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-1 pt-2 border-t border-gray-200">
+          <p className="text-sm text-gray-600 font-medium">
+            Menampilkan{" "}
+            <span className="text-orange-600 font-semibold">
+              {startRow}-{endRow}
+            </span>{" "}
+            dari <span className="text-orange-600 font-semibold">{total}</span>{" "}
+            data
+          </p>
+          <Pagination
+            currentPage={page}
+            totalPages={Math.max(1, Math.ceil(total / limit))}
+            totalItems={total}
+            pageSize={limit}
+            onPageChange={onPageChange}
+            onPageSizeChange={onPageSizeChange}
+            pageSizeOptions={pageSizeOptions}
+            showPageSizeSelector={showPageSizeSelector}
+            showPageNumbers={showPageNumbers}
+          />
         </div>
-      </div>
+      )}
     </div>
   );
 }

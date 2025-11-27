@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, X, Filter } from "lucide-react";
+import { Filter, Search, X } from "lucide-react";
 import { FC } from "react";
 
 interface SearchFilterInputProps {
@@ -80,8 +80,8 @@ export const FilterBadge: FC<FilterBadgeProps> = ({
         <span className="font-semibold">{label}:</span>
         <span className="text-orange-800">{value}</span>
       </span>
-      <button 
-        onClick={onRemove} 
+      <button
+        onClick={onRemove}
         className="ml-1 text-orange-700 hover:text-orange-900 hover:bg-orange-300 rounded-full p-0.5 transition-colors"
         aria-label={`Hapus filter ${label}`}
       >
@@ -164,7 +164,7 @@ interface SortHeaderProps {
  * @deprecated Use DataTable component with sortable columns instead.
  * This component is kept for backward compatibility but is no longer recommended.
  * DataTable provides better UX with proper visual feedback and column definitions.
- * 
+ *
  * Example:
  * - Old: <SortHeader label="Title" sortKey="title" onSort={...} />
  * - New: Create column with sortable: true in DataTable ColumnDef
@@ -206,7 +206,7 @@ interface TableStatusProps {
  * @deprecated Use DataTable component which has built-in loading, error, and empty states.
  * This component is kept for backward compatibility but is no longer recommended.
  * DataTable provides better UX with skeleton loaders, icons, and professional styling.
- * 
+ *
  * Example:
  * - Old: <TableStatus isLoading={loading} isError={error} isEmpty={!data} />
  * - New: <DataTable data={data} isLoading={loading} error={error} columns={...} />
@@ -263,7 +263,7 @@ interface ResultsSummaryProps {
  * @deprecated Use DataTable component which has built-in results summary.
  * This component is kept for backward compatibility but is no longer recommended.
  * DataTable provides better UX with automatic calculation and orange-600 highlights.
- * 
+ *
  * Example:
  * - Old: <ResultsSummary total={100} page={1} limit={10} />
  * - New: DataTable includes this automatically as "Showing 1-10 of 100"
@@ -278,8 +278,8 @@ export const ResultsSummary: FC<ResultsSummaryProps> = ({
 
   return (
     <p className="text-sm text-gray-600">
-      Menampilkan <span className="font-semibold text-orange-600">{start}</span> hingga{" "}
-      <span className="font-semibold text-orange-600">{end}</span> dari{" "}
+      Menampilkan <span className="font-semibold text-orange-600">{start}</span>{" "}
+      hingga <span className="font-semibold text-orange-600">{end}</span> dari{" "}
       <span className="font-semibold text-orange-600">{total}</span> hasil
     </p>
   );
@@ -321,7 +321,10 @@ export const SelectFilter: FC<SelectFilterProps> = ({
 
   return (
     <Select value={selectedValue} onValueChange={onChange} disabled={disabled}>
-      <SelectTrigger aria-label={aria} className="rounded-lg border-gray-300 focus:ring-orange-500 h-10">
+      <SelectTrigger
+        aria-label={aria}
+        className="rounded-lg border-gray-300 focus:ring-orange-500 h-10"
+      >
         <SelectValue placeholder={placeholderOption?.label || placeholder} />
       </SelectTrigger>
       <SelectContent className="rounded-lg">

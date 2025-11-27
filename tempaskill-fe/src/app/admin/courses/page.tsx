@@ -4,7 +4,6 @@ import {
   ActiveFilters,
   ColumnDef,
   DataTable,
-  Pagination,
   SearchFilterInput,
   SelectFilter,
 } from "@/components/common";
@@ -381,6 +380,12 @@ export default function AdminCoursesPage() {
             sortBy={table.filters.sortBy}
             sortOrder={table.filters.sortOrder}
             onSort={table.filters.toggleSort}
+            onPageChange={table.filters.setPage}
+            onPageSizeChange={table.filters.setLimit}
+            pageSizeOptions={[10, 20, 50, 100]}
+            showPagination={true}
+            showPageSizeSelector={true}
+            showPageNumbers={true}
             emptyMessage={
               table.filters.hasActiveFilters || table.filters.search
                 ? "Tidak ada kursus yang sesuai dengan filter"
@@ -388,23 +393,6 @@ export default function AdminCoursesPage() {
             }
             loadingMessage="Memuat daftar kursus..."
           />
-
-          {/* Pagination */}
-          {table.data.length > 0 && (
-            <div className="flex items-center justify-between pt-4 border-t">
-              <Pagination
-                currentPage={table.filters.page}
-                totalPages={table.totalPages}
-                totalItems={table.total}
-                pageSize={table.filters.limit}
-                onPageChange={table.filters.setPage}
-                onPageSizeChange={table.filters.setLimit}
-                pageSizeOptions={[10, 20, 50, 100]}
-                showPageSizeSelector
-                showPageNumbers
-              />
-            </div>
-          )}
         </CardContent>
       </Card>
 
