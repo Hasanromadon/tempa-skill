@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -36,22 +35,23 @@ export const SearchFilterInput: FC<SearchFilterInputProps> = ({
   disabled = false,
 }) => {
   return (
-    <div className="relative w-full">
-      <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 pointer-events-none" />
+    <div className="relative w-full group">
+      <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500 pointer-events-none group-focus-within:text-orange-600 transition-colors" />
       <Input
         type="text"
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
-        className="pl-11 pr-11 rounded-lg border-gray-300 focus:border-orange-500 focus:ring-orange-500 transition-colors h-10"
+        className="pl-10 pr-10 rounded-lg border border-gray-300 bg-white focus:border-orange-600 focus:ring-2 focus:ring-orange-100 transition-all h-11 text-sm disabled:bg-gray-50"
       />
       {value && (
         <button
           onClick={onClear}
           disabled={disabled}
-          className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 disabled:opacity-50 transition-colors p-1 hover:bg-gray-100 rounded"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 disabled:opacity-50 transition-colors p-1.5 hover:bg-gray-100 rounded-md"
           aria-label="Clear search"
+          type="button"
         >
           <X className="h-4 w-4" />
         </button>
@@ -75,15 +75,16 @@ export const FilterBadge: FC<FilterBadgeProps> = ({
   onRemove,
 }) => {
   return (
-    <div className="inline-flex items-center gap-2 rounded-full bg-orange-100 px-4 py-1.5 text-sm text-orange-900 border border-orange-200 transition-all hover:bg-orange-200 hover:shadow-sm">
+    <div className="inline-flex items-center gap-1.5 rounded-full bg-orange-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-orange-700 hover:shadow-md transition-all duration-200">
       <span className="flex items-center gap-1">
         <span className="font-semibold">{label}:</span>
-        <span className="text-orange-800">{value}</span>
+        <span className="font-normal">{value}</span>
       </span>
       <button
         onClick={onRemove}
-        className="ml-1 text-orange-700 hover:text-orange-900 hover:bg-orange-300 rounded-full p-0.5 transition-colors"
+        className="ml-0.5 text-white/80 hover:text-white hover:bg-orange-800/40 rounded-full p-0.5 transition-colors"
         aria-label={`Hapus filter ${label}`}
+        type="button"
       >
         <X className="h-3 w-3" />
       </button>
@@ -101,10 +102,10 @@ interface ActiveFiltersProps {
 /**
  * Component untuk menampilkan active filters
  * Features:
- * - Visual filter counter dengan Filter icon
- * - Gradient background untuk visual hierarchy
- * - Clear all button dengan confirm action
- * - Smooth animations dan transitions
+ * - Compact design dengan active filters count
+ * - Modern styling dengan orange accent
+ * - Quick clear all functionality
+ * - Smooth animations
  */
 export const ActiveFilters: FC<ActiveFiltersProps> = ({
   filters,
@@ -119,15 +120,24 @@ export const ActiveFilters: FC<ActiveFiltersProps> = ({
   }
 
   return (
-    <div className="space-y-3 rounded-lg border border-orange-200 bg-linear-to-r from-orange-50 to-orange-100 p-4">
-      <div className="flex items-center gap-2">
-        <Filter className="h-4 w-4 text-orange-600" />
-        <span className="text-sm font-semibold text-gray-700">
-          Filter aktif:
-          <span className="ml-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-orange-600 text-xs font-bold text-white">
+    <div className="flex flex-col gap-2.5 p-3 rounded-lg bg-gray-50 border border-gray-200">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Filter className="h-4 w-4 text-orange-600 shrink-0" />
+          <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+            Filter Aktif
+          </span>
+          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-orange-600 text-xs font-bold text-white">
             {activeFilters.length}
           </span>
-        </span>
+        </div>
+        <button
+          onClick={onClearAll}
+          className="text-xs font-medium text-orange-600 hover:text-orange-700 hover:underline transition-colors"
+          type="button"
+        >
+          Hapus Semua
+        </button>
       </div>
       <div className="flex flex-wrap gap-2">
         {activeFilters.map(([key, value]) => (
@@ -139,15 +149,6 @@ export const ActiveFilters: FC<ActiveFiltersProps> = ({
           />
         ))}
       </div>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onClearAll}
-        className="text-orange-600 hover:bg-orange-200 font-medium"
-      >
-        <X className="h-3.5 w-3.5 mr-1" />
-        Hapus semua filter
-      </Button>
     </div>
   );
 };
@@ -302,6 +303,7 @@ interface SelectFilterProps {
  * - Rounded corners dan smooth focus state
  * - ARIA labels untuk accessibility
  * - Automatic empty value filtering
+ * - Modern styling dengan better visual feedback
  */
 export const SelectFilter: FC<SelectFilterProps> = ({
   value,
@@ -323,7 +325,7 @@ export const SelectFilter: FC<SelectFilterProps> = ({
     <Select value={selectedValue} onValueChange={onChange} disabled={disabled}>
       <SelectTrigger
         aria-label={aria}
-        className="rounded-lg border-gray-300 focus:ring-orange-500 h-10"
+        className="rounded-lg border border-gray-300 bg-white focus:border-orange-600 focus:ring-2 focus:ring-orange-100 transition-all h-11 text-sm disabled:bg-gray-50"
       >
         <SelectValue placeholder={placeholderOption?.label || placeholder} />
       </SelectTrigger>
