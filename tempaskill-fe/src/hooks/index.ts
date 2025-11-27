@@ -8,5 +8,7 @@ export * from "./use-lessons";
 export * from "./use-payment";
 export * from "./use-progress";
 export * from "./use-reviews";
+export * from "./use-server-table";
 export * from "./use-sessions";
+export * from "./use-table-filters";
 export * from "./use-user";

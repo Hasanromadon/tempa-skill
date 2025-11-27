@@ -1,6 +1,14 @@
 "use client";
 
-import { LoadingScreen, Pagination } from "@/components/common";
+import {
+  ActiveFilters,
+  LimitSelect,
+  Pagination,
+  ResultsSummary,
+  SearchFilterInput,
+  SortHeader,
+  TableStatus,
+} from "@/components/common";
 import { DeleteCourseDialog } from "@/components/course/delete-course-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,14 +26,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -35,38 +35,40 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  useCourses,
-  useDataTable,
   useDeleteCourse,
+  useServerTable,
   useTogglePublishCourse,
 } from "@/hooks";
-import { DIFFICULTY_COLORS, DIFFICULTY_LABELS } from "@/lib/constants";
-import { formatCurrency } from "@/lib/utils";
 import {
-  Edit,
-  Eye,
-  EyeOff,
-  MoreVertical,
-  Plus,
-  Search,
-  Trash2,
-} from "lucide-react";
+  API_ENDPOINTS,
+  DIFFICULTY_COLORS,
+  DIFFICULTY_LABELS,
+} from "@/lib/constants";
+import { formatCurrency } from "@/lib/utils";
+import type { Course } from "@/types/api";
+import { Edit, Eye, EyeOff, MoreVertical, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 
 export default function AdminCoursesPage() {
-  const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [difficultyFilter, setDifficultyFilter] = useState("all");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState<{
     id: number;
     title: string;
   } | null>(null);
 
-  const { data: coursesData, isLoading } = useCourses();
-  const courses = coursesData?.courses || [];
+  // Server-side table with filters
+  const table = useServerTable<Course>({
+    queryKey: ["admin-courses"],
+    endpoint: API_ENDPOINTS.COURSES.LIST,
+    initialLimit: 10,
+    initialFilters: {
+      category: "",
+      difficulty: "",
+    },
+  });
+
   const togglePublish = useTogglePublishCourse();
   const deleteCourse = useDeleteCourse();
 
@@ -90,6 +92,9 @@ export default function AdminCoursesPage() {
           }.`,
         }
       );
+
+      // Refetch courses
+      table.refetch();
     } catch {
       toast.error("Gagal mengubah status kursus", {
         description: "Silakan coba lagi.",
@@ -115,46 +120,15 @@ export default function AdminCoursesPage() {
 
       setDeleteDialogOpen(false);
       setCourseToDelete(null);
+
+      // Refetch courses
+      table.refetch();
     } catch {
       toast.error("Gagal menghapus kursus", {
         description: "Silakan coba lagi.",
       });
     }
   };
-
-  // Filter courses
-  const filteredCourses = courses.filter((course) => {
-    const matchesSearch =
-      search === "" ||
-      course.title.toLowerCase().includes(search.toLowerCase()) ||
-      course.description.toLowerCase().includes(search.toLowerCase());
-
-    const matchesCategory =
-      categoryFilter === "all" || course.category === categoryFilter;
-
-    const matchesDifficulty =
-      difficultyFilter === "all" || course.difficulty === difficultyFilter;
-
-    return matchesSearch && matchesCategory && matchesDifficulty;
-  });
-
-  // Pagination hook
-  const {
-    currentPage,
-    pageSize: currentPageSize,
-    paginatedData: displayedCourses,
-    totalPages,
-    totalItems: totalFiltered,
-    goToPage,
-    setPageSize,
-  } = useDataTable({
-    data: filteredCourses,
-    pageSize: 10,
-  });
-
-  if (isLoading) {
-    return <LoadingScreen message="Memuat daftar kursus..." />;
-  }
 
   return (
     <div className="space-y-6">
@@ -177,215 +151,276 @@ export default function AdminCoursesPage() {
         </Link>
       </div>
 
-      {/* Filters */}
+      {/* Filters Card */}
       <Card>
         <CardHeader>
-          <CardTitle>Filter Kursus</CardTitle>
+          <CardTitle>Filter & Pencarian</CardTitle>
           <CardDescription>
             Cari dan filter kursus berdasarkan kategori dan tingkat kesulitan
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                type="text"
-                placeholder="Cari kursus..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-10"
-                aria-label="Cari kursus"
+          <div className="space-y-4">
+            {/* Search Input */}
+            <SearchFilterInput
+              value={table.filters.search}
+              onChange={table.filters.setSearch}
+              onClear={table.filters.clearSearch}
+              placeholder="Cari berdasarkan judul kursus..."
+              disabled={table.isLoading}
+            />
+
+            {/* Filters Row */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Category Filter */}
+              <select
+                value={String(table.filters.filters.category || "")}
+                onChange={(e) =>
+                  table.filters.setFilter("category", e.target.value || "")
+                }
+                disabled={table.isLoading}
+                className="rounded border border-gray-300 bg-white px-3 py-2 text-sm disabled:bg-gray-100 disabled:opacity-50"
+                aria-label="Filter berdasarkan kategori"
+              >
+                <option value="">Semua Kategori</option>
+                <option value="Web Development">Web Development</option>
+                <option value="Mobile Development">Mobile Development</option>
+                <option value="Data Science">Data Science</option>
+                <option value="DevOps">DevOps</option>
+              </select>
+
+              {/* Difficulty Filter */}
+              <select
+                value={String(table.filters.filters.difficulty || "")}
+                onChange={(e) =>
+                  table.filters.setFilter("difficulty", e.target.value || "")
+                }
+                disabled={table.isLoading}
+                className="rounded border border-gray-300 bg-white px-3 py-2 text-sm disabled:bg-gray-100 disabled:opacity-50"
+                aria-label="Filter berdasarkan tingkat kesulitan"
+              >
+                <option value="">Semua Tingkat</option>
+                <option value="beginner">Pemula</option>
+                <option value="intermediate">Menengah</option>
+                <option value="advanced">Lanjutan</option>
+              </select>
+
+              {/* Limit Selector */}
+              <LimitSelect
+                value={table.filters.limit}
+                onChange={table.filters.setLimit}
+                disabled={table.isLoading}
               />
             </div>
 
-            {/* Category Filter */}
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger aria-label="Filter berdasarkan kategori">
-                <SelectValue placeholder="Semua Kategori" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua Kategori</SelectItem>
-                <SelectItem value="Web Development">Web Development</SelectItem>
-                <SelectItem value="Mobile Development">
-                  Mobile Development
-                </SelectItem>
-                <SelectItem value="Data Science">Data Science</SelectItem>
-                <SelectItem value="DevOps">DevOps</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Difficulty Filter */}
-            <Select
-              value={difficultyFilter}
-              onValueChange={setDifficultyFilter}
-            >
-              <SelectTrigger aria-label="Filter berdasarkan tingkat kesulitan">
-                <SelectValue placeholder="Semua Tingkat" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua Tingkat</SelectItem>
-                <SelectItem value="beginner">Pemula</SelectItem>
-                <SelectItem value="intermediate">Menengah</SelectItem>
-                <SelectItem value="advanced">Lanjutan</SelectItem>
-              </SelectContent>
-            </Select>
+            {/* Active Filters */}
+            {table.filters.hasActiveFilters && (
+              <ActiveFilters
+                filters={table.filters.filters}
+                labels={{
+                  category: "Kategori",
+                  difficulty: "Tingkat",
+                }}
+                onRemove={table.filters.clearFilter}
+                onClearAll={table.filters.clearAllFilters}
+              />
+            )}
           </div>
         </CardContent>
       </Card>
 
       {/* Courses Table */}
       <Card>
-        <CardHeader>
-          <CardTitle>Daftar Kursus ({totalFiltered})</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <div>
+            <CardTitle>Daftar Kursus</CardTitle>
+            {!table.isLoading && (
+              <CardDescription className="mt-1">
+                <ResultsSummary
+                  total={table.total}
+                  page={table.filters.page}
+                  limit={table.filters.limit}
+                />
+              </CardDescription>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Judul</TableHead>
+                  <TableHead>
+                    <SortHeader
+                      label="Judul"
+                      sortKey="title"
+                      currentSort={table.filters.sortBy}
+                      currentOrder={table.filters.sortOrder}
+                      onSort={table.filters.toggleSort}
+                    />
+                  </TableHead>
                   <TableHead>Kategori</TableHead>
-                  <TableHead>Tingkat</TableHead>
-                  <TableHead>Harga</TableHead>
-                  <TableHead>Siswa</TableHead>
+                  <TableHead>
+                    <SortHeader
+                      label="Tingkat"
+                      sortKey="difficulty"
+                      currentSort={table.filters.sortBy}
+                      currentOrder={table.filters.sortOrder}
+                      onSort={table.filters.toggleSort}
+                    />
+                  </TableHead>
+                  <TableHead>
+                    <SortHeader
+                      label="Harga"
+                      sortKey="price"
+                      currentSort={table.filters.sortBy}
+                      currentOrder={table.filters.sortOrder}
+                      onSort={table.filters.toggleSort}
+                    />
+                  </TableHead>
+                  <TableHead>
+                    <SortHeader
+                      label="Siswa"
+                      sortKey="enrollment_count"
+                      currentSort={table.filters.sortBy}
+                      currentOrder={table.filters.sortOrder}
+                      onSort={table.filters.toggleSort}
+                    />
+                  </TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {displayedCourses.length > 0 ? (
-                  displayedCourses.map((course) => (
-                    <TableRow key={course.id}>
-                      <TableCell className="font-medium">
-                        {course.title}
-                      </TableCell>
-                      <TableCell>{course.category}</TableCell>
-                      <TableCell>
-                        <Badge
-                          className={
-                            DIFFICULTY_COLORS[
-                              course.difficulty as keyof typeof DIFFICULTY_COLORS
-                            ]
-                          }
-                        >
-                          {
-                            DIFFICULTY_LABELS[
-                              course.difficulty as keyof typeof DIFFICULTY_LABELS
-                            ]
-                          }
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{formatCurrency(course.price)}</TableCell>
-                      <TableCell>{course.enrolled_count || 0}</TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            course.is_published ? "default" : "secondary"
-                          }
-                          className={
-                            course.is_published
-                              ? "bg-green-100 text-green-800"
-                              : "bg-gray-100 text-gray-800"
-                          }
-                        >
-                          {course.is_published ? "Aktif" : "Draft"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              aria-label={`Aksi untuk ${course.title}`}
-                            >
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem asChild>
-                              <Link href={`/admin/courses/${course.id}/edit`}>
-                                <Edit className="h-4 w-4 mr-2" />
-                                Edit
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <Link
-                                href={`/admin/courses/${course.id}/lessons`}
-                              >
+                {table.data.map((course) => (
+                  <TableRow key={course.id}>
+                    <TableCell className="font-medium">
+                      {course.title}
+                    </TableCell>
+                    <TableCell>{course.category}</TableCell>
+                    <TableCell>
+                      <Badge
+                        className={
+                          DIFFICULTY_COLORS[
+                            course.difficulty as keyof typeof DIFFICULTY_COLORS
+                          ]
+                        }
+                      >
+                        {
+                          DIFFICULTY_LABELS[
+                            course.difficulty as keyof typeof DIFFICULTY_LABELS
+                          ]
+                        }
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{formatCurrency(course.price)}</TableCell>
+                    <TableCell>{course.enrolled_count || 0}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={course.is_published ? "default" : "secondary"}
+                        className={
+                          course.is_published
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-800"
+                        }
+                      >
+                        {course.is_published ? "Aktif" : "Draft"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label={`Aksi untuk ${course.title}`}
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem asChild>
+                            <Link href={`/admin/courses/${course.id}/edit`}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href={`/admin/courses/${course.id}/lessons`}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              Kelola Pelajaran
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() =>
+                              handleTogglePublish(
+                                course.id,
+                                course.is_published,
+                                course.title
+                              )
+                            }
+                            disabled={togglePublish.isPending}
+                          >
+                            {course.is_published ? (
+                              <>
+                                <EyeOff className="h-4 w-4 mr-2" />
+                                Unpublish
+                              </>
+                            ) : (
+                              <>
                                 <Eye className="h-4 w-4 mr-2" />
-                                Kelola Pelajaran
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              onClick={() =>
-                                handleTogglePublish(
-                                  course.id,
-                                  course.is_published,
-                                  course.title
-                                )
-                              }
-                              disabled={togglePublish.isPending}
-                            >
-                              {course.is_published ? (
-                                <>
-                                  <EyeOff className="h-4 w-4 mr-2" />
-                                  Unpublish
-                                </>
-                              ) : (
-                                <>
-                                  <Eye className="h-4 w-4 mr-2" />
-                                  Publish
-                                </>
-                              )}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              className="text-red-600"
-                              onClick={() =>
-                                handleDeleteClick(course.id, course.title)
-                              }
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Hapus
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">
-                      <p className="text-gray-500">
-                        {search ||
-                        categoryFilter !== "all" ||
-                        difficultyFilter !== "all"
-                          ? "Tidak ada kursus yang sesuai dengan filter"
-                          : "Belum ada kursus. Buat kursus pertama Anda!"}
-                      </p>
+                                Publish
+                              </>
+                            )}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-red-600"
+                            onClick={() =>
+                              handleDeleteClick(course.id, course.title)
+                            }
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Hapus
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                )}
+                ))}
               </TableBody>
             </Table>
           </div>
 
+          {/* Table Status (Loading, Error, Empty) */}
+          <TableStatus
+            isLoading={table.isLoading}
+            isError={table.isError}
+            isEmpty={table.data.length === 0}
+            errorMessage="Gagal memuat daftar kursus. Silakan coba lagi."
+            emptyMessage={
+              table.filters.hasActiveFilters || table.filters.search
+                ? "Tidak ada kursus yang sesuai dengan filter"
+                : "Belum ada kursus. Buat kursus pertama Anda!"
+            }
+            loadingMessage="Memuat daftar kursus..."
+          />
+
           {/* Pagination */}
-          {totalFiltered > 0 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalItems={totalFiltered}
-              pageSize={currentPageSize}
-              onPageChange={goToPage}
-              onPageSizeChange={setPageSize}
-              pageSizeOptions={[5, 10, 20, 50]}
-              showPageSizeSelector
-              showPageNumbers
-            />
+          {table.data.length > 0 && (
+            <div className="flex items-center justify-between pt-4 border-t">
+              <Pagination
+                currentPage={table.filters.page}
+                totalPages={table.totalPages}
+                totalItems={table.total}
+                pageSize={table.filters.limit}
+                onPageChange={table.filters.setPage}
+                onPageSizeChange={table.filters.setLimit}
+                pageSizeOptions={[10, 20, 50, 100]}
+                showPageSizeSelector
+                showPageNumbers
+              />
+            </div>
           )}
         </CardContent>
       </Card>
