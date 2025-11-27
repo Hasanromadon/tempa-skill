@@ -60,6 +60,7 @@ export default function EditLessonPage({ params }: PageProps) {
     content: string;
     orderIndex: number;
     duration?: number;
+    isPublished?: boolean;
   }) => {
     try {
       setError(null);
@@ -71,6 +72,7 @@ export default function EditLessonPage({ params }: PageProps) {
           content: data.content,
           order_index: data.orderIndex,
           duration: data.duration,
+          is_published: data.isPublished,
         },
       });
 

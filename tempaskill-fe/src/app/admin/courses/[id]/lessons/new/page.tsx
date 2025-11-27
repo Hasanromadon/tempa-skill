@@ -63,6 +63,7 @@ export default function NewLessonPage({ params }: PageProps) {
     content: string;
     orderIndex: number;
     duration?: number;
+    isPublished?: boolean;
   }) => {
     try {
       setError(null);
@@ -74,7 +75,7 @@ export default function NewLessonPage({ params }: PageProps) {
           content: data.content,
           order_index: data.orderIndex,
           duration: data.duration || 30,
-          is_published: false, // Default to draft
+          is_published: data.isPublished || false,
         },
       });
 
