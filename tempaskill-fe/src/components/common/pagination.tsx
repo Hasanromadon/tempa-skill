@@ -183,7 +183,10 @@ export function Pagination({
             {pageNumbers.map((page, index) => {
               if (page === "...") {
                 return (
-                  <span key={`ellipsis-${index}`} className="px-2 text-gray-400">
+                  <span
+                    key={`ellipsis-${index}`}
+                    className="px-2 text-gray-400"
+                  >
                     ...
                   </span>
                 );

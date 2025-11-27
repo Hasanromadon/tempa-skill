@@ -20,7 +20,14 @@ export async function login(page: Page, email: string, password: string) {
  * Admin redirects to /admin/dashboard after successful login
  */
 export async function loginAdmin(page: Page, email: string, password: string) {
+  // Clear any existing cookies to ensure clean login state
+  await page.context().clearCookies();
+
   await page.goto("/login");
+  await page.waitForLoadState("networkidle");
+
+  // Take screenshot for debugging
+  await page.screenshot({ path: "debug-login-page.png" });
 
   // Fill login form
   await page.fill('input[id="email"]', email);

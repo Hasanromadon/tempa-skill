@@ -52,6 +52,21 @@ import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 
+/**
+ * Admin Courses List Page
+ *
+ * Demonstrates useServerTable with auto-detect parser
+ * The hook automatically detects 'courses' key in response
+ *
+ * Alternative with explicit parser:
+ * ```tsx
+ * import { COMMON_PARSERS } from "@/lib/table-response-parsers";
+ * const table = useServerTable<Course>({
+ *   responseParser: COMMON_PARSERS.courses,
+ *   ...
+ * });
+ * ```
+ */
 export default function AdminCoursesPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState<{

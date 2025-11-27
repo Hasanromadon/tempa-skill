@@ -153,6 +153,7 @@ export const createLessonSchema = z.object({
     .int("Durasi harus berupa bilangan bulat")
     .min(1, "Durasi minimal 1 menit")
     .optional(),
+  isPublished: z.boolean().optional(),
 });
 
 export const updateLessonSchema = createLessonSchema.partial();

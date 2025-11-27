@@ -7,26 +7,33 @@ const testContent = `# TempaSkill MDX Components Test
 
 Ini adalah konten test untuk memverifikasi semua komponen MDX berfungsi dengan baik.
 
-## Callout Components
+## Basic Markdown
 
-<Callout type="info" title="Informasi Penting">
-  Ini adalah callout dengan tipe info. Cocok untuk informasi penting yang perlu diperhatikan siswa.
+Ini adalah **teks tebal** dan ini adalah *teks miring*.
+
+### Lists
+- Item pertama
+- Item kedua
+- Item ketiga
+
+### Code Block
+
+\`\`\`javascript
+function greetUser(name) {
+  return "Hello, " + name + "!";
+}
+
+console.log(greetUser("World"));
+\`\`\`
+
+## Callout Component
+
+<Callout type="info">
+  Ini adalah callout dengan tipe info. Cocok untuk informasi penting.
 </Callout>
 
 <Callout type="warning">
-  Ini adalah callout warning tanpa title. Gunakan untuk peringatan penting.
-</Callout>
-
-<Callout type="success" title="Berhasil!">
-  Operasi berhasil diselesaikan dengan baik.
-</Callout>
-
-<Callout type="error" title="Error">
-  Terjadi kesalahan dalam proses ini.
-</Callout>
-
-<Callout type="tip">
-  Tip berguna untuk meningkatkan produktivitas Anda.
+  Ini adalah callout dengan tipe warning. Untuk peringatan penting.
 </Callout>
 
 ## Tabs Component
@@ -38,66 +45,24 @@ Ini adalah konten test untuk memverifikasi semua komponen MDX berfungsi dengan b
   <Tab label="Contoh Kode">
     Konten untuk tab kedua - Berisi contoh kode praktis
   </Tab>
-  <Tab label="Latihan">
-    Konten untuk tab ketiga - Latihan dan soal-soal
-  </Tab>
 </Tabs>
 
 ## Quiz Component
 
-<Quiz
+<MDXQuiz
   question="Apa itu JavaScript?"
-  options={[
-    { text: "Bahasa pemrograman untuk styling web", isCorrect: false },
-    { text: "Bahasa pemrograman untuk membuat halaman web interaktif", isCorrect: true },
-    { text: "Bahasa pemrograman untuk database", isCorrect: false },
-    { text: "Bahasa markup untuk struktur web", isCorrect: false }
-  ]}
+  option1="Bahasa pemrograman untuk styling web"
+  option2="Bahasa pemrograman untuk membuat halaman web interaktif"
+  option3="Bahasa pemrograman untuk database"
+  option4="Bahasa markup untuk struktur web"
+  correctAnswer={2}
   explanation="JavaScript adalah bahasa pemrograman yang digunakan untuk membuat halaman web menjadi interaktif dan dinamis."
 />
-
-## CodeBlock Component
-
-<CodeBlock language="javascript" title="Contoh Fungsi JavaScript">
-function greetUser(name) {
-  return \`Hello, \${name}!\`;
-}
-
-console.log(greetUser("World"));
-</CodeBlock>
-
-<CodeBlock language="python">
-def calculate_sum(a, b):
-    """Menghitung jumlah dua angka"""
-    return a + b
-
-result = calculate_sum(5, 3)
-print(f"Hasil: {result}")
-</CodeBlock>
-
-## Regular Markdown Elements
-
-### Lists
-- Item pertama
-- Item kedua
-- Item ketiga
 
 ### Links
 [Kunjungi TempaSkill](https://tempaskill.com)
 
-### Images
-![Logo TempaSkill](https://example.com/logo.png)
-
-### Tables
-
-| Fitur | Status | Keterangan |
-|-------|--------|------------|
-| MDX Editor | ✅ | Lengkap dengan live preview |
-| Custom Components | ✅ | Callout, Tabs, Quiz, CodeBlock |
-| Authentication | 🔄 | Dalam pengembangan |
-| Progress Tracking | 🔄 | Dalam pengembangan |
-
-> **Catatan**: Semua komponen MDX telah berhasil diintegrasikan dan siap digunakan untuk membuat konten kursus yang interaktif dan menarik.`;
+> **Catatan**: Komponen MDX telah berhasil diintegrasikan.`;
 
 export default function MDXTestPage() {
   return (

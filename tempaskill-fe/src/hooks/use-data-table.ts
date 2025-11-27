@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 
 interface UseDataTableProps<T> {
   data: T[];
@@ -24,20 +24,20 @@ interface UseDataTableReturn<T> {
 
 /**
  * Hook untuk data table pagination logic
- * 
+ *
  * Headless pagination hook yang dapat digunakan dengan TanStack Table, Material-UI, Shadcn, dll
- * 
+ *
  * @example
  * ```tsx
  * const { currentPage, paginatedData, totalPages, goToPage } = useDataTable({
  *   data: courses,
  *   pageSize: 10,
  * });
- * 
+ *
  * return (
  *   <>
  *     <Table data={paginatedData} />
- *     <Pagination 
+ *     <Pagination
  *       current={currentPage}
  *       total={totalPages}
  *       onChange={goToPage}

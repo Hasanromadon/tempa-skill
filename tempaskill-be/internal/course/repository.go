@@ -326,7 +326,10 @@ func (r *repository) FindAllCoursesWithMeta(ctx context.Context, userID uint, qu
 }
 
 func (r *repository) UpdateCourse(ctx context.Context, course *Course) error {
-	return r.db.WithContext(ctx).Model(course).Updates(course).Error
+	return r.db.WithContext(ctx).Model(course).Select(
+		"title", "slug", "description", "thumbnail_url", "category",
+		"difficulty", "price", "is_published",
+	).Updates(course).Error
 }
 
 func (r *repository) DeleteCourse(ctx context.Context, id uint) error {

@@ -10,7 +10,7 @@ import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
 import { Callout } from "./callout";
 import { CodeBlock } from "./code-block";
-import { Quiz } from "./quiz";
+import { MDXQuiz } from "./quiz";
 import { Tab, Tabs } from "./tabs";
 
 // Custom components for MDX
@@ -112,7 +112,7 @@ const components = {
   Callout,
   Tabs,
   Tab,
-  Quiz,
+  MDXQuiz,
   CodeBlock,
 };
 

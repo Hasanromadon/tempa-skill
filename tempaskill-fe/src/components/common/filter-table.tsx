@@ -316,18 +316,12 @@ export const SelectFilter: FC<SelectFilterProps> = ({
 
   // Check if current value is valid
   const hasValidValue = validOptions.some((opt) => opt.value === value);
-  const selectedValue = hasValidValue ? value : (validOptions[0]?.value ?? "");
+  const selectedValue = hasValidValue ? value : validOptions[0]?.value ?? "";
 
   return (
-    <Select
-      value={selectedValue}
-      onValueChange={onChange}
-      disabled={disabled}
-    >
+    <Select value={selectedValue} onValueChange={onChange} disabled={disabled}>
       <SelectTrigger aria-label={aria} className="w-full">
-        <SelectValue 
-          placeholder={placeholderOption?.label || placeholder} 
-        />
+        <SelectValue placeholder={placeholderOption?.label || placeholder} />
       </SelectTrigger>
       <SelectContent>
         {validOptions.map((option) => (

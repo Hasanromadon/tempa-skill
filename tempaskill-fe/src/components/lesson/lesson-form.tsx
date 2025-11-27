@@ -6,6 +6,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { createLessonSchema } from "@/lib/validators";
 import { Lesson } from "@/types/api";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -57,6 +58,7 @@ export function LessonForm({
           content: lesson.content,
           orderIndex: lesson.order_index,
           duration: lesson.duration,
+          isPublished: lesson.is_published,
         }
       : {
           title: "",
@@ -64,6 +66,7 @@ export function LessonForm({
           content: "",
           orderIndex: maxOrderIndex + 1,
           duration: 30, // Default 30 minutes
+          isPublished: false,
         },
   });
 
@@ -136,6 +139,26 @@ export function LessonForm({
                 type="number"
                 placeholder="30"
                 description="Estimasi waktu pengerjaan"
+              />
+            </div>
+
+            {/* Publish Toggle */}
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div className="space-y-0.5">
+                <Label htmlFor="isPublished" className="text-base">
+                  Terbitkan Pelajaran
+                </Label>
+                <p className="text-sm text-gray-600">
+                  Pelajaran yang diterbitkan akan terlihat oleh siswa yang
+                  terdaftar
+                </p>
+              </div>
+              <Switch
+                id="isPublished"
+                checked={methods.watch("isPublished")}
+                onCheckedChange={(checked) =>
+                  methods.setValue("isPublished", checked)
+                }
               />
             </div>
           </CardContent>

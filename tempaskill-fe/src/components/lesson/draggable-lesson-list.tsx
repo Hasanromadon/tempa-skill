@@ -2,6 +2,7 @@
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import apiClient from "@/lib/api-client";
 import { API_ENDPOINTS } from "@/lib/constants";
@@ -22,7 +23,8 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { FileText, GripVertical } from "lucide-react";
+import { Edit, FileText, GripVertical, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 interface Lesson {
@@ -36,14 +38,24 @@ interface Lesson {
 interface DraggableLessonListProps {
   lessons: Lesson[];
   onReorder?: (lessons: Lesson[]) => void;
+  courseId: number; // Add courseId prop
 }
 
 interface SortableItemProps {
   lesson: Lesson;
   index: number;
+  courseId: number;
+  onTogglePublish: (lessonId: number, isPublished: boolean) => void;
+  onDelete: (lessonId: number) => void;
 }
 
-function SortableItem({ lesson, index }: SortableItemProps) {
+function SortableItem({
+  lesson,
+  index,
+  courseId,
+  onTogglePublish,
+  onDelete,
+}: SortableItemProps) {
   const {
     attributes,
     listeners,
@@ -103,6 +115,33 @@ function SortableItem({ lesson, index }: SortableItemProps) {
               Draft
             </Badge>
           )}
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onTogglePublish(lesson.id, !lesson.is_published)}
+              className="text-xs"
+            >
+              {lesson.is_published ? "Unpublish" : "Publish"}
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <Link
+                href={`/admin/courses/${courseId}/lessons/${lesson.id}/edit`}
+              >
+                <Edit className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onDelete(lesson.id)}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </Card>
     </div>
@@ -112,6 +151,7 @@ function SortableItem({ lesson, index }: SortableItemProps) {
 export function DraggableLessonList({
   lessons: initialLessons,
   onReorder,
+  courseId,
 }: DraggableLessonListProps) {
   const [lessons, setLessons] = useState(initialLessons);
   const [isSaving, setIsSaving] = useState(false);
@@ -123,6 +163,45 @@ export function DraggableLessonList({
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+
+  const handleTogglePublish = async (
+    lessonId: number,
+    isPublished: boolean
+  ) => {
+    try {
+      await apiClient.patch(API_ENDPOINTS.LESSONS.UPDATE(lessonId), {
+        is_published: isPublished,
+      });
+
+      // Update local state
+      setLessons((prev) =>
+        prev.map((lesson) =>
+          lesson.id === lessonId
+            ? { ...lesson, is_published: isPublished }
+            : lesson
+        )
+      );
+    } catch (err) {
+      console.error("Failed to toggle lesson publish status:", err);
+      setError("Gagal mengubah status publikasi pelajaran");
+    }
+  };
+
+  const handleDelete = async (lessonId: number) => {
+    if (!confirm("Apakah Anda yakin ingin menghapus pelajaran ini?")) {
+      return;
+    }
+
+    try {
+      await apiClient.delete(API_ENDPOINTS.LESSONS.DELETE(lessonId));
+
+      // Update local state
+      setLessons((prev) => prev.filter((lesson) => lesson.id !== lessonId));
+    } catch (err) {
+      console.error("Failed to delete lesson:", err);
+      setError("Gagal menghapus pelajaran");
+    }
+  };
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
@@ -200,7 +279,14 @@ export function DraggableLessonList({
           strategy={verticalListSortingStrategy}
         >
           {lessons.map((lesson, index) => (
-            <SortableItem key={lesson.id} lesson={lesson} index={index} />
+            <SortableItem
+              key={lesson.id}
+              lesson={lesson}
+              index={index}
+              courseId={courseId}
+              onTogglePublish={handleTogglePublish}
+              onDelete={handleDelete}
+            />
           ))}
         </SortableContext>
       </DndContext>

@@ -236,11 +236,11 @@ export default function AdminCoursesPage() {
 ```typescript
 interface UseServerTableOptions<T> extends TableFilterConfig {
   // Required
-  queryKey: string[];              // React Query key
-  endpoint: string;                // API endpoint
+  queryKey: string[]; // React Query key
+  endpoint: string; // API endpoint
 
   // Optional
-  enabled?: boolean;               // Enable/disable query
+  enabled?: boolean; // Enable/disable query
   responseParser?: ResponseParserOptions<T>; // Custom parser
 
   // From TableFilterConfig
@@ -260,9 +260,9 @@ interface UseServerTableOptions<T> extends TableFilterConfig {
 ```typescript
 interface UseServerTableReturn<T> {
   // Data
-  data: T[];                       // Items array
-  total: number;                   // Total count
-  totalPages: number;              // Total pages
+  data: T[]; // Items array
+  total: number; // Total count
+  totalPages: number; // Total pages
 
   // Loading states
   isLoading: boolean;
@@ -310,7 +310,7 @@ interface UseServerTableReturn<T> {
   hasPrevPage: boolean;
 
   // Methods
-  refetch: () => void;             // Manual refetch
+  refetch: () => void; // Manual refetch
 }
 ```
 
@@ -349,6 +349,7 @@ interface ResponseParserOptions<T> {
 ```
 
 Parser:
+
 ```typescript
 responseParser: {
   getItems: (res) => (res as any).courses,
@@ -367,6 +368,7 @@ responseParser: {
 ```
 
 Parser:
+
 ```typescript
 responseParser: {
   getItems: (res) => (res as any).data,
@@ -390,6 +392,7 @@ responseParser: {
 ```
 
 Parser:
+
 ```typescript
 responseParser: {
   getItems: (res) => (res as any).result.records,
@@ -406,6 +409,7 @@ GET /api/endpoint?page=1&limit=10&search=keyword&category=web&sort_by=title&sort
 ```
 
 Parameters:
+
 - `page`: Current page (1-indexed)
 - `limit`: Items per page
 - `search`: Search term (optional)
@@ -421,8 +425,7 @@ Parameters:
 const courseQueryKeys = {
   all: ["courses"] as const,
   lists: () => [...courseQueryKeys.all, "list"] as const,
-  list: (filters: unknown) =>
-    [...courseQueryKeys.lists(), filters] as const,
+  list: (filters: unknown) => [...courseQueryKeys.lists(), filters] as const,
   detail: (id: number) => [...courseQueryKeys.all, "detail", id] as const,
 };
 

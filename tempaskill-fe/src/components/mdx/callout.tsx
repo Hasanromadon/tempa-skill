@@ -81,7 +81,7 @@ export function Callout({
       {...props}
     >
       <div className="flex items-start gap-3">
-        <Icon className={`h-5 w-5 mt-0.5 flex-shrink-0 ${style.iconColor}`} />
+        <Icon className={`h-5 w-5 mt-0.5 shrink-0 ${style.iconColor}`} />
         <div className="flex-1">
           {title && (
             <h4 className={`font-semibold mb-2 ${style.titleColor}`}>

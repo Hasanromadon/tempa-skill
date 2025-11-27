@@ -16,6 +16,18 @@ interface QuizProps {
   children?: ReactNode;
 }
 
+// MDX-friendly version that accepts options as separate props
+interface MDXQuizProps {
+  question: string;
+  option1: string;
+  option2: string;
+  option3?: string;
+  option4?: string;
+  correctAnswer: number; // 1-based index
+  explanation?: string;
+  children?: ReactNode;
+}
+
 export function Quiz({ question, options, explanation, children }: QuizProps) {
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
@@ -138,5 +150,35 @@ export function Quiz({ question, options, explanation, children }: QuizProps) {
         <div className="mt-4 pt-4 border-t border-blue-200">{children}</div>
       )}
     </div>
+  );
+}
+
+// MDX-friendly version that accepts options as separate props
+export function MDXQuiz({
+  question,
+  option1,
+  option2,
+  option3,
+  option4,
+  correctAnswer,
+  explanation,
+  children
+}: MDXQuizProps) {
+  // Convert MDX props to QuizOption format
+  const options: QuizOption[] = [
+    { text: option1, isCorrect: correctAnswer === 1 },
+    { text: option2, isCorrect: correctAnswer === 2 },
+    ...(option3 ? [{ text: option3, isCorrect: correctAnswer === 3 }] : []),
+    ...(option4 ? [{ text: option4, isCorrect: correctAnswer === 4 }] : []),
+  ];
+
+  return (
+    <Quiz
+      question={question}
+      options={options}
+      explanation={explanation}
+    >
+      {children}
+    </Quiz>
   );
 }

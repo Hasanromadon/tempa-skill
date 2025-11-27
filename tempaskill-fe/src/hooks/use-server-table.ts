@@ -65,8 +65,11 @@ interface UseServerTableReturn<T> {
 /**
  * Hook untuk server-side table dengan React Query integration
  *
- * Supports ANY API response format through customizable response parser.
- * Default parser works with TempaSKill API format: {courses, pagination}
+ * Default parser auto-detects common TempaSKill API format:
+ * { [key]: [], pagination: { total, total_pages } }
+ *
+ * Automatically tries to find array data in response. If that doesn't work,
+ * you can provide a custom responseParser untuk handle different formats.
  *
  * Features:
  * - Automatic API calls dengan filter/sort/pagination params
@@ -74,25 +77,33 @@ interface UseServerTableReturn<T> {
  * - Type-safe data handling
  * - Error handling
  * - Loading states
- * - Flexible response parsing
+ * - Auto-detect or custom response parsing
  *
  * @example
  * ```tsx
- * // With default parser (for courses endpoint)
+ * // With default parser (auto-detects courses, users, lessons, etc)
  * const table = useServerTable<Course>({
  *   queryKey: ["courses"],
  *   endpoint: "/api/v1/courses",
  *   initialLimit: 10,
  * });
  *
- * // With custom parser (for different endpoint)
+ * // With predefined parser
+ * import { COMMON_PARSERS } from "@/lib/table-response-parsers";
  * const table = useServerTable<User>({
  *   queryKey: ["users"],
  *   endpoint: "/api/v1/users",
+ *   responseParser: COMMON_PARSERS.users,
+ * });
+ *
+ * // With custom parser (for different response format)
+ * const table = useServerTable<Order>({
+ *   queryKey: ["orders"],
+ *   endpoint: "/api/v1/orders",
  *   responseParser: {
- *     getItems: (res) => res.data.users,
- *     getTotal: (res) => res.data.pagination.total,
- *     getTotalPages: (res) => res.data.pagination.total_pages,
+ *     getItems: (res) => res.data.items,
+ *     getTotal: (res) => res.data.meta.total,
+ *     getTotalPages: (res) => res.data.meta.total_pages,
  *   },
  * });
  * ```
@@ -118,19 +129,52 @@ export function useServerTable<T>(
     )
   );
 
-  // Default response parser for TempaSKill API
+  // Default response parser: auto-detect common paginated format
+  // Tries to find array data in response and pagination metadata
   const defaultParser: ResponseParserOptions<T> = {
     getItems: (res: unknown) => {
       const data = res as Record<string, unknown>;
-      return (data.courses as T[]) ?? [];
+      
+      // Try common keys first (courses, users, lessons, enrollments, etc)
+      const commonKeys = [
+        "courses",
+        "users",
+        "lessons",
+        "enrollments",
+        "sessions",
+        "reviews",
+        "certificates",
+        "transactions",
+      ];
+
+      for (const key of commonKeys) {
+        const items = data?.[key];
+        if (Array.isArray(items)) {
+          return items as T[];
+        }
+      }
+
+      // Fallback: find first array in response
+      for (const value of Object.values(data ?? {})) {
+        if (Array.isArray(value)) {
+          return value as T[];
+        }
+      }
+
+      return [];
     },
     getTotal: (res: unknown) => {
       const data = res as Record<string, unknown>;
-      return (data.pagination as Record<string, unknown>)?.total as number ?? 0;
+      return (
+        ((data?.pagination as Record<string, unknown>)?.total as number) ?? 0
+      );
     },
     getTotalPages: (res: unknown) => {
       const data = res as Record<string, unknown>;
-      return (data.pagination as Record<string, unknown>)?.total_pages as number ?? 1;
+      return (
+        ((data?.pagination as Record<string, unknown>)
+          ?.total_pages as number) ?? 1
+      );
     },
   };
 
@@ -146,21 +190,19 @@ export function useServerTable<T>(
   } = useQuery({
     queryKey: [...queryKey, cleanQueryParams],
     queryFn: async () => {
-      const response = await apiClient.get<ApiResponse<unknown>>(
-        endpoint,
-        {
-          params: cleanQueryParams,
-        }
-      );
+      const response = await apiClient.get<ApiResponse<unknown>>(endpoint, {
+        params: cleanQueryParams,
+      });
       return response.data.data;
     },
     enabled: enabled,
     staleTime: 1000 * 60, // 1 minute
   });
 
-  const data = parser.getItems(responseData);
-  const total = parser.getTotal(responseData);
-  const totalPages = parser.getTotalPages(responseData);
+  // Safely extract data using parser, handle undefined response
+  const data = responseData ? parser.getItems(responseData) : [];
+  const total = responseData ? parser.getTotal(responseData) : 0;
+  const totalPages = responseData ? parser.getTotalPages(responseData) : 1;
   const hasNextPage = filters.page < totalPages;
   const hasPrevPage = filters.page > 1;
 
