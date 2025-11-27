@@ -38,7 +38,7 @@ import { formatCurrency } from "@/lib/utils";
 import type { Course } from "@/types/api";
 import { Edit, Eye, EyeOff, MoreVertical, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState, useRef } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 /**
@@ -56,10 +56,8 @@ export default function AdminCoursesPage() {
     title: string;
   } | null>(null);
 
-  // Local search state for input (never triggers re-render for search API)
-  const [localSearch, setLocalSearch] = useState("");
-
   // Server-side table with filters
+  // Search debounce is handled by useTableFilters hook (500ms)
   const table = useServerTable<Course>({
     queryKey: ["admin-courses"],
     endpoint: API_ENDPOINTS.COURSES.LIST,
@@ -69,29 +67,6 @@ export default function AdminCoursesPage() {
       difficulty: "",
     },
   });
-
-  // Debounce search using useCallback + useRef for proper timing
-  // This updates the actual filter without causing input focus loss
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    // Clear previous timer
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-
-    // Set new timer - only update table search after user stops typing
-    debounceTimerRef.current = setTimeout(() => {
-      table.filters.setSearch(localSearch);
-    }, 500); // Increased to 500ms for more stable debounce
-
-    // Cleanup
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-    };
-  }, [localSearch, table.filters]);
 
   const togglePublish = useTogglePublishCourse();
   const deleteCourse = useDeleteCourse();
@@ -327,12 +302,9 @@ export default function AdminCoursesPage() {
           <div className="space-y-4">
             {/* Search Input - Full Width */}
             <SearchFilterInput
-              value={localSearch}
-              onChange={setLocalSearch}
-              onClear={() => {
-                setLocalSearch("");
-                table.filters.clearSearch();
-              }}
+              value={table.filters.search}
+              onChange={table.filters.setSearch}
+              onClear={table.filters.clearSearch}
               placeholder="Cari berdasarkan judul kursus..."
               disabled={table.isLoading}
             />

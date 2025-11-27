@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useRef, useEffect } from "react";
 
 export interface TableFilterState {
   search: string;
@@ -110,8 +110,30 @@ export function useTableFilters(
     initialSort = {},
   } = config;
 
-  // Search state
+  // Search state - SPLIT into two: immediate (UI) and debounced (queries)
   const [search, setSearch] = useState(initialSearch);
+  const [debouncedSearch, setDebouncedSearch] = useState(initialSearch);
+
+  // Debounce timer ref
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounce search changes for API queries (500ms)
+  // This prevents rapid API calls while maintaining focus
+  useEffect(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 500);
+
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [search]);
 
   // Filter state
   const [filters, setFiltersState] =
@@ -149,6 +171,7 @@ export function useTableFilters(
 
   const handleClearSearch = useCallback(() => {
     setSearch("");
+    setDebouncedSearch("");
     // Reset page when explicitly clearing, since it's a deliberate action
     setPage(1);
   }, []);
@@ -249,16 +272,18 @@ export function useTableFilters(
   }, []);
 
   // Query params for API
+  // Uses debouncedSearch for queries (prevents rapid API calls)
+  // but returns immediate search for UI binding
   const queryParams = useMemo((): Record<string, unknown> => {
     return {
-      search: search || undefined,
+      search: debouncedSearch || undefined,
       ...filters,
       sort_by: sortBy,
       sort_order: sortOrder,
       page,
       limit,
     };
-  }, [search, filters, sortBy, sortOrder, page, limit]);
+  }, [debouncedSearch, filters, sortBy, sortOrder, page, limit]);
 
   // Reset all
   const handleResetAll = useCallback(() => {
