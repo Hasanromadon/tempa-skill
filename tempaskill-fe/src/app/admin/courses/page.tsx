@@ -58,30 +58,27 @@ export default function AdminCoursesPage() {
 
   // Local search state for immediate UI feedback (prevents focus blur)
   const [localSearch, setLocalSearch] = useState("");
-  
-  // Debounced search state (300ms) - syncs to table after delay
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-
-  useEffect(() => {
-    // Debounce search to prevent rapid API calls
-    const timer = setTimeout(() => {
-      setDebouncedSearch(localSearch);
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [localSearch]);
 
   // Server-side table with filters
   const table = useServerTable<Course>({
     queryKey: ["admin-courses"],
     endpoint: API_ENDPOINTS.COURSES.LIST,
     initialLimit: 10,
-    initialSearch: debouncedSearch,
     initialFilters: {
       category: "",
       difficulty: "",
     },
   });
+
+  // Debounce search to prevent rapid API calls
+  // Sync localSearch to table.filters.search after 300ms pause
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      table.filters.setSearch(localSearch);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [localSearch, table.filters]);
 
   const togglePublish = useTogglePublishCourse();
   const deleteCourse = useDeleteCourse();
@@ -321,7 +318,7 @@ export default function AdminCoursesPage() {
               onChange={setLocalSearch}
               onClear={() => {
                 setLocalSearch("");
-                setDebouncedSearch("");
+                table.filters.clearSearch();
               }}
               placeholder="Cari berdasarkan judul kursus..."
               disabled={table.isLoading}
