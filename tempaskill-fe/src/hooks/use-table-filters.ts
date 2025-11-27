@@ -1,5 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
-import { debounce } from "@/lib/table-utils";
+import { useCallback, useMemo, useState } from "react";
 
 export interface TableFilterState {
   search: string;
@@ -139,21 +138,18 @@ export function useTableFilters(
   };
 
   // Search handlers
-  // Store debounced function in ref to maintain stable reference
-  const debouncedSetPageRef = useRef(
-    debounce(() => {
-      setPage(1);
-    }, 300)
-  );
-
+  // FIX: Don't reset page on search input change - only on explicit search submission
+  // This prevents focus blur from re-renders during typing
   const handleSetSearch = useCallback((value: string) => {
     setSearch(value);
-    // Debounce page reset to avoid focus blur on rapid typing
-    debouncedSetPageRef.current();
+    // Note: Page reset is NOT done here to preserve focus
+    // Page will reset when user submits search (if API integration adds that)
+    // For now, filtering happens client-side in real-time
   }, []);
 
   const handleClearSearch = useCallback(() => {
     setSearch("");
+    // Reset page when explicitly clearing, since it's a deliberate action
     setPage(1);
   }, []);
 
