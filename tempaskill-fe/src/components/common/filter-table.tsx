@@ -297,7 +297,10 @@ interface SelectFilterProps {
 
 /**
  * Reusable select filter component menggunakan Shadcn
- * Supports multiple options dengan placeholder
+ * Supports multiple options dengan placeholder (empty value as clear)
+ *
+ * Note: Shadcn Select tidak support empty value pada SelectItem,
+ * jadi gunakan first valid option sebagai default atau handle di parent
  */
 export const SelectFilter: FC<SelectFilterProps> = ({
   value,
@@ -307,16 +310,27 @@ export const SelectFilter: FC<SelectFilterProps> = ({
   disabled = false,
   aria = "Select filter",
 }) => {
-  // Find if value exists in options
-  const hasValue = options.some((opt) => opt.value === value);
+  // Filter options yang memiliki value (tidak kosong)
+  const validOptions = options.filter((opt) => opt.value !== "");
+  const placeholderOption = options.find((opt) => opt.value === "");
+
+  // Check if current value is valid
+  const hasValidValue = validOptions.some((opt) => opt.value === value);
+  const selectedValue = hasValidValue ? value : (validOptions[0]?.value ?? "");
 
   return (
-    <Select value={hasValue ? value : ""} onValueChange={onChange} disabled={disabled}>
+    <Select
+      value={selectedValue}
+      onValueChange={onChange}
+      disabled={disabled}
+    >
       <SelectTrigger aria-label={aria} className="w-full">
-        <SelectValue placeholder={placeholder} />
+        <SelectValue 
+          placeholder={placeholderOption?.label || placeholder} 
+        />
       </SelectTrigger>
       <SelectContent>
-        {options.map((option) => (
+        {validOptions.map((option) => (
           <SelectItem key={option.value} value={option.value}>
             {option.label}
           </SelectItem>
