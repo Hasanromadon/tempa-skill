@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { debounce } from "@/lib/table-utils";
 
 export interface TableFilterState {
   search: string;
@@ -138,9 +139,17 @@ export function useTableFilters(
   };
 
   // Search handlers
+  // Store debounced function in ref to maintain stable reference
+  const debouncedSetPageRef = useRef(
+    debounce(() => {
+      setPage(1);
+    }, 300)
+  );
+
   const handleSetSearch = useCallback((value: string) => {
     setSearch(value);
-    setPage(1); // Reset to first page on search
+    // Debounce page reset to avoid focus blur on rapid typing
+    debouncedSetPageRef.current();
   }, []);
 
   const handleClearSearch = useCallback(() => {

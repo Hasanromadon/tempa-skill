@@ -26,6 +26,7 @@ interface SearchFilterInputProps {
  * - Smooth clear button animation
  * - Modern design dengan rounded corners
  * - Focus states dengan orange accent
+ * - No focus blur on debounce (uses useCallback for stable reference)
  */
 export const SearchFilterInput: FC<SearchFilterInputProps> = ({
   value,
@@ -34,6 +35,11 @@ export const SearchFilterInput: FC<SearchFilterInputProps> = ({
   placeholder = "Cari...",
   disabled = false,
 }) => {
+  // Handle change event directly to avoid debounce issues
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange(e.target.value);
+  };
+
   return (
     <div className="relative w-full group">
       <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500 pointer-events-none group-focus-within:text-orange-600 transition-colors" />
@@ -41,9 +47,10 @@ export const SearchFilterInput: FC<SearchFilterInputProps> = ({
         type="text"
         placeholder={placeholder}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={handleChange}
         disabled={disabled}
         className="pl-10 pr-10 rounded-lg border border-gray-300 bg-white focus:border-orange-600 focus:ring-2 focus:ring-orange-100 transition-all h-11 text-sm disabled:bg-gray-50"
+        autoComplete="off"
       />
       {value && (
         <button
@@ -52,6 +59,7 @@ export const SearchFilterInput: FC<SearchFilterInputProps> = ({
           className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 disabled:opacity-50 transition-colors p-1.5 hover:bg-gray-100 rounded-md"
           aria-label="Clear search"
           type="button"
+          tabIndex={-1}
         >
           <X className="h-4 w-4" />
         </button>

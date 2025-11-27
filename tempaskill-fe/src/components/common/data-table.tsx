@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { ReactNode, useMemo, memo } from "react";
+import { memo, ReactNode, useMemo } from "react";
 
 /**
  * SVG ICON CONSTANTS (Priority 2: Extracted to avoid recreation)
