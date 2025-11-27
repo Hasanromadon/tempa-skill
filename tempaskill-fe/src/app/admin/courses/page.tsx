@@ -38,7 +38,7 @@ import { formatCurrency } from "@/lib/utils";
 import type { Course } from "@/types/api";
 import { Edit, Eye, EyeOff, MoreVertical, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import { toast } from "sonner";
 
 /**
@@ -56,11 +56,27 @@ export default function AdminCoursesPage() {
     title: string;
   } | null>(null);
 
+  // Local search state for immediate UI feedback (prevents focus blur)
+  const [localSearch, setLocalSearch] = useState("");
+  
+  // Debounced search state (300ms) - syncs to table after delay
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  useEffect(() => {
+    // Debounce search to prevent rapid API calls
+    const timer = setTimeout(() => {
+      setDebouncedSearch(localSearch);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [localSearch]);
+
   // Server-side table with filters
   const table = useServerTable<Course>({
     queryKey: ["admin-courses"],
     endpoint: API_ENDPOINTS.COURSES.LIST,
     initialLimit: 10,
+    initialSearch: debouncedSearch,
     initialFilters: {
       category: "",
       difficulty: "",
@@ -301,9 +317,12 @@ export default function AdminCoursesPage() {
           <div className="space-y-4">
             {/* Search Input - Full Width */}
             <SearchFilterInput
-              value={table.filters.search}
-              onChange={table.filters.setSearch}
-              onClear={table.filters.clearSearch}
+              value={localSearch}
+              onChange={setLocalSearch}
+              onClear={() => {
+                setLocalSearch("");
+                setDebouncedSearch("");
+              }}
               placeholder="Cari berdasarkan judul kursus..."
               disabled={table.isLoading}
             />
