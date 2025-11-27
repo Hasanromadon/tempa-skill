@@ -11,27 +11,31 @@
 ### 1. **register() Helper** ❌→✅
 
 #### Problems:
+
 ```typescript
 // ❌ WRONG - Old implementation
-await page.goto("/daftar");                              // Wrong route
-await page.fill('input[name="name"]', name);             // Wrong selector (uses id, not name)
-await page.fill('input[name="confirmPassword"]', pwd);   // Wrong field name
+await page.goto("/daftar"); // Wrong route
+await page.fill('input[name="name"]', name); // Wrong selector (uses id, not name)
+await page.fill('input[name="confirmPassword"]', pwd); // Wrong field name
 ```
 
 #### Root Cause:
+
 - FormField component uses `id={name}` not `name=` attribute
 - `/daftar` is redirect; actual route is `/register`
 - Form uses `confirmPassword` (camelCase) not `password_confirmation`
 
 #### Solution:
+
 ```typescript
 // ✅ CORRECT - New implementation
-await page.goto("/register");                         // Correct route
-await page.fill('input[id="name"]', name);            // Correct selector
-await page.fill('input[id="confirmPassword"]', pwd);  // Correct field name
+await page.goto("/register"); // Correct route
+await page.fill('input[id="name"]', name); // Correct selector
+await page.fill('input[id="confirmPassword"]', pwd); // Correct field name
 ```
 
 #### Verification:
+
 - Checked `src/app/(auth)/register/page.tsx` - uses FormField with name="confirmPassword"
 - Checked `src/components/common/form-field.tsx` - creates input with `id={name}`
 - auth.spec.ts expects `input[name="password_confirmation"]` in validation test - that's for server request, not DOM selector
@@ -41,6 +45,7 @@ await page.fill('input[id="confirmPassword"]', pwd);  // Correct field name
 ### 2. **login() Helper** ❌→✅
 
 #### Problems:
+
 ```typescript
 // ❌ WRONG - Old implementation
 await page.waitForURL(/\/(dashboard|courses)/, { timeout: 10000 });
@@ -48,10 +53,12 @@ await page.waitForURL(/\/(dashboard|courses)/, { timeout: 10000 });
 ```
 
 #### Root Cause:
+
 - Admin login redirects to `/admin/dashboard`, not `/dashboard`
 - Pattern was too restrictive
 
 #### Solution:
+
 ```typescript
 // ✅ CORRECT - New implementation
 await page.waitForURL(/\/(dashboard|courses|admin)/, { timeout: 10000 });
@@ -63,6 +70,7 @@ await page.waitForURL(/\/(dashboard|courses|admin)/, { timeout: 10000 });
 ### 3. **loginAdmin() Helper** ❌→✅
 
 #### Problems:
+
 ```typescript
 // ❌ WRONG - Old implementation
 const [response] = await Promise.all([
@@ -81,11 +89,13 @@ if (status !== 200) {
 ```
 
 #### Root Cause:
+
 - `waitForResponse` is flaky and timing-dependent
 - Fails when network is slow or in CI environments
 - Overcomplicated for what should be a simple login
 
 #### Solution:
+
 ```typescript
 // ✅ CORRECT - New implementation
 await page.click('button[type="submit"]');
@@ -106,6 +116,7 @@ try {
 ### 4. **logout() Helper** ❌→✅
 
 #### Problems:
+
 ```typescript
 // ❌ WRONG - Old implementation
 const logoutButton = page.locator("text=/keluar|logout/i").first();
@@ -114,17 +125,20 @@ const logoutButton = page.locator("text=/keluar|logout/i").first();
 ```
 
 #### Root Cause:
+
 - Text selector too brittle
 - Doesn't handle variations in button placement or structure
 - Regex pattern requires exact format
 
 #### Solution:
+
 ```typescript
 // ✅ CORRECT - New implementation
-let logoutButton = page.locator('button:has-text(/keluar|logout/i)').first();
+let logoutButton = page.locator("button:has-text(/keluar|logout/i)").first();
 
 if (!(await logoutButton.isVisible())) {
-  logoutButton = page.locator('a, button')
+  logoutButton = page
+    .locator("a, button")
     .filter({ hasText: /keluar|logout/i })
     .first();
 }
@@ -137,23 +151,24 @@ if (!(await logoutButton.isVisible())) {
 
 ### Register Form (src/app/(auth)/register/page.tsx)
 
-| Field | ID | Frontend Name | API Name | Type |
-|-------|----|----|---|---|
-| Name | `name` | `name` | `name` | text |
-| Email | `email` | `email` | `email` | email |
-| Password | `password` | `password` | `password` | password |
-| Confirm | `confirmPassword` | `confirmPassword` | `password_confirmation` | password |
+| Field    | ID                | Frontend Name     | API Name                | Type     |
+| -------- | ----------------- | ----------------- | ----------------------- | -------- |
+| Name     | `name`            | `name`            | `name`                  | text     |
+| Email    | `email`           | `email`           | `email`                 | email    |
+| Password | `password`        | `password`        | `password`              | password |
+| Confirm  | `confirmPassword` | `confirmPassword` | `password_confirmation` | password |
 
-**Important**: 
+**Important**:
+
 - Selectors use `input[id="..."]` not `input[name="..."]`
 - Frontend form uses camelCase (`confirmPassword`)
 - API request transforms to snake_case (`password_confirmation`)
 
 ### Login Form (src/app/(auth)/login/page.tsx)
 
-| Field | ID | Type |
-|-------|----|----|
-| Email | `email` | email |
+| Field    | ID         | Type     |
+| -------- | ---------- | -------- |
+| Email    | `email`    | email    |
 | Password | `password` | password |
 
 **Selectors**: `input[id="email"]` and `input[id="password"]`
@@ -167,7 +182,7 @@ From `src/components/common/form-field.tsx`:
 ```typescript
 export function FormField({ name, label, type = "text", ... }: FormFieldProps) {
   const { register, formState: { errors } } = useFormContext();
-  
+
   return (
     <Input
       id={name}  // ← Creates id attribute from name prop
@@ -179,6 +194,7 @@ export function FormField({ name, label, type = "text", ... }: FormFieldProps) {
 ```
 
 **Key Point**: FormField creates `id={name}` but registers with React Hook Form using the name. This means:
+
 - DOM selector: `input[id="confirmPassword"]`
 - React Hook Form registration: `register("confirmPassword")`
 - API submission: field name stays `confirmPassword` until transformed by API client
@@ -200,6 +216,7 @@ expect(page.locator('input[name="password_confirmation"]')).toBeVisible();
 **Issue**: auth.spec.ts looks for `name=` but FormField creates `id=`
 
 **Solution**: auth.spec.ts should be updated OR test helpers should work around this by:
+
 - Using actual selectors: `input[id="..."]`
 - Making test helpers independent of auth.spec.ts assertions
 
@@ -213,13 +230,12 @@ The auth.spec.ts test that checks for `input[name="password_confirmation"]` is t
 
 ```typescript
 // auth.spec.ts line ~22
-await expect(
-  page.locator('input[name="password_confirmation"]')
-).toBeVisible();
+await expect(page.locator('input[name="password_confirmation"]')).toBeVisible();
 // This will FAIL because actual input has id="confirmPassword", not name="password_confirmation"
 ```
 
 **Recommendation**: Either:
+
 1. Update auth.spec.ts to use `input[id="confirmPassword"]`
 2. Or update FormField component to add `name` attribute
 3. Or use a different selector that works (e.g., using aria-label)
@@ -229,17 +245,20 @@ await expect(
 ## Testing the Fixes
 
 ### Run auth.spec.ts:
+
 ```bash
 npx playwright test e2e/auth.spec.ts --headed
 ```
 
 **Expected Result**:
+
 - ✅ "should register new user successfully" - PASS
 - ✅ "should login successfully with valid credentials" - PASS
 - ✅ "should logout successfully" - PASS
 - ⚠️ "should display registration page" - May need selector update (name= issue)
 
 ### Run specific test:
+
 ```bash
 npx playwright test e2e/auth.spec.ts -g "register new user" --headed
 ```
@@ -248,12 +267,12 @@ npx playwright test e2e/auth.spec.ts -g "register new user" --headed
 
 ## Summary of Changes
 
-| Function | Changes | Impact |
-|----------|---------|--------|
-| `login()` | Added `/admin` to URL pattern | Admin login now works |
-| `loginAdmin()` | Removed flaky response waiting | More reliable in CI/slow networks |
-| `register()` | Fixed route and selectors | Registration now finds correct inputs |
-| `logout()` | Made selectors more flexible | Works with more UI variations |
+| Function       | Changes                        | Impact                                |
+| -------------- | ------------------------------ | ------------------------------------- |
+| `login()`      | Added `/admin` to URL pattern  | Admin login now works                 |
+| `loginAdmin()` | Removed flaky response waiting | More reliable in CI/slow networks     |
+| `register()`   | Fixed route and selectors      | Registration now finds correct inputs |
+| `logout()`     | Made selectors more flexible   | Works with more UI variations         |
 
 ---
 
@@ -266,9 +285,11 @@ npx playwright test e2e/auth.spec.ts -g "register new user" --headed
 ## Next Steps
 
 1. **Optional**: Update auth.spec.ts validation test to use correct selectors
+
    - Line ~22: Change `input[name="password_confirmation"]` to `input[id="confirmPassword"]`
 
 2. **Run full auth test suite**:
+
    ```bash
    npx playwright test e2e/auth.spec.ts
    ```

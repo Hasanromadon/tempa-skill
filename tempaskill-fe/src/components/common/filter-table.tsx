@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Filter, Search, X } from "lucide-react";
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, memo, useCallback, useEffect, useRef, useState } from "react";
 
 interface SearchFilterInputProps {
   onChange: (value: string) => void;
@@ -26,11 +26,12 @@ interface SearchFilterInputProps {
  * - Focus tetap saat debounce (tidak blur)
  * - UNCONTROLLED component: NOT dependent on parent value
  * - Component adalah single source of truth untuk search input
+ * - React.memo + useCallback untuk prevent unnecessary re-renders
  *
  * IMPORTANT: Component TIDAK menerima value dari parent untuk prevent focus blur
  * Debounce terjadi di component, onChange dipanggil SETELAH 500ms pause
  */
-export const SearchFilterInput: FC<SearchFilterInputProps> = ({
+const SearchFilterInputComponent: FC<SearchFilterInputProps> = ({
   onChange,
   onClear,
   placeholder = "Cari...",
@@ -38,31 +39,54 @@ export const SearchFilterInput: FC<SearchFilterInputProps> = ({
 }) => {
   // Uncontrolled state - ini adalah satu-satunya source of truth
   const [inputValue, setInputValue] = useState("");
+  const [shouldMaintainFocus, setShouldMaintainFocus] = useState(false);
 
-  // Ref untuk store debounce timer
+  // Ref untuk store debounce timer dan input element
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  // Restore focus if it was lost during onChange
+  useEffect(() => {
+    if (shouldMaintainFocus && inputRef.current && !disabled) {
+      const checkAndRestoreFocus = () => {
+        if (document.activeElement !== inputRef.current) {
+          inputRef.current?.focus();
+        }
+        setShouldMaintainFocus(false);
+      };
+
+      // Check after a small delay to allow re-renders to settle
+      const focusTimer = setTimeout(checkAndRestoreFocus, 100);
+      return () => clearTimeout(focusTimer);
+    }
+  }, [shouldMaintainFocus, disabled]);
 
   // Handle change dengan internal debounce
   // onChange dipanggil HANYA setelah 500ms pause, tidak setiap keystroke
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newValue = e.target.value;
 
-    // Update local input immediately (smooth typing, no blur)
-    setInputValue(newValue);
+      // Update local input immediately (smooth typing, no blur)
+      setInputValue(newValue);
 
-    // Clear previous timer
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
+      // Clear previous timer
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
 
-    // Debounce onChange call to parent (500ms)
-    debounceRef.current = setTimeout(() => {
-      onChange(newValue);
-    }, 500);
-  };
+      // Debounce onChange call to parent (500ms)
+      debounceRef.current = setTimeout(() => {
+        onChange(newValue);
+        // Set flag to restore focus after parent re-renders
+        setShouldMaintainFocus(true);
+      }, 500);
+    },
+    [onChange]
+  );
 
   // Handle clear dengan reset state dan cancel pending debounce
-  const handleClear = () => {
+  const handleClear = useCallback(() => {
     setInputValue("");
     onClear();
 
@@ -70,7 +94,10 @@ export const SearchFilterInput: FC<SearchFilterInputProps> = ({
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
-  };
+
+    // Set flag to restore focus after parent re-renders
+    setShouldMaintainFocus(true);
+  }, [onClear]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -85,6 +112,7 @@ export const SearchFilterInput: FC<SearchFilterInputProps> = ({
     <div className="relative w-full group">
       <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500 pointer-events-none group-focus-within:text-orange-600 transition-colors" />
       <Input
+        ref={inputRef}
         type="text"
         placeholder={placeholder}
         value={inputValue}
@@ -108,6 +136,9 @@ export const SearchFilterInput: FC<SearchFilterInputProps> = ({
     </div>
   );
 };
+
+// Wrap with React.memo to prevent unnecessary re-renders from parent
+export const SearchFilterInput = memo(SearchFilterInputComponent);
 
 interface FilterBadgeProps {
   label: string;

@@ -99,11 +99,14 @@ export async function register(
 export async function logout(page: Page) {
   // Find logout button - could be in menu, navbar, or dropdown
   // Try multiple selectors to be flexible
-  let logoutButton = page.locator('button:has-text(/keluar|logout/i)').first();
+  let logoutButton = page.locator("button:has-text(/keluar|logout/i)").first();
 
   if (!(await logoutButton.isVisible())) {
     // Try alternative selector - might be a menu item
-    logoutButton = page.locator('a, button').filter({ hasText: /keluar|logout/i }).first();
+    logoutButton = page
+      .locator("a, button")
+      .filter({ hasText: /keluar|logout/i })
+      .first();
   }
 
   if (await logoutButton.isVisible()) {
