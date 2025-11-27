@@ -19,6 +19,7 @@ export {
   LimitSelect,
   ResultsSummary,
   SearchFilterInput,
+  SelectFilter,
   SortHeader,
   TableStatus,
 } from "./filter-table";

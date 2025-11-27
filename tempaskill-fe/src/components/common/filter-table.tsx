@@ -2,6 +2,13 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Search, X } from "lucide-react";
 import { FC } from "react";
 
@@ -276,5 +283,45 @@ export const ResultsSummary: FC<ResultsSummaryProps> = ({
       <span className="font-medium">{end}</span> dari{" "}
       <span className="font-medium">{total}</span> hasil
     </p>
+  );
+};
+
+interface SelectFilterProps {
+  value: string;
+  onChange: (value: string) => void;
+  options: Array<{ value: string; label: string }>;
+  placeholder?: string;
+  disabled?: boolean;
+  aria?: string;
+}
+
+/**
+ * Reusable select filter component menggunakan Shadcn
+ * Supports multiple options dengan placeholder
+ */
+export const SelectFilter: FC<SelectFilterProps> = ({
+  value,
+  onChange,
+  options,
+  placeholder = "Pilih...",
+  disabled = false,
+  aria = "Select filter",
+}) => {
+  // Find if value exists in options
+  const hasValue = options.some((opt) => opt.value === value);
+
+  return (
+    <Select value={hasValue ? value : ""} onValueChange={onChange} disabled={disabled}>
+      <SelectTrigger aria-label={aria} className="w-full">
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
+        {options.map((option) => (
+          <SelectItem key={option.value} value={option.value}>
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 };

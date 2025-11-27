@@ -6,6 +6,7 @@ import {
   Pagination,
   ResultsSummary,
   SearchFilterInput,
+  SelectFilter,
   SortHeader,
   TableStatus,
 } from "@/components/common";
@@ -173,37 +174,39 @@ export default function AdminCoursesPage() {
             {/* Filters Row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Category Filter */}
-              <select
+              <SelectFilter
                 value={String(table.filters.filters.category || "")}
-                onChange={(e) =>
-                  table.filters.setFilter("category", e.target.value || "")
+                onChange={(value) =>
+                  table.filters.setFilter("category", value || "")
                 }
+                options={[
+                  { value: "", label: "Semua Kategori" },
+                  { value: "Web Development", label: "Web Development" },
+                  { value: "Mobile Development", label: "Mobile Development" },
+                  { value: "Data Science", label: "Data Science" },
+                  { value: "DevOps", label: "DevOps" },
+                ]}
+                placeholder="Semua Kategori"
                 disabled={table.isLoading}
-                className="rounded border border-gray-300 bg-white px-3 py-2 text-sm disabled:bg-gray-100 disabled:opacity-50"
-                aria-label="Filter berdasarkan kategori"
-              >
-                <option value="">Semua Kategori</option>
-                <option value="Web Development">Web Development</option>
-                <option value="Mobile Development">Mobile Development</option>
-                <option value="Data Science">Data Science</option>
-                <option value="DevOps">DevOps</option>
-              </select>
+                aria="Filter berdasarkan kategori"
+              />
 
               {/* Difficulty Filter */}
-              <select
+              <SelectFilter
                 value={String(table.filters.filters.difficulty || "")}
-                onChange={(e) =>
-                  table.filters.setFilter("difficulty", e.target.value || "")
+                onChange={(value) =>
+                  table.filters.setFilter("difficulty", value || "")
                 }
+                options={[
+                  { value: "", label: "Semua Tingkat" },
+                  { value: "beginner", label: "Pemula" },
+                  { value: "intermediate", label: "Menengah" },
+                  { value: "advanced", label: "Lanjutan" },
+                ]}
+                placeholder="Semua Tingkat"
                 disabled={table.isLoading}
-                className="rounded border border-gray-300 bg-white px-3 py-2 text-sm disabled:bg-gray-100 disabled:opacity-50"
-                aria-label="Filter berdasarkan tingkat kesulitan"
-              >
-                <option value="">Semua Tingkat</option>
-                <option value="beginner">Pemula</option>
-                <option value="intermediate">Menengah</option>
-                <option value="advanced">Lanjutan</option>
-              </select>
+                aria="Filter berdasarkan tingkat kesulitan"
+              />
 
               {/* Limit Selector */}
               <LimitSelect
