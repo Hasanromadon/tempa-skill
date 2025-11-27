@@ -65,7 +65,7 @@ export const SearchFilterInput: FC<SearchFilterInputProps> = ({
   const handleClear = () => {
     setInputValue("");
     onClear();
-    
+
     // Cancel pending debounce
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
