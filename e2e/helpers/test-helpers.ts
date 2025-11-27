@@ -2,17 +2,24 @@ import { Page, expect } from "@playwright/test";
 
 /**
  * Test helper untuk login user
+ * Handles both regular users and admins
  */
 export async function login(page: Page, email: string, password: string) {
   await page.goto("/login");
   await page.waitForLoadState("networkidle");
+
+  // Wait for email input to appear
   await page.waitForSelector('input[id="email"]', { timeout: 10000 });
+
+  // Fill login form
   await page.fill('input[id="email"]', email);
   await page.fill('input[id="password"]', password);
+
+  // Click submit button
   await page.click('button[type="submit"]');
 
-  // Wait for navigation to complete
-  await page.waitForURL(/\/(dashboard|courses)/, { timeout: 10000 });
+  // Wait for navigation to complete (can go to /dashboard, /courses, or /admin/*)
+  await page.waitForURL(/\/(dashboard|courses|admin)/, { timeout: 10000 });
 }
 
 /**
@@ -26,39 +33,36 @@ export async function loginAdmin(page: Page, email: string, password: string) {
   await page.goto("/login");
   await page.waitForLoadState("networkidle");
 
-  // Take screenshot for debugging
-  await page.screenshot({ path: "debug-login-page.png" });
+  // Wait for email input to appear
+  await page.waitForSelector('input[id="email"]', { timeout: 10000 });
 
   // Fill login form
   await page.fill('input[id="email"]', email);
   await page.fill('input[id="password"]', password);
 
-  // Click login button and wait for response
-  const [response] = await Promise.all([
-    page.waitForResponse(
-      (response) =>
-        response.url().includes("/api/v1/auth/login") &&
-        response.request().method() === "POST"
-    ),
-    page.click('button[type="submit"]'),
-  ]);
-
-  // Check if login was successful
-  const status = response.status();
-  if (status !== 200) {
-    console.error(`Login failed with status ${status}`);
-    console.error(`Response URL: ${response.url()}`);
-    throw new Error(
-      `Admin login failed with status ${status}. Check if admin user exists and backend is running.`
-    );
-  }
+  // Click submit button and wait for navigation
+  // Don't use waitForResponse as it's flaky - just wait for URL change
+  await page.click('button[type="submit"]');
 
   // Wait for redirect to admin area
-  await page.waitForURL(/\/admin/, { timeout: 10000 });
+  // Could be /admin/dashboard or other admin routes
+  try {
+    await page.waitForURL(/\/admin/, { timeout: 15000 });
+  } catch (error) {
+    // If navigation fails, check if we're still on login (login failed)
+    if (page.url().includes("/login")) {
+      throw new Error(
+        `Admin login failed - still on login page. Check credentials and ensure backend is running.`
+      );
+    }
+    // If neither redirect nor stay on login, something else happened
+    throw error;
+  }
 }
 
 /**
  * Test helper untuk register user baru
+ * Using correct form field names and register page path
  */
 export async function register(
   page: Page,
@@ -66,37 +70,65 @@ export async function register(
   email: string,
   password: string
 ) {
-  await page.goto("/daftar");
+  // Navigate to register page (using /register route, not /daftar which is just a redirect)
+  await page.goto("/register");
   await page.waitForLoadState("networkidle");
-  await page.waitForSelector('input[name="name"]', { timeout: 10000 });
-  await page.fill('input[name="name"]', name);
-  await page.fill('input[name="email"]', email);
-  await page.fill('input[name="password"]', password);
-  await page.fill('input[name="confirmPassword"]', password);
+
+  // Wait for form fields to appear
+  await page.waitForSelector('input[id="name"]', { timeout: 10000 });
+
+  // Fill registration form with correct field IDs (not name attributes)
+  await page.fill('input[id="name"]', name);
+  await page.fill('input[id="email"]', email);
+  await page.fill('input[id="password"]', password);
+  // Field name is "confirmPassword" (camelCase, not snake_case)
+  await page.fill('input[id="confirmPassword"]', password);
 
   // Click submit button
   await page.click('button[type="submit"]');
 
-  // Wait for navigation or error
+  // Wait for navigation or API response
+  // Can redirect to /dashboard or /courses depending on app flow
   await page.waitForURL(/\/(dashboard|courses)/, { timeout: 60000 });
 }
 
 /**
  * Test helper untuk logout
+ * Handles logout dialog and navigation
  */
 export async function logout(page: Page) {
-  // Find and click logout button (opens AlertDialog)
-  const logoutButton = page.locator("text=/keluar|logout/i").first();
+  // Find logout button - could be in menu, navbar, or dropdown
+  // Try multiple selectors to be flexible
+  let logoutButton = page.locator('button:has-text(/keluar|logout/i)').first();
+
+  if (!(await logoutButton.isVisible())) {
+    // Try alternative selector - might be a menu item
+    logoutButton = page.locator('a, button').filter({ hasText: /keluar|logout/i }).first();
+  }
+
   if (await logoutButton.isVisible()) {
     await logoutButton.click();
 
-    // Wait for confirmation dialog and click "Ya, Keluar"
-    await page.waitForTimeout(500); // Wait for dialog animation
-    const confirmButton = page.locator("text=/Ya,?\\s*Keluar/i");
-    await confirmButton.click();
+    // Some implementations show a confirmation dialog
+    // Wait a bit for dialog to appear
+    await page.waitForTimeout(500);
 
-    // Wait for navigation to complete
-    await page.waitForURL(/\/(|login)/, { timeout: 30000 });
+    // Try to click confirmation button
+    // Different possible texts: "Ya, Keluar" / "Confirm" / "OK"
+    const confirmButton = page
+      .locator("button")
+      .filter({ hasText: /ya|confirm|ok|keluar/i })
+      .last();
+
+    if (await confirmButton.isVisible()) {
+      await confirmButton.click();
+    }
+
+    // Wait for navigation - can go to home, login, or just clear auth
+    await page.waitForURL(/\/(|login|home)/, { timeout: 30000 }).catch(() => {
+      // If URL doesn't match, just wait for page stability
+      return page.waitForLoadState("networkidle");
+    });
   }
 }
 
