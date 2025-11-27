@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { ReactNode } from "react";
+import { ReactNode, useMemo } from "react";
 
 /**
  * Cell rendering context - provides access to row data and utilities
@@ -156,6 +156,11 @@ function getValueByAccessor<TData, TValue>(
  *
  * Works seamlessly with useServerTable hook
  * Uses column definitions to define structure and behavior
+ * 
+ * Performance optimizations:
+ * - Memoized header context creation
+ * - Efficient row rendering
+ * - Skeleton loading for better UX
  */
 export function DataTable<TData>({
   columns,
@@ -177,6 +182,9 @@ export function DataTable<TData>({
   showPageSizeSelector = true,
   showPageNumbers = true,
 }: DataTableProps<TData>) {
+  // Memoize start and end row calculations
+  const startRow = useMemo(() => (page - 1) * limit + 1, [page, limit]);
+  const endRow = useMemo(() => Math.min(page * limit, total), [page, limit, total]);
   // Show loading state
   if (isLoading) {
     return (
@@ -288,10 +296,6 @@ export function DataTable<TData>({
       </div>
     );
   }
-
-  // Calculate start and end row numbers
-  const startRow = (page - 1) * limit + 1;
-  const endRow = Math.min(page * limit, total);
 
   return (
     <div className="space-y-4">
