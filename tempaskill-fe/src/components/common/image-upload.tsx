@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import apiClient from "@/lib/api-client";
 import { API_ENDPOINTS } from "@/lib/constants";
 import { ImageIcon, Loader2, Upload, X } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 
 interface ImageUploadProps {
@@ -28,6 +28,13 @@ export function ImageUpload({
   );
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Update preview when currentImageUrl changes (from parent)
+  useEffect(() => {
+    if (currentImageUrl && currentImageUrl !== preview) {
+      setPreview(currentImageUrl);
+    }
+  }, [currentImageUrl, preview]);
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
@@ -86,8 +93,12 @@ export function ImageUpload({
           },
         });
 
+        // Update preview with final URL from server
+        const finalUrl = response.data.data.url;
+        setPreview(finalUrl);
+
         // Call success callback with uploaded URL
-        onUploadComplete(response.data.data.url);
+        onUploadComplete(finalUrl);
       } catch (err) {
         console.error("Upload error:", err);
         const errorMessage =
@@ -136,14 +147,14 @@ export function ImageUpload({
           />
 
           {/* Overlay with Remove Button */}
-          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 rounded-lg flex items-center justify-center">
+          <div className="absolute inset-0  bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 rounded-lg flex items-center justify-center pointer-events-none group-hover:pointer-events-auto">
             <Button
               type="button"
               variant="destructive"
               size="sm"
               onClick={removeImage}
               disabled={uploading}
-              className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+              className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-auto"
             >
               <X className="h-4 w-4 mr-2" />
               Hapus Gambar

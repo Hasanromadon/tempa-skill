@@ -9,3 +9,4 @@ export { ProgressRing } from "./progress-ring";
 export { FormField, SelectField, TextareaField } from "./form-field";
 export { FormWrapper } from "./form-wrapper";
 export { SubmitButton } from "./submit-button";
+export { NumberInput } from "./number-input";

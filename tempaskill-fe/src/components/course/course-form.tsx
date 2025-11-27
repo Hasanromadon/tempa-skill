@@ -3,6 +3,7 @@
 import {
   FormField,
   ImageUpload,
+  NumberInput,
   SelectField,
   TextareaField,
 } from "@/components/common";
@@ -163,10 +164,13 @@ export function CourseForm({
               options={DIFFICULTIES}
             />
 
-            <FormField
+            <NumberInput
               name="price"
               label="Harga (Rp)"
-              type="number"
+              prefix="Rp "
+              thousandSeparator="."
+              decimalSeparator=","
+              decimals={0}
               placeholder="0"
               description="Masukkan 0 untuk kursus gratis"
             />

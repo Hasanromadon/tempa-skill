@@ -77,7 +77,7 @@ Write-Host "`n[4/10] Creating Course (as Instructor)..." -ForegroundColor Yellow
 $courseData = @{
     title = "Go Programming Masterclass"
     description = "Learn Go from scratch to advanced"
-    category = "programming"
+    category = "Web Development"
     difficulty = "beginner"
     price = 99000
 } | ConvertTo-Json

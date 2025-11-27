@@ -16,11 +16,19 @@ Input field dengan auto-validation dan error display
 
 Textarea dengan auto-validation dan error display
 
-### 3. FormWrapper
+### 3. SelectField
+
+Select dropdown dengan auto-validation dan error display
+
+### 4. NumberInput
+
+Number input dengan thousand separator formatting (e.g., "Rp 1.000.000")
+
+### 5. FormWrapper
 
 Form wrapper dengan FormProvider dan API error handling
 
-### 4. SubmitButton
+### 6. SubmitButton
 
 Submit button dengan loading state built-in
 
@@ -590,6 +598,159 @@ const methods = useForm();
 const methods = useForm({
   resolver: zodResolver(mySchema),
 });
+```
+
+---
+
+## 4️⃣ NumberInput
+
+Number input dengan thousand separator formatting (Rp 1.000.000) tetapi value clean (1000000)
+
+### Features
+
+- ✅ Display with separator (e.g., "Rp 1.000.000")
+- ✅ Store clean value internally (e.g., 1000000)
+- ✅ Customizable prefix, separator, decimals
+- ✅ Auto-format on blur, show raw on focus
+- ✅ Full React Hook Form integration
+
+### Basic Usage
+
+```tsx
+import { NumberInput } from "@/components/common";
+import { useForm, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+export function MyForm() {
+  const methods = useForm({
+    resolver: zodResolver(mySchema),
+    defaultValues: {
+      price: 0,
+    },
+  });
+
+  return (
+    <FormProvider {...methods}>
+      <form onSubmit={methods.handleSubmit(onSubmit)}>
+        <NumberInput
+          name="price"
+          label="Harga"
+          prefix="Rp "
+          thousandSeparator="."
+          decimalSeparator=","
+          decimals={0}
+          placeholder="0"
+          description="Masukkan harga dalam rupiah"
+        />
+      </form>
+    </FormProvider>
+  );
+}
+```
+
+### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `name` | `string` | - | Field name (required) |
+| `label` | `string` | - | Field label (required) |
+| `prefix` | `string` | `""` | Prefix (e.g., "Rp ") |
+| `thousandSeparator` | `string` | `"."` | Thousand separator (e.g., ".", ",") |
+| `decimalSeparator` | `string` | `","` | Decimal separator |
+| `decimals` | `number` | `0` | Number of decimal places |
+| `placeholder` | `string` | `"0"` | Placeholder text |
+| `description` | `string` | - | Helper text |
+| `disabled` | `boolean` | `false` | Disable field |
+| `required` | `boolean` | `false` | Show required indicator |
+| `onValueChange` | `function` | - | Callback when value changes |
+
+### Advanced Examples
+
+#### With Decimal Places
+
+```tsx
+<NumberInput
+  name="discount"
+  label="Diskon"
+  prefix="Rp "
+  thousandSeparator="."
+  decimalSeparator=","
+  decimals={2}
+  description="Diskon dalam rupiah"
+/>
+```
+
+#### Without Prefix
+
+```tsx
+<NumberInput
+  name="quantity"
+  label="Jumlah"
+  thousandSeparator=","
+  decimalSeparator="."
+  decimals={0}
+  description="Jumlah item"
+/>
+```
+
+#### With Value Change Callback
+
+```tsx
+<NumberInput
+  name="price"
+  label="Harga"
+  prefix="Rp "
+  thousandSeparator="."
+  decimalSeparator=","
+  decimals={0}
+  onValueChange={(cleanValue) => {
+    console.log("Clean value:", cleanValue); // 1000000
+  }}
+/>
+```
+
+### Form Value
+
+Ketika form di-submit, value yang dikirim adalah **clean number** (bukan formatted):
+
+```tsx
+const onSubmit = (data: any) => {
+  console.log(data.price); // 1000000 (bukan "Rp 1.000.000")
+};
+```
+
+### Behavior
+
+1. **On Focus** - Menampilkan raw number (e.g., "1000000")
+2. **On Blur** - Auto-format dengan separator (e.g., "Rp 1.000.000")
+3. **On Change** - Value form selalu clean number
+
+### Common Patterns
+
+#### Indonesian Currency (Rupiah)
+
+```tsx
+<NumberInput
+  name="price"
+  label="Harga"
+  prefix="Rp "
+  thousandSeparator="."
+  decimalSeparator=","
+  decimals={0}
+/>
+```
+
+#### International Currency (US Dollar)
+
+```tsx
+<NumberInput
+  name="price"
+  label="Price"
+  prefix="$ "
+  thousandSeparator=","
+  decimalSeparator="."
+  decimals={2}
+/>
 ```
 
 ---
