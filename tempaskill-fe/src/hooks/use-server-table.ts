@@ -2,7 +2,8 @@
 
 import apiClient from "@/lib/api-client";
 import { ApiResponse } from "@/types/api";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { TableFilterConfig, useTableFilters } from "./use-table-filters";
 
 /**
@@ -119,6 +120,9 @@ export function useServerTable<T>(
     ...filterConfig
   } = options;
 
+  // Get React Query client untuk prefetch (Priority 3a)
+  const queryClient = useQueryClient();
+
   // Use table filters hook
   const filters = useTableFilters(filterConfig);
 
@@ -205,6 +209,67 @@ export function useServerTable<T>(
   const totalPages = responseData ? parser.getTotalPages(responseData) : 1;
   const hasNextPage = filters.page < totalPages;
   const hasPrevPage = filters.page > 1;
+
+  /**
+   * Priority 3a: Pagination Prefetch Optimization
+   * Automatically prefetch next page before user navigates
+   * Improves perceived performance and reduces loading time
+   *
+   * How it works:
+   * 1. When component mounts or page changes
+   * 2. If there's a next page available
+   * 3. Prefetch that page in background using React Query
+   * 4. When user clicks "Next", data is already cached
+   * 5. Instant page transition with no loading spinner
+   */
+  useEffect(() => {
+    if (!hasNextPage || !enabled) return;
+
+    const nextParams = {
+      ...cleanQueryParams,
+      page: filters.page + 1,
+    };
+
+    // Prefetch next page in background
+    queryClient.prefetchQuery({
+      queryKey: [...queryKey, nextParams],
+      queryFn: async () => {
+        const response = await apiClient.get<ApiResponse<unknown>>(endpoint, {
+          params: nextParams,
+        });
+        return response.data.data;
+      },
+      staleTime: 1000 * 60, // Match query stale time
+    });
+
+    // Also prefetch previous page for back navigation
+    if (hasPrevPage) {
+      const prevParams = {
+        ...cleanQueryParams,
+        page: filters.page - 1,
+      };
+
+      queryClient.prefetchQuery({
+        queryKey: [...queryKey, prevParams],
+        queryFn: async () => {
+          const response = await apiClient.get<ApiResponse<unknown>>(endpoint, {
+            params: prevParams,
+          });
+          return response.data.data;
+        },
+        staleTime: 1000 * 60,
+      });
+    }
+  }, [
+    filters.page,
+    hasNextPage,
+    hasPrevPage,
+    enabled,
+    queryClient,
+    queryKey,
+    endpoint,
+    cleanQueryParams,
+  ]);
 
   return {
     data,

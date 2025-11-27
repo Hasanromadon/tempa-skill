@@ -11,7 +11,43 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { ReactNode, useMemo } from "react";
+import { ReactNode, useMemo, memo } from "react";
+
+/**
+ * SVG ICON CONSTANTS (Priority 2: Extracted to avoid recreation)
+ * Icons are defined once and reused, preventing JSX recreation
+ */
+const ERROR_ICON = (
+  <svg
+    className="w-6 h-6 text-red-600"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+    />
+  </svg>
+);
+
+const EMPTY_ICON = (
+  <svg
+    className="w-8 h-8 text-orange-600"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={1.5}
+      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+    />
+  </svg>
+);
 
 /**
  * Cell rendering context - provides access to row data and utilities
@@ -152,14 +188,63 @@ function getValueByAccessor<TData, TValue>(
 }
 
 /**
+ * Priority 2 Optimization: Memoized TableRow component
+ * Prevents unnecessary re-renders when parent table updates
+ * Only re-renders if columns, row data, or handlers actually change
+ */
+interface DataTableRowProps<TData> {
+  row: TData;
+  rowIndex: number;
+  columns: ColumnDef<TData>[];
+}
+
+const DataTableRow = memo(function DataTableRow<TData>({
+  row,
+  rowIndex,
+  columns,
+}: DataTableRowProps<TData>) {
+  return (
+    <TableRow className="border-b border-gray-100 hover:bg-orange-50 transition-colors duration-150 group">
+      {columns.map((column) => {
+        const columnId = column.id || (column.accessor as string);
+        const value = getValueByAccessor(row, column.accessor);
+
+        return (
+          <TableCell
+            key={columnId}
+            className={`py-4 text-gray-700 group-hover:text-gray-900 transition-colors ${
+              column.className || ""
+            }`}
+          >
+            {column.cell ? (
+              column.cell({
+                getValue: () => value,
+                row: {
+                  original: row,
+                  index: rowIndex,
+                },
+              })
+            ) : (
+              <>{value || "-"}</>
+            )}
+          </TableCell>
+        );
+      })}
+    </TableRow>
+  );
+}) as <TData>(props: DataTableRowProps<TData>) => React.ReactElement;
+
+/**
  * Generic reusable DataTable component
  *
  * Works seamlessly with useServerTable hook
  * Uses column definitions to define structure and behavior
- * 
+ *
  * Performance optimizations:
- * - Memoized header context creation
- * - Efficient row rendering
+ * - Priority 1: Memoized pagination calculations
+ * - Priority 2a: Memoized row component (DataTableRow)
+ * - Priority 2b: Extracted SVG icons to constants
+ * - Efficient header context creation
  * - Skeleton loading for better UX
  */
 export function DataTable<TData>({
@@ -184,7 +269,10 @@ export function DataTable<TData>({
 }: DataTableProps<TData>) {
   // Memoize start and end row calculations
   const startRow = useMemo(() => (page - 1) * limit + 1, [page, limit]);
-  const endRow = useMemo(() => Math.min(page * limit, total), [page, limit, total]);
+  const endRow = useMemo(
+    () => Math.min(page * limit, total),
+    [page, limit, total]
+  );
   // Show loading state
   if (isLoading) {
     return (
@@ -236,19 +324,7 @@ export function DataTable<TData>({
         <div className="w-full py-12 text-center">
           <div className="flex flex-col items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-              <svg
-                className="w-6 h-6 text-red-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
+              {ERROR_ICON}
             </div>
             <div>
               <p className="font-semibold text-red-900">Gagal memuat data</p>
@@ -269,19 +345,7 @@ export function DataTable<TData>({
         <div className="w-full py-16 text-center">
           <div className="flex flex-col items-center gap-3">
             <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center">
-              <svg
-                className="w-8 h-8 text-orange-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
+              {EMPTY_ICON}
             </div>
             <div>
               <p className="font-semibold text-gray-900 text-lg">
@@ -390,36 +454,12 @@ export function DataTable<TData>({
           </TableHeader>
           <TableBody>
             {data.map((row, rowIndex) => (
-              <TableRow
+              <DataTableRow
                 key={rowIndex}
-                className="border-b border-gray-100 hover:bg-orange-50 transition-colors duration-150 group"
-              >
-                {columns.map((column) => {
-                  const columnId = column.id || (column.accessor as string);
-                  const value = getValueByAccessor(row, column.accessor);
-
-                  return (
-                    <TableCell
-                      key={columnId}
-                      className={`py-4 text-gray-700 group-hover:text-gray-900 transition-colors ${
-                        column.className || ""
-                      }`}
-                    >
-                      {column.cell ? (
-                        column.cell({
-                          getValue: () => value,
-                          row: {
-                            original: row,
-                            index: rowIndex,
-                          },
-                        })
-                      ) : (
-                        <>{value || "-"}</>
-                      )}
-                    </TableCell>
-                  );
-                })}
-              </TableRow>
+                row={row}
+                rowIndex={rowIndex}
+                columns={columns}
+              />
             ))}
           </TableBody>
         </Table>

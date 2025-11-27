@@ -184,6 +184,12 @@ export function useTableFilters(
   }, [filters]);
 
   // Sort handlers
+  // Priority 2c (Evaluation): toggleSort debounce
+  // CURRENT: Immediate execution (good for small datasets)
+  // FUTURE: If rapid sort clicks cause API spam, add 300ms debounce:
+  //   - Use useMemo(() => debounce(handleToggleSort, 300), [])
+  //   - Watch performance metrics in React DevTools
+  //   - Only apply if sorting 100+ times/minute detected
   const handleSetSort = useCallback(
     (newSortBy: string, newSortOrder: "asc" | "desc" = "asc") => {
       setSortBy(newSortBy);
