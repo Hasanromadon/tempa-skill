@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Filter, Search, X } from "lucide-react";
-import { FC } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 
 interface SearchFilterInputProps {
   value: string;
@@ -22,11 +22,13 @@ interface SearchFilterInputProps {
 /**
  * Reusable search input component untuk filter table
  * Features:
- * - Real-time search dengan icon
- * - Smooth clear button animation
- * - Modern design dengan rounded corners
- * - Focus states dengan orange accent
- * - No focus blur on debounce (uses useCallback for stable reference)
+ * - Internal debounce (500ms) untuk prevent rapid API calls
+ * - Immediate UI feedback (smooth typing)
+ * - Focus tetap saat debounce (tidak blur)
+ * - Debounce di component level, bukan di parent
+ * 
+ * IMPORTANT: onChange callback dipanggil SETELAH debounce selesai
+ * jadi parent tidak perlu khawatir tentang rapid re-renders
  */
 export const SearchFilterInput: FC<SearchFilterInputProps> = ({
   value,
@@ -35,10 +37,44 @@ export const SearchFilterInput: FC<SearchFilterInputProps> = ({
   placeholder = "Cari...",
   disabled = false,
 }) => {
-  // Handle change event directly to avoid debounce issues
+  // Local state untuk input (immediate feedback tanpa debounce)
+  const [inputValue, setInputValue] = useState(value);
+  
+  // Ref untuk store debounce timer
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Update input value ketika parent value berubah (sync state)
+  useEffect(() => {
+    setInputValue(value);
+  }, [value]);
+
+  // Handle change dengan internal debounce
+  // onChange dipanggil HANYA setelah 500ms pause, tidak setiap keystroke
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange(e.target.value);
+    const newValue = e.target.value;
+    
+    // Update local input immediately (smooth typing, no blur)
+    setInputValue(newValue);
+
+    // Clear previous timer
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    // Debounce onChange call to parent (500ms)
+    debounceRef.current = setTimeout(() => {
+      onChange(newValue);
+    }, 500);
   };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div className="relative w-full group">
@@ -46,15 +82,22 @@ export const SearchFilterInput: FC<SearchFilterInputProps> = ({
       <Input
         type="text"
         placeholder={placeholder}
-        value={value}
+        value={inputValue}
         onChange={handleChange}
         disabled={disabled}
         className="pl-10 pr-10 rounded-lg border border-gray-300 bg-white focus:border-orange-600 focus:ring-2 focus:ring-orange-100 transition-all h-11 text-sm disabled:bg-gray-50"
         autoComplete="off"
       />
-      {value && (
+      {inputValue && (
         <button
-          onClick={onClear}
+          onClick={() => {
+            setInputValue("");
+            onClear();
+            // Cancel pending debounce
+            if (debounceRef.current) {
+              clearTimeout(debounceRef.current);
+            }
+          }}
           disabled={disabled}
           className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 disabled:opacity-50 transition-colors p-1.5 hover:bg-gray-100 rounded-md"
           aria-label="Clear search"
