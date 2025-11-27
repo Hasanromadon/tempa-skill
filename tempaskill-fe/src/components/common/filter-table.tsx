@@ -12,7 +12,6 @@ import { Filter, Search, X } from "lucide-react";
 import { FC, useEffect, useRef, useState } from "react";
 
 interface SearchFilterInputProps {
-  value: string;
   onChange: (value: string) => void;
   onClear: () => void;
   placeholder?: string;
@@ -25,34 +24,29 @@ interface SearchFilterInputProps {
  * - Internal debounce (500ms) untuk prevent rapid API calls
  * - Immediate UI feedback (smooth typing)
  * - Focus tetap saat debounce (tidak blur)
- * - Debounce di component level, bukan di parent
- * 
- * IMPORTANT: onChange callback dipanggil SETELAH debounce selesai
- * jadi parent tidak perlu khawatir tentang rapid re-renders
+ * - UNCONTROLLED component: NOT dependent on parent value
+ * - Component adalah single source of truth untuk search input
+ *
+ * IMPORTANT: Component TIDAK menerima value dari parent untuk prevent focus blur
+ * Debounce terjadi di component, onChange dipanggil SETELAH 500ms pause
  */
 export const SearchFilterInput: FC<SearchFilterInputProps> = ({
-  value,
   onChange,
   onClear,
   placeholder = "Cari...",
   disabled = false,
 }) => {
-  // Local state untuk input (immediate feedback tanpa debounce)
-  const [inputValue, setInputValue] = useState(value);
-  
+  // Uncontrolled state - ini adalah satu-satunya source of truth
+  const [inputValue, setInputValue] = useState("");
+
   // Ref untuk store debounce timer
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Update input value ketika parent value berubah (sync state)
-  useEffect(() => {
-    setInputValue(value);
-  }, [value]);
 
   // Handle change dengan internal debounce
   // onChange dipanggil HANYA setelah 500ms pause, tidak setiap keystroke
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-    
+
     // Update local input immediately (smooth typing, no blur)
     setInputValue(newValue);
 
@@ -65,6 +59,17 @@ export const SearchFilterInput: FC<SearchFilterInputProps> = ({
     debounceRef.current = setTimeout(() => {
       onChange(newValue);
     }, 500);
+  };
+
+  // Handle clear dengan reset state dan cancel pending debounce
+  const handleClear = () => {
+    setInputValue("");
+    onClear();
+    
+    // Cancel pending debounce
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
   };
 
   // Cleanup on unmount
@@ -90,14 +95,7 @@ export const SearchFilterInput: FC<SearchFilterInputProps> = ({
       />
       {inputValue && (
         <button
-          onClick={() => {
-            setInputValue("");
-            onClear();
-            // Cancel pending debounce
-            if (debounceRef.current) {
-              clearTimeout(debounceRef.current);
-            }
-          }}
+          onClick={handleClear}
           disabled={disabled}
           className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 disabled:opacity-50 transition-colors p-1.5 hover:bg-gray-100 rounded-md"
           aria-label="Clear search"

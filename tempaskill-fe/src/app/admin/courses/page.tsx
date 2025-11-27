@@ -301,8 +301,8 @@ export default function AdminCoursesPage() {
         <CardContent>
           <div className="space-y-4">
             {/* Search Input - Full Width */}
+            {/* UNCONTROLLED: Component manage its own state, NOT dependent on parent */}
             <SearchFilterInput
-              value={table.filters.search}
               onChange={table.filters.setSearch}
               onClear={table.filters.clearSearch}
               placeholder="Cari berdasarkan judul kursus..."
