@@ -325,7 +325,7 @@ export const SelectFilter: FC<SelectFilterProps> = ({
     <Select value={selectedValue} onValueChange={onChange} disabled={disabled}>
       <SelectTrigger
         aria-label={aria}
-        className="rounded-lg border border-gray-300 bg-white focus:border-orange-600 focus:ring-2 focus:ring-orange-100 transition-all h-11 text-sm disabled:bg-gray-50"
+        className="w-full rounded-lg border border-gray-300 bg-white focus:border-orange-600 focus:ring-2 focus:ring-orange-100 transition-all h-11 text-sm disabled:bg-gray-50"
       >
         <SelectValue placeholder={placeholderOption?.label || placeholder} />
       </SelectTrigger>

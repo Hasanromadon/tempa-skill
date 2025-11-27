@@ -9,13 +9,13 @@ interface FilterFormProps {
 
 /**
  * Filter Form Layout Component
- * 
+ *
  * Reusable container untuk filter form dengan good design principles:
  * - Consistent spacing (space-y-4)
  * - Responsive grid layout untuk fields
  * - Proper visual hierarchy
  * - Accessible form structure
- * 
+ *
  * @example
  * ```tsx
  * <FilterForm>
@@ -44,7 +44,7 @@ interface FilterFormGridProps {
 
 /**
  * Filter Form Grid Component
- * 
+ *
  * Container untuk field filter dengan responsive grid layout
  * Default 2 columns, responsive ke 1 column di mobile
  */
@@ -61,9 +61,7 @@ export function FilterFormGrid({
   };
 
   return (
-    <div
-      className={`grid grid-cols-1 ${colsMap[columns]} gap-3 ${className}`}
-    >
+    <div className={`grid grid-cols-1 ${colsMap[columns]} gap-3 ${className}`}>
       {children}
     </div>
   );
@@ -77,7 +75,7 @@ interface FilterFormFieldProps {
 
 /**
  * Filter Form Field Component
- * 
+ *
  * Wrapper untuk individual filter field dengan:
  * - Label dengan consistent styling
  * - Vertical spacing
@@ -107,7 +105,7 @@ interface FilterFormSectionProps {
 
 /**
  * Filter Form Section Component
- * 
+ *
  * Optional section for grouping related filters dengan header
  */
 export function FilterFormSection({

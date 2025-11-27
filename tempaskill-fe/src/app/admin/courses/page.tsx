@@ -323,7 +323,10 @@ export default function AdminCoursesPage() {
                   options={[
                     { value: "", label: "Semua Kategori" },
                     { value: "Web Development", label: "Web Development" },
-                    { value: "Mobile Development", label: "Mobile Development" },
+                    {
+                      value: "Mobile Development",
+                      label: "Mobile Development",
+                    },
                     { value: "Data Science", label: "Data Science" },
                     { value: "DevOps", label: "DevOps" },
                   ]}
