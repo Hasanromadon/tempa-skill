@@ -1,5 +1,6 @@
 "use client";
 
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -8,9 +9,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { ReactNode } from "react";
-import { ChevronUp, ChevronDown } from "lucide-react";
 
 /**
  * Cell rendering context - provides access to row data and utilities
@@ -404,8 +404,8 @@ export function DataTable<TData>({
           <span className="text-orange-600 font-semibold">
             {startRow}-{endRow}
           </span>{" "}
-          dari{" "}
-          <span className="text-orange-600 font-semibold">{total}</span> data
+          dari <span className="text-orange-600 font-semibold">{total}</span>{" "}
+          data
         </p>
         <div className="text-xs text-gray-500">
           Halaman {page} dari {Math.max(1, Math.ceil(total / limit))}

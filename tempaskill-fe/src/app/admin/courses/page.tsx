@@ -4,7 +4,6 @@ import {
   ActiveFilters,
   ColumnDef,
   DataTable,
-  LimitSelect,
   Pagination,
   SearchFilterInput,
   SelectFilter,
@@ -345,13 +344,6 @@ export default function AdminCoursesPage() {
                 placeholder="Semua Tingkat"
                 disabled={table.isLoading}
                 aria="Filter berdasarkan tingkat kesulitan"
-              />
-
-              {/* Limit Selector */}
-              <LimitSelect
-                value={table.filters.limit}
-                onChange={table.filters.setLimit}
-                disabled={table.isLoading}
               />
             </div>
 

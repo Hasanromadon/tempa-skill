@@ -16,7 +16,6 @@ export { SubmitButton } from "./submit-button";
 export {
   ActiveFilters,
   FilterBadge,
-  LimitSelect,
   ResultsSummary,
   SearchFilterInput,
   SelectFilter,

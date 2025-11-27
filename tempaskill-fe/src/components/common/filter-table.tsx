@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, X } from "lucide-react";
+import { Search, X, Filter } from "lucide-react";
 import { FC } from "react";
 
 interface SearchFilterInputProps {
@@ -23,10 +23,10 @@ interface SearchFilterInputProps {
 /**
  * Reusable search input component untuk filter table
  * Features:
- * - Real-time search
- * - Clear button
- * - Loading state
- * - Customizable placeholder
+ * - Real-time search dengan icon
+ * - Smooth clear button animation
+ * - Modern design dengan rounded corners
+ * - Focus states dengan orange accent
  */
 export const SearchFilterInput: FC<SearchFilterInputProps> = ({
   value,
@@ -36,64 +36,26 @@ export const SearchFilterInput: FC<SearchFilterInputProps> = ({
   disabled = false,
 }) => {
   return (
-    <div className="relative w-full max-w-md">
-      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+    <div className="relative w-full">
+      <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 pointer-events-none" />
       <Input
         type="text"
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
-        className="pl-10 pr-10"
+        className="pl-11 pr-11 rounded-lg border-gray-300 focus:border-orange-500 focus:ring-orange-500 transition-colors h-10"
       />
       {value && (
         <button
           onClick={onClear}
           disabled={disabled}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 disabled:opacity-50"
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 disabled:opacity-50 transition-colors p-1 hover:bg-gray-100 rounded"
+          aria-label="Clear search"
         >
           <X className="h-4 w-4" />
         </button>
       )}
-    </div>
-  );
-};
-
-interface LimitSelectProps {
-  value: number;
-  onChange: (limit: number) => void;
-  options?: number[];
-  disabled?: boolean;
-}
-
-/**
- * Reusable limit selector component
- * Digunakan untuk mengubah jumlah item per halaman
- */
-export const LimitSelect: FC<LimitSelectProps> = ({
-  value,
-  onChange,
-  options = [10, 20, 50, 100],
-  disabled = false,
-}) => {
-  return (
-    <div className="flex items-center gap-2">
-      <label htmlFor="limit" className="text-sm text-gray-600">
-        Tampilkan per halaman:
-      </label>
-      <select
-        id="limit"
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        disabled={disabled}
-        className="rounded border border-gray-300 bg-white px-3 py-2 text-sm disabled:bg-gray-100"
-      >
-        {options.map((opt) => (
-          <option key={opt} value={opt}>
-            {opt}
-          </option>
-        ))}
-      </select>
     </div>
   );
 };
@@ -113,11 +75,16 @@ export const FilterBadge: FC<FilterBadgeProps> = ({
   onRemove,
 }) => {
   return (
-    <div className="inline-flex items-center gap-2 rounded-full bg-orange-100 px-3 py-1 text-sm text-orange-900">
-      <span>
-        <span className="font-medium">{label}:</span> {value}
+    <div className="inline-flex items-center gap-2 rounded-full bg-orange-100 px-4 py-1.5 text-sm text-orange-900 border border-orange-200 transition-all hover:bg-orange-200 hover:shadow-sm">
+      <span className="flex items-center gap-1">
+        <span className="font-semibold">{label}:</span>
+        <span className="text-orange-800">{value}</span>
       </span>
-      <button onClick={onRemove} className="ml-1 hover:text-orange-800">
+      <button 
+        onClick={onRemove} 
+        className="ml-1 text-orange-700 hover:text-orange-900 hover:bg-orange-300 rounded-full p-0.5 transition-colors"
+        aria-label={`Hapus filter ${label}`}
+      >
         <X className="h-3 w-3" />
       </button>
     </div>
@@ -133,7 +100,11 @@ interface ActiveFiltersProps {
 
 /**
  * Component untuk menampilkan active filters
- * Memudahkan user melihat dan clear filters yang sedang aktif
+ * Features:
+ * - Visual filter counter dengan Filter icon
+ * - Gradient background untuk visual hierarchy
+ * - Clear all button dengan confirm action
+ * - Smooth animations dan transitions
  */
 export const ActiveFilters: FC<ActiveFiltersProps> = ({
   filters,
@@ -148,7 +119,16 @@ export const ActiveFilters: FC<ActiveFiltersProps> = ({
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3 rounded-lg border border-orange-200 bg-linear-to-r from-orange-50 to-orange-100 p-4">
+      <div className="flex items-center gap-2">
+        <Filter className="h-4 w-4 text-orange-600" />
+        <span className="text-sm font-semibold text-gray-700">
+          Filter aktif:
+          <span className="ml-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-orange-600 text-xs font-bold text-white">
+            {activeFilters.length}
+          </span>
+        </span>
+      </div>
       <div className="flex flex-wrap gap-2">
         {activeFilters.map(([key, value]) => (
           <FilterBadge
@@ -163,8 +143,9 @@ export const ActiveFilters: FC<ActiveFiltersProps> = ({
         variant="ghost"
         size="sm"
         onClick={onClearAll}
-        className="text-orange-600 hover:bg-orange-50"
+        className="text-orange-600 hover:bg-orange-200 font-medium"
       >
+        <X className="h-3.5 w-3.5 mr-1" />
         Hapus semua filter
       </Button>
     </div>
@@ -180,7 +161,13 @@ interface SortHeaderProps {
 }
 
 /**
- * Sortable table header component
+ * @deprecated Use DataTable component with sortable columns instead.
+ * This component is kept for backward compatibility but is no longer recommended.
+ * DataTable provides better UX with proper visual feedback and column definitions.
+ * 
+ * Example:
+ * - Old: <SortHeader label="Title" sortKey="title" onSort={...} />
+ * - New: Create column with sortable: true in DataTable ColumnDef
  */
 export const SortHeader: FC<SortHeaderProps> = ({
   label,
@@ -216,7 +203,13 @@ interface TableStatusProps {
 }
 
 /**
- * Component untuk menampilkan loading, error, atau empty state
+ * @deprecated Use DataTable component which has built-in loading, error, and empty states.
+ * This component is kept for backward compatibility but is no longer recommended.
+ * DataTable provides better UX with skeleton loaders, icons, and professional styling.
+ * 
+ * Example:
+ * - Old: <TableStatus isLoading={loading} isError={error} isEmpty={!data} />
+ * - New: <DataTable data={data} isLoading={loading} error={error} columns={...} />
  */
 export const TableStatus: FC<TableStatusProps> = ({
   isLoading,
@@ -267,7 +260,13 @@ interface ResultsSummaryProps {
 }
 
 /**
- * Component untuk menampilkan summary hasil (misal: "Showing 1-10 of 100")
+ * @deprecated Use DataTable component which has built-in results summary.
+ * This component is kept for backward compatibility but is no longer recommended.
+ * DataTable provides better UX with automatic calculation and orange-600 highlights.
+ * 
+ * Example:
+ * - Old: <ResultsSummary total={100} page={1} limit={10} />
+ * - New: DataTable includes this automatically as "Showing 1-10 of 100"
  */
 export const ResultsSummary: FC<ResultsSummaryProps> = ({
   total,
@@ -279,9 +278,9 @@ export const ResultsSummary: FC<ResultsSummaryProps> = ({
 
   return (
     <p className="text-sm text-gray-600">
-      Menampilkan <span className="font-medium">{start}</span> hingga{" "}
-      <span className="font-medium">{end}</span> dari{" "}
-      <span className="font-medium">{total}</span> hasil
+      Menampilkan <span className="font-semibold text-orange-600">{start}</span> hingga{" "}
+      <span className="font-semibold text-orange-600">{end}</span> dari{" "}
+      <span className="font-semibold text-orange-600">{total}</span> hasil
     </p>
   );
 };
@@ -297,10 +296,12 @@ interface SelectFilterProps {
 
 /**
  * Reusable select filter component menggunakan Shadcn
- * Supports multiple options dengan placeholder (empty value as clear)
- *
- * Note: Shadcn Select tidak support empty value pada SelectItem,
- * jadi gunakan first valid option sebagai default atau handle di parent
+ * Features:
+ * - Consistent design dengan orange accent
+ * - Multiple options dengan placeholder support
+ * - Rounded corners dan smooth focus state
+ * - ARIA labels untuk accessibility
+ * - Automatic empty value filtering
  */
 export const SelectFilter: FC<SelectFilterProps> = ({
   value,
@@ -320,10 +321,10 @@ export const SelectFilter: FC<SelectFilterProps> = ({
 
   return (
     <Select value={selectedValue} onValueChange={onChange} disabled={disabled}>
-      <SelectTrigger aria-label={aria} className="w-full">
+      <SelectTrigger aria-label={aria} className="rounded-lg border-gray-300 focus:ring-orange-500 h-10">
         <SelectValue placeholder={placeholderOption?.label || placeholder} />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="rounded-lg">
         {validOptions.map((option) => (
           <SelectItem key={option.value} value={option.value}>
             {option.label}
