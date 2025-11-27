@@ -1,12 +1,10 @@
 "use client";
 
 import {
-  ActiveFilters,
   ColumnDef,
   DataTable,
-  SearchFilterInput,
-  SelectFilter,
 } from "@/components/common";
+import { SearchAndFilters } from "@/components/admin/search-and-filters";
 import { DeleteCourseDialog } from "@/components/course/delete-course-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -299,81 +297,16 @@ export default function AdminCoursesPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {/* Search Input - Full Width */}
-            {/* UNCONTROLLED: Component manage its own state, NOT dependent on parent */}
-            <SearchFilterInput
-              key="search-input"
-              onChange={table.filters.setSearch}
-              onClear={table.filters.clearSearch}
-              placeholder="Cari berdasarkan judul kursus..."
-              disabled={table.isLoading}
-            />
-
-            {/* Filters Grid - Responsive & Structured */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* Category Filter */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
-                  Kategori
-                </label>
-                <SelectFilter
-                  value={String(table.filters.filters.category || "")}
-                  onChange={(value) =>
-                    table.filters.setFilter("category", value || "")
-                  }
-                  options={[
-                    { value: "", label: "Semua Kategori" },
-                    { value: "Web Development", label: "Web Development" },
-                    {
-                      value: "Mobile Development",
-                      label: "Mobile Development",
-                    },
-                    { value: "Data Science", label: "Data Science" },
-                    { value: "DevOps", label: "DevOps" },
-                  ]}
-                  placeholder="Semua Kategori"
-                  disabled={table.isLoading}
-                  aria="Filter berdasarkan kategori"
-                />
-              </div>
-
-              {/* Difficulty Filter */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
-                  Tingkat Kesulitan
-                </label>
-                <SelectFilter
-                  value={String(table.filters.filters.difficulty || "")}
-                  onChange={(value) =>
-                    table.filters.setFilter("difficulty", value || "")
-                  }
-                  options={[
-                    { value: "", label: "Semua Tingkat" },
-                    { value: "beginner", label: "Pemula" },
-                    { value: "intermediate", label: "Menengah" },
-                    { value: "advanced", label: "Lanjutan" },
-                  ]}
-                  placeholder="Semua Tingkat"
-                  disabled={table.isLoading}
-                  aria="Filter berdasarkan tingkat kesulitan"
-                />
-              </div>
-            </div>
-
-            {/* Active Filters */}
-            {table.filters.hasActiveFilters && (
-              <ActiveFilters
-                filters={table.filters.filters}
-                labels={{
-                  category: "Kategori",
-                  difficulty: "Tingkat",
-                }}
-                onRemove={table.filters.clearFilter}
-                onClearAll={table.filters.clearAllFilters}
-              />
-            )}
-          </div>
+          <SearchAndFilters
+            isLoading={table.isLoading}
+            onSearchChange={table.filters.setSearch}
+            onSearchClear={table.filters.clearSearch}
+            filters={table.filters.filters}
+            onFilterChange={table.filters.setFilter}
+            onFilterClear={table.filters.clearFilter}
+            onClearAllFilters={table.filters.clearAllFilters}
+            hasActiveFilters={table.filters.hasActiveFilters}
+          />
         </CardContent>
       </Card>
 
