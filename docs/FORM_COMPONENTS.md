@@ -650,19 +650,19 @@ export function MyForm() {
 
 ### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `name` | `string` | - | Field name (required) |
-| `label` | `string` | - | Field label (required) |
-| `prefix` | `string` | `""` | Prefix (e.g., "Rp ") |
-| `thousandSeparator` | `string` | `"."` | Thousand separator (e.g., ".", ",") |
-| `decimalSeparator` | `string` | `","` | Decimal separator |
-| `decimals` | `number` | `0` | Number of decimal places |
-| `placeholder` | `string` | `"0"` | Placeholder text |
-| `description` | `string` | - | Helper text |
-| `disabled` | `boolean` | `false` | Disable field |
-| `required` | `boolean` | `false` | Show required indicator |
-| `onValueChange` | `function` | - | Callback when value changes |
+| Prop                | Type       | Default | Description                         |
+| ------------------- | ---------- | ------- | ----------------------------------- |
+| `name`              | `string`   | -       | Field name (required)               |
+| `label`             | `string`   | -       | Field label (required)              |
+| `prefix`            | `string`   | `""`    | Prefix (e.g., "Rp ")                |
+| `thousandSeparator` | `string`   | `"."`   | Thousand separator (e.g., ".", ",") |
+| `decimalSeparator`  | `string`   | `","`   | Decimal separator                   |
+| `decimals`          | `number`   | `0`     | Number of decimal places            |
+| `placeholder`       | `string`   | `"0"`   | Placeholder text                    |
+| `description`       | `string`   | -       | Helper text                         |
+| `disabled`          | `boolean`  | `false` | Disable field                       |
+| `required`          | `boolean`  | `false` | Show required indicator             |
+| `onValueChange`     | `function` | -       | Callback when value changes         |
 
 ### Advanced Examples
 
@@ -721,9 +721,9 @@ const onSubmit = (data: any) => {
 
 ### Behavior
 
-1. **On Focus** - Menampilkan raw number (e.g., "1000000")
-2. **On Blur** - Auto-format dengan separator (e.g., "Rp 1.000.000")
-3. **On Change** - Value form selalu clean number
+1. **On Type** - Auto-format real-time dengan separator (e.g., saat mengetik "1000000" akan menjadi "Rp 1.000.000")
+2. **On Change** - Value form selalu clean number (1000000)
+3. **Display** - Selalu menampilkan format dengan separator saat field tidak kosong
 
 ### Common Patterns
 

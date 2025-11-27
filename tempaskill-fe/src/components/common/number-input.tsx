@@ -4,9 +4,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import React, { useState } from "react";
-import { useFormContext, Controller } from "react-hook-form";
+import { Controller, useFormContext } from "react-hook-form";
 
-interface NumberInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type' | 'value' | 'onChange'> {
+interface NumberInputProps
+  extends Omit<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    "type" | "value" | "onChange"
+  > {
   name: string;
   label: string;
   description?: string;
@@ -21,13 +25,13 @@ interface NumberInputProps extends Omit<React.InputHTMLAttributes<HTMLInputEleme
 
 /**
  * Number input component with thousand separator formatting
- * 
+ *
  * Features:
  * - Displays formatted value (e.g., "1.000.000")
  * - Stores clean value internally (e.g., 1000000)
  * - Supports prefix (e.g., "Rp ")
  * - Customizable separators and decimals
- * 
+ *
  * @example
  * ```tsx
  * <NumberInput
@@ -61,7 +65,10 @@ export function NumberInput({
   const formatNumberDisplay = (value: number | string): string => {
     if (!value) return "";
 
-    const numValue = typeof value === "string" ? parseFloat(value.replace(/\D/g, "")) || 0 : value;
+    const numValue =
+      typeof value === "string"
+        ? parseFloat(value.replace(/\D/g, "")) || 0
+        : value;
 
     if (isNaN(numValue)) return "";
 
@@ -71,9 +78,7 @@ export function NumberInput({
 
     // Gabungkan dengan decimal separator jika ada desimal
     const formatted =
-      decimals > 0
-        ? parts[0] + decimalSeparator + parts[1]
-        : parts[0];
+      decimals > 0 ? parts[0] + decimalSeparator + parts[1] : parts[0];
 
     return prefix + formatted;
   };
@@ -107,13 +112,14 @@ export function NumberInput({
               inputMode="numeric"
               placeholder={placeholder}
               disabled={disabled}
-              value={displayValue || formatNumberDisplay(field.value)}
+              value={displayValue}
               onChange={(e) => {
                 const inputValue = e.target.value;
                 const cleanNumber = extractCleanNumber(inputValue);
 
-                // Update display value
-                setDisplayValue(inputValue);
+                // Format display value real-time saat mengetik
+                const formattedValue = formatNumberDisplay(cleanNumber);
+                setDisplayValue(formattedValue);
 
                 // Update form value dengan clean number
                 field.onChange(cleanNumber);
@@ -124,15 +130,7 @@ export function NumberInput({
                 }
               }}
               onBlur={() => {
-                // Format display value on blur
-                const cleanNumber = field.value || 0;
-                setDisplayValue(formatNumberDisplay(cleanNumber));
                 field.onBlur();
-              }}
-              onFocus={() => {
-                // Show raw format on focus
-                const cleanNumber = field.value || 0;
-                setDisplayValue(cleanNumber.toString());
               }}
               {...props}
               className={cn(
@@ -146,16 +144,7 @@ export function NumberInput({
             <p className="text-xs text-gray-500">{description}</p>
           )}
 
-          {error && (
-            <p className="text-xs text-red-500">{error.message}</p>
-          )}
-
-          {/* Debug info - untuk development saja */}
-          {process.env.NODE_ENV === "development" && (
-            <p className="text-xs text-gray-400 mt-1">
-              Nilai clean: {field.value || 0}
-            </p>
-          )}
+          {error && <p className="text-xs text-red-500">{error.message}</p>}
         </div>
       )}
     />
