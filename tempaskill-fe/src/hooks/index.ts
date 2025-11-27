@@ -2,6 +2,7 @@
 export * from "./use-auth";
 export * from "./use-certificate";
 export * from "./use-courses";
+export * from "./use-data-table";
 export * from "./use-debug";
 export * from "./use-lessons";
 export * from "./use-payment";

@@ -1,6 +1,6 @@
 "use client";
 
-import { LoadingScreen } from "@/components/common";
+import { LoadingScreen, Pagination } from "@/components/common";
 import { DeleteCourseDialog } from "@/components/course/delete-course-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,7 +34,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useCourses, useDeleteCourse, useTogglePublishCourse } from "@/hooks";
+import {
+  useCourses,
+  useDataTable,
+  useDeleteCourse,
+  useTogglePublishCourse,
+} from "@/hooks";
 import { DIFFICULTY_COLORS, DIFFICULTY_LABELS } from "@/lib/constants";
 import { formatCurrency } from "@/lib/utils";
 import {
@@ -133,6 +138,20 @@ export default function AdminCoursesPage() {
     return matchesSearch && matchesCategory && matchesDifficulty;
   });
 
+  // Pagination hook
+  const {
+    currentPage,
+    pageSize: currentPageSize,
+    paginatedData: displayedCourses,
+    totalPages,
+    totalItems: totalFiltered,
+    goToPage,
+    setPageSize,
+  } = useDataTable({
+    data: filteredCourses,
+    pageSize: 10,
+  });
+
   if (isLoading) {
     return <LoadingScreen message="Memuat daftar kursus..." />;
   }
@@ -219,9 +238,9 @@ export default function AdminCoursesPage() {
       {/* Courses Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Daftar Kursus ({filteredCourses.length})</CardTitle>
+          <CardTitle>Daftar Kursus ({totalFiltered})</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
@@ -236,8 +255,8 @@ export default function AdminCoursesPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredCourses.length > 0 ? (
-                  filteredCourses.map((course) => (
+                {displayedCourses.length > 0 ? (
+                  displayedCourses.map((course) => (
                     <TableRow key={course.id}>
                       <TableCell className="font-medium">
                         {course.title}
@@ -353,6 +372,21 @@ export default function AdminCoursesPage() {
               </TableBody>
             </Table>
           </div>
+
+          {/* Pagination */}
+          {totalFiltered > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalFiltered}
+              pageSize={currentPageSize}
+              onPageChange={goToPage}
+              onPageSizeChange={setPageSize}
+              pageSizeOptions={[5, 10, 20, 50]}
+              showPageSizeSelector
+              showPageNumbers
+            />
+          )}
         </CardContent>
       </Card>
 
