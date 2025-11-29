@@ -28,9 +28,11 @@ import {
   useToggleUserStatus,
 } from "@/hooks";
 import type { User } from "@/hooks/use-users";
+import { ExportColumn, exportToCSV } from "@/lib/export-csv";
 import {
   Ban,
   CheckCircle,
+  Download,
   Edit,
   Eye,
   MoreVertical,
@@ -93,6 +95,58 @@ export default function AdminUsersPage() {
   const deleteUser = useDeleteUser();
   const changeUserRole = useChangeUserRole();
   const toggleUserStatus = useToggleUserStatus();
+
+  // Handle export to CSV
+  const handleExportCSV = useCallback(() => {
+    const columns: ExportColumn<User>[] = [
+      { key: "id", label: "ID" },
+      { key: "name", label: "Nama" },
+      { key: "email", label: "Email" },
+      {
+        key: "role",
+        label: "Role",
+        format: (value) => {
+          const labels: Record<string, string> = {
+            student: "Siswa",
+            instructor: "Instruktur",
+            admin: "Admin",
+          };
+          return labels[String(value)] || String(value);
+        },
+      },
+      {
+        key: "status",
+        label: "Status",
+        format: (value) => (value === "active" ? "Aktif" : "Ditangguhkan"),
+      },
+      {
+        key: "enrolled_count",
+        label: "Kursus Terdaftar",
+        format: (value) => String(value || 0),
+      },
+      {
+        key: "completed_count",
+        label: "Kursus Selesai",
+        format: (value) => String(value || 0),
+      },
+      {
+        key: "created_at",
+        label: "Tanggal Bergabung",
+        format: (value) => {
+          const date = new Date(String(value));
+          return date.toLocaleDateString("id-ID");
+        },
+      },
+    ];
+
+    const filename = `pengguna_tempaskill_${new Date().toISOString().split("T")[0]}.csv`;
+
+    exportToCSV(table.data, columns, filename);
+
+    toast.success("Data berhasil diekspor", {
+      description: `File ${filename} telah diunduh.`,
+    });
+  }, [table.data]);
 
   // Handle delete
   const handleDeleteClick = useCallback((userId: number, userName: string) => {
@@ -176,9 +230,13 @@ export default function AdminUsersPage() {
         await toggleUserStatus.mutateAsync({ userId, suspend });
 
         toast.success(
-          suspend ? "Pengguna berhasil disuspend" : "Pengguna berhasil diaktifkan",
+          suspend
+            ? "Pengguna berhasil disuspend"
+            : "Pengguna berhasil diaktifkan",
           {
-            description: `"${userName}" sekarang ${suspend ? "suspended" : "active"}.`,
+            description: `"${userName}" sekarang ${
+              suspend ? "suspended" : "active"
+            }.`,
           }
         );
 
@@ -372,7 +430,12 @@ export default function AdminUsersPage() {
         },
       },
     ],
-    [handleDeleteClick, handleChangeRoleClick, handleToggleStatus, toggleUserStatus.isPending]
+    [
+      handleDeleteClick,
+      handleChangeRoleClick,
+      handleToggleStatus,
+      toggleUserStatus.isPending,
+    ]
   );
 
   return (
@@ -385,15 +448,26 @@ export default function AdminUsersPage() {
             Lihat dan kelola semua pengguna platform
           </p>
         </div>
-        <Link href="/admin/users/new">
+        <div className="flex gap-2">
           <Button
-            className="bg-orange-600 hover:bg-orange-700"
-            aria-label="Tambah pengguna baru"
+            variant="outline"
+            onClick={handleExportCSV}
+            disabled={table.data.length === 0}
+            aria-label="Ekspor data ke CSV"
           >
-            <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
-            Tambah Pengguna
+            <Download className="h-4 w-4 mr-2" aria-hidden="true" />
+            Ekspor CSV
           </Button>
-        </Link>
+          <Link href="/admin/users/new">
+            <Button
+              className="bg-orange-600 hover:bg-orange-700"
+              aria-label="Tambah pengguna baru"
+            >
+              <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
+              Tambah Pengguna
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Filters Card */}
