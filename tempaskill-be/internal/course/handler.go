@@ -130,10 +130,17 @@ func (h *Handler) ListCourses(c *gin.Context) {
 		userRole = role.(string)
 	}
 
+	// DEBUG LOG
+	c.Writer.Header().Set("X-Debug-UserRole", userRole)
+	c.Writer.Header().Set("X-Debug-UserID", strconv.FormatUint(uint64(userID), 10))
+
 	// INSTRUCTOR FILTER: Instructor only sees their own courses
 	// Admin sees all courses, Students see all courses
 	if userRole == "instructor" && query.InstructorID == nil {
 		query.InstructorID = &userID
+		c.Writer.Header().Set("X-Debug-FilterApplied", "true")
+	} else {
+		c.Writer.Header().Set("X-Debug-FilterApplied", "false")
 	}
 
 	result, err := h.service.ListCourses(c.Request.Context(), userID, &query)
@@ -255,7 +262,13 @@ func (h *Handler) CreateLesson(c *gin.Context) {
 		return
 	}
 
-	lesson, err := h.service.CreateLesson(c.Request.Context(), userID.(uint), uint(courseID), &req)
+	userRole, exists := c.Get("userRole")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	lesson, err := h.service.CreateLesson(c.Request.Context(), userID.(uint), userRole.(string), uint(courseID), &req)
 	if err != nil {
 		if err == ErrCourseNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
@@ -358,7 +371,13 @@ func (h *Handler) UpdateLesson(c *gin.Context) {
 		return
 	}
 
-	lesson, err := h.service.UpdateLesson(c.Request.Context(), userID.(uint), uint(id), &req)
+	userRole, exists := c.Get("userRole")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	lesson, err := h.service.UpdateLesson(c.Request.Context(), userID.(uint), userRole.(string), uint(id), &req)
 	if err != nil {
 		if err == ErrLessonNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
@@ -393,7 +412,13 @@ func (h *Handler) DeleteLesson(c *gin.Context) {
 		return
 	}
 
-	err = h.service.DeleteLesson(c.Request.Context(), userID.(uint), uint(id))
+	userRole, exists := c.Get("userRole")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	err = h.service.DeleteLesson(c.Request.Context(), userID.(uint), userRole.(string), uint(id))
 	if err != nil {
 		if err == ErrLessonNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
@@ -427,7 +452,13 @@ func (h *Handler) ReorderLessons(c *gin.Context) {
 		return
 	}
 
-	err := h.service.ReorderLessons(c.Request.Context(), userID.(uint), req.Updates)
+	userRole, exists := c.Get("userRole")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	err := h.service.ReorderLessons(c.Request.Context(), userID.(uint), userRole.(string), req.Updates)
 	if err != nil {
 		if err == ErrUnauthorized {
 			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})

@@ -15,7 +15,8 @@ func RegisterRoutes(router *gin.RouterGroup, db *gorm.DB, authMiddleware *middle
 	// Public routes (no authentication required)
 	public := router.Group("")
 	{
-		public.GET("/courses", handler.ListCourses)                    // List all courses with filters
+		// Apply OptionalAuth to support instructor auto-filter and is_enrolled field
+		public.GET("/courses", authMiddleware.OptionalAuth(), handler.ListCourses)                    // List all courses with filters
 		// Apply OptionalAuth to support is_enrolled field for logged-in users
 		public.GET("/courses/slug/:slug", authMiddleware.OptionalAuth(), handler.GetCourseBySlug)     // Get course by slug (must be before :id)
 		public.GET("/courses/:id", handler.GetCourse)                  // Get course by ID

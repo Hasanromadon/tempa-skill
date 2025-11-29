@@ -29,12 +29,12 @@ type Service interface {
 	DeleteCourse(ctx context.Context, userID uint, userRole string, courseID uint) error
 
 	// Lesson operations
-	CreateLesson(ctx context.Context, userID uint, courseID uint, req *CreateLessonRequest) (*Lesson, error)
+	CreateLesson(ctx context.Context, userID uint, userRole string, courseID uint, req *CreateLessonRequest) (*Lesson, error)
 	GetLesson(ctx context.Context, userID uint, lessonID uint) (*LessonResponse, error)
 	GetCourseLessons(ctx context.Context, userID uint, courseID uint) ([]*LessonResponse, error)
-	UpdateLesson(ctx context.Context, userID uint, lessonID uint, req *UpdateLessonRequest) (*Lesson, error)
-	DeleteLesson(ctx context.Context, userID uint, lessonID uint) error
-	ReorderLessons(ctx context.Context, userID uint, updates []LessonOrderUpdate) error
+	UpdateLesson(ctx context.Context, userID uint, userRole string, lessonID uint, req *UpdateLessonRequest) (*Lesson, error)
+	DeleteLesson(ctx context.Context, userID uint, userRole string, lessonID uint) error
+	ReorderLessons(ctx context.Context, userID uint, userRole string, updates []LessonOrderUpdate) error
 
 	// Enrollment operations
 	EnrollCourse(ctx context.Context, userID uint, courseID uint) error
@@ -223,14 +223,15 @@ func (s *service) DeleteCourse(ctx context.Context, userID uint, userRole string
 
 // Lesson operations
 
-func (s *service) CreateLesson(ctx context.Context, userID uint, courseID uint, req *CreateLessonRequest) (*Lesson, error) {
+func (s *service) CreateLesson(ctx context.Context, userID uint, userRole string, courseID uint, req *CreateLessonRequest) (*Lesson, error) {
 	// Verify course exists and user is instructor
 	course, err := s.repo.FindCourseByID(ctx, courseID)
 	if err != nil {
 		return nil, ErrCourseNotFound
 	}
 
-	if course.InstructorID != userID {
+	// Check authorization - allow instructor or admin
+	if course.InstructorID != userID && userRole != "admin" {
 		return nil, ErrUnauthorized
 	}
 
@@ -311,7 +312,7 @@ func (s *service) GetCourseLessons(ctx context.Context, userID uint, courseID ui
 	return responses, nil
 }
 
-func (s *service) UpdateLesson(ctx context.Context, userID uint, lessonID uint, req *UpdateLessonRequest) (*Lesson, error) {
+func (s *service) UpdateLesson(ctx context.Context, userID uint, userRole string, lessonID uint, req *UpdateLessonRequest) (*Lesson, error) {
 	lesson, err := s.repo.FindLessonByID(ctx, lessonID)
 	if err != nil {
 		return nil, ErrLessonNotFound
@@ -323,7 +324,8 @@ func (s *service) UpdateLesson(ctx context.Context, userID uint, lessonID uint, 
 		return nil, ErrCourseNotFound
 	}
 
-	if course.InstructorID != userID {
+	// Check authorization - allow instructor or admin
+	if course.InstructorID != userID && userRole != "admin" {
 		return nil, ErrUnauthorized
 	}
 
@@ -352,7 +354,7 @@ func (s *service) UpdateLesson(ctx context.Context, userID uint, lessonID uint, 
 	return lesson, nil
 }
 
-func (s *service) DeleteLesson(ctx context.Context, userID uint, lessonID uint) error {
+func (s *service) DeleteLesson(ctx context.Context, userID uint, userRole string, lessonID uint) error {
 	lesson, err := s.repo.FindLessonByID(ctx, lessonID)
 	if err != nil {
 		return ErrLessonNotFound
@@ -364,7 +366,8 @@ func (s *service) DeleteLesson(ctx context.Context, userID uint, lessonID uint) 
 		return ErrCourseNotFound
 	}
 
-	if course.InstructorID != userID {
+	// Check authorization - allow instructor or admin
+	if course.InstructorID != userID && userRole != "admin" {
 		return ErrUnauthorized
 	}
 
@@ -372,7 +375,7 @@ func (s *service) DeleteLesson(ctx context.Context, userID uint, lessonID uint) 
 }
 
 // ReorderLessons updates order_index for multiple lessons
-func (s *service) ReorderLessons(ctx context.Context, userID uint, updates []LessonOrderUpdate) error {
+func (s *service) ReorderLessons(ctx context.Context, userID uint, userRole string, updates []LessonOrderUpdate) error {
 	// Validate that user owns all lessons being reordered
 	// We'll check the first lesson to get the course, then verify ownership
 	if len(updates) == 0 {
@@ -391,7 +394,8 @@ func (s *service) ReorderLessons(ctx context.Context, userID uint, updates []Les
 		return ErrCourseNotFound
 	}
 
-	if course.InstructorID != userID {
+	// Check authorization - allow instructor or admin
+	if course.InstructorID != userID && userRole != "admin" {
 		return ErrUnauthorized
 	}
 
