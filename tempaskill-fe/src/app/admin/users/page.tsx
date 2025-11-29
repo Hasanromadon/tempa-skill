@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { ChangeRoleDialog } from "@/components/user/change-role-dialog";
 import { DeleteUserDialog } from "@/components/user/delete-user-dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   useChangeUserRole,
   useDeleteUser,
@@ -64,6 +65,9 @@ interface UsersApiResponse {
  * - Filter controls for role and search
  */
 export default function AdminUsersPage() {
+  // Bulk selection state
+  const [selectedUsers, setSelectedUsers] = useState<Set<number>>(new Set());
+
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<{
     id: number;
@@ -95,6 +99,122 @@ export default function AdminUsersPage() {
   const deleteUser = useDeleteUser();
   const changeUserRole = useChangeUserRole();
   const toggleUserStatus = useToggleUserStatus();
+
+  // Bulk selection handlers
+  const toggleUserSelection = useCallback((userId: number) => {
+    setSelectedUsers((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(userId)) {
+        newSet.delete(userId);
+      } else {
+        newSet.add(userId);
+      }
+      return newSet;
+    });
+  }, []);
+
+  const toggleSelectAll = useCallback(() => {
+    if (selectedUsers.size === table.data.length) {
+      setSelectedUsers(new Set());
+    } else {
+      setSelectedUsers(new Set(table.data.map((user) => user.id)));
+    }
+  }, [selectedUsers.size, table.data]);
+
+  const clearSelection = useCallback(() => {
+    setSelectedUsers(new Set());
+  }, []);
+
+  // Bulk actions
+  const handleBulkDelete = useCallback(async () => {
+    const count = selectedUsers.size;
+    if (count === 0) return;
+
+    const confirmMsg = `Apakah Anda yakin ingin menghapus ${count} pengguna yang dipilih?`;
+    if (!confirm(confirmMsg)) return;
+
+    const errors: string[] = [];
+
+    for (const userId of selectedUsers) {
+      try {
+        await deleteUser.mutateAsync(userId);
+      } catch {
+        const user = table.data.find((u) => u.id === userId);
+        errors.push(user?.name || `User #${userId}`);
+      }
+    }
+
+    if (errors.length === 0) {
+      toast.success(`${count} pengguna berhasil dihapus`);
+    } else {
+      toast.error(`Gagal menghapus ${errors.length} pengguna`, {
+        description: errors.join(", "),
+      });
+    }
+
+    clearSelection();
+    table.refetch();
+  }, [selectedUsers, deleteUser, table, clearSelection]);
+
+  const handleBulkSuspend = useCallback(async () => {
+    const count = selectedUsers.size;
+    if (count === 0) return;
+
+    const confirmMsg = `Suspend ${count} pengguna yang dipilih?`;
+    if (!confirm(confirmMsg)) return;
+
+    const errors: string[] = [];
+
+    for (const userId of selectedUsers) {
+      try {
+        await toggleUserStatus.mutateAsync({ userId, suspend: true });
+      } catch {
+        const user = table.data.find((u) => u.id === userId);
+        errors.push(user?.name || `User #${userId}`);
+      }
+    }
+
+    if (errors.length === 0) {
+      toast.success(`${count} pengguna berhasil di-suspend`);
+    } else {
+      toast.error(`Gagal suspend ${errors.length} pengguna`, {
+        description: errors.join(", "),
+      });
+    }
+
+    clearSelection();
+    table.refetch();
+  }, [selectedUsers, toggleUserStatus, table, clearSelection]);
+
+  const handleBulkActivate = useCallback(async () => {
+    const count = selectedUsers.size;
+    if (count === 0) return;
+
+    const confirmMsg = `Aktifkan ${count} pengguna yang dipilih?`;
+    if (!confirm(confirmMsg)) return;
+
+    const errors: string[] = [];
+
+    for (const userId of selectedUsers) {
+      try {
+        await toggleUserStatus.mutateAsync({ userId, suspend: false });
+      } catch {
+        const user = table.data.find((u) => u.id === userId);
+        errors.push(user?.name || `User #${userId}`);
+      }
+    }
+
+    if (errors.length === 0) {
+      toast.success(`${count} pengguna berhasil diaktifkan`);
+    } else {
+      toast.error(`Gagal aktifkan ${errors.length} pengguna`, {
+        description: errors.join(", "),
+      });
+    }
+
+    clearSelection();
+    table.refetch();
+  }, [selectedUsers, toggleUserStatus, table, clearSelection]);
 
   // Handle export to CSV
   const handleExportCSV = useCallback(() => {
@@ -290,6 +410,26 @@ export default function AdminUsersPage() {
   // Column definitions for DataTable
   const columns = useMemo<ColumnDef<User>[]>(
     () => [
+      // Checkbox column for bulk selection
+      {
+        id: "select",
+        header: () => (
+          <Checkbox
+            checked={
+              selectedUsers.size === table.data.length && table.data.length > 0
+            }
+            onCheckedChange={toggleSelectAll}
+            aria-label="Pilih semua pengguna"
+          />
+        ),
+        cell: (ctx) => (
+          <Checkbox
+            checked={selectedUsers.has(ctx.row.original.id)}
+            onCheckedChange={() => toggleUserSelection(ctx.row.original.id)}
+            aria-label={`Pilih ${ctx.row.original.name}`}
+          />
+        ),
+      },
       {
         id: "name",
         accessor: "name",
@@ -433,10 +573,14 @@ export default function AdminUsersPage() {
       },
     ],
     [
+      selectedUsers,
+      toggleSelectAll,
+      toggleUserSelection,
       handleDeleteClick,
       handleChangeRoleClick,
       handleToggleStatus,
       toggleUserStatus.isPending,
+      table.data.length,
     ]
   );
 
@@ -540,6 +684,51 @@ export default function AdminUsersPage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Bulk Actions Toolbar */}
+          {selectedUsers.size > 0 && (
+            <div className="flex items-center justify-between bg-orange-50 border border-orange-200 rounded-lg px-4 py-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-700">
+                  {selectedUsers.size} pengguna dipilih
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleBulkActivate}
+                  disabled={toggleUserStatus.isPending}
+                >
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Aktifkan Semua
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleBulkSuspend}
+                  disabled={toggleUserStatus.isPending}
+                >
+                  <Ban className="h-4 w-4 mr-2" />
+                  Suspend Semua
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleBulkDelete}
+                  disabled={deleteUser.isPending}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Hapus Semua
+                </Button>
+                <Button variant="ghost" size="sm" onClick={clearSelection}>
+                  <X className="h-4 w-4 mr-2" />
+                  Batal
+                </Button>
+              </div>
+            </div>
+          )}
+
           <DataTable<User>
             columns={columns}
             data={table.data}
