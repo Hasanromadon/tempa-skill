@@ -95,10 +95,18 @@ func (s *service) ListUsers(ctx context.Context, userID uint, userRole string, q
 		query.Limit = 10
 	}
 
+	// DEBUG: Log before auto-filter
+	println("🔍 ListUsers DEBUG:")
+	println("  - userRole:", userRole)
+	println("  - query.Role BEFORE:", query.Role)
+
 	// INSTRUCTOR FILTER: Instructors only see students (not other instructors or admins)
 	if userRole == "instructor" {
 		query.Role = "student" // Force filter to students only
+		println("  - ✅ AUTO-FILTER APPLIED: query.Role = student")
 	}
+
+	println("  - query.Role AFTER:", query.Role)
 
 	users, total, err := s.repo.List(ctx, query)
 	if err != nil {

@@ -165,11 +165,22 @@ func (h *Handler) ListUsers(c *gin.Context) {
 		return
 	}
 
+	// DEBUG: Log request parameters
+	println("🔍 HANDLER ListUsers DEBUG:")
+	println("  - URL Query Params:", c.Request.URL.RawQuery)
+	println("  - Bound query.Role:", query.Role)
+	println("  - userRole from JWT:", userRole.(string))
+
 	result, err := h.service.ListUsers(c.Request.Context(), userID.(uint), userRole.(string), &query)
 	if err != nil {
 		response.Error(c, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
+
+	// DEBUG HEADERS: Show filter status to frontend
+	c.Header("X-Debug-UserRole", userRole.(string))
+	c.Header("X-Debug-UserID", strconv.FormatUint(uint64(userID.(uint)), 10))
+	c.Header("X-Debug-QueryRole", query.Role)
 
 	response.Success(c, http.StatusOK, "Users retrieved successfully", result)
 }

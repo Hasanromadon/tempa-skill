@@ -8,20 +8,20 @@
 
 ## 📊 Summary
 
-| Endpoint | Method | Auth Required | Role Check | Status |
-|----------|--------|---------------|------------|--------|
-| List Courses | GET | Optional | ✅ Auto-filter instructor | ✅ SECURE |
-| Get Course (ID) | GET | No | N/A | ✅ PUBLIC |
-| Get Course (Slug) | GET | Optional | N/A | ✅ PUBLIC |
-| Create Course | POST | Yes | ✅ Instructor/Admin | ✅ SECURE |
-| **Update Course** | **PATCH** | **Yes** | **✅ Owner/Admin** | **✅ SECURE** |
-| **Delete Course** | **DELETE** | **Yes** | **✅ Owner/Admin** | **✅ SECURE** |
-| Get Lessons | GET | Optional | ✅ Unpublished for owner/enrolled | ✅ SECURE |
-| Get Lesson | GET | Optional | ✅ Unpublished for owner/enrolled | ✅ SECURE |
-| Create Lesson | POST | Yes | ❌ **ONLY OWNER** | ⚠️ **ADMIN CAN'T** |
-| **Update Lesson** | **PATCH** | **Yes** | **❌ ONLY OWNER** | **⚠️ ADMIN CAN'T** |
-| **Delete Lesson** | **DELETE** | **Yes** | **❌ ONLY OWNER** | **⚠️ ADMIN CAN'T** |
-| **Reorder Lessons** | **PATCH** | **Yes** | **❌ ONLY OWNER** | **⚠️ ADMIN CAN'T** |
+| Endpoint            | Method     | Auth Required | Role Check                        | Status             |
+| ------------------- | ---------- | ------------- | --------------------------------- | ------------------ |
+| List Courses        | GET        | Optional      | ✅ Auto-filter instructor         | ✅ SECURE          |
+| Get Course (ID)     | GET        | No            | N/A                               | ✅ PUBLIC          |
+| Get Course (Slug)   | GET        | Optional      | N/A                               | ✅ PUBLIC          |
+| Create Course       | POST       | Yes           | ✅ Instructor/Admin               | ✅ SECURE          |
+| **Update Course**   | **PATCH**  | **Yes**       | **✅ Owner/Admin**                | **✅ SECURE**      |
+| **Delete Course**   | **DELETE** | **Yes**       | **✅ Owner/Admin**                | **✅ SECURE**      |
+| Get Lessons         | GET        | Optional      | ✅ Unpublished for owner/enrolled | ✅ SECURE          |
+| Get Lesson          | GET        | Optional      | ✅ Unpublished for owner/enrolled | ✅ SECURE          |
+| Create Lesson       | POST       | Yes           | ❌ **ONLY OWNER**                 | ⚠️ **ADMIN CAN'T** |
+| **Update Lesson**   | **PATCH**  | **Yes**       | **❌ ONLY OWNER**                 | **⚠️ ADMIN CAN'T** |
+| **Delete Lesson**   | **DELETE** | **Yes**       | **❌ ONLY OWNER**                 | **⚠️ ADMIN CAN'T** |
+| **Reorder Lessons** | **PATCH**  | **Yes**       | **❌ ONLY OWNER**                 | **⚠️ ADMIN CAN'T** |
 
 ---
 
@@ -30,6 +30,7 @@
 ### 1. **UPDATE COURSE** (`PATCH /courses/:id`)
 
 **Authorization Logic**:
+
 ```go
 // service.go:175-177
 if course.InstructorID != userID && userRole != "admin" {
@@ -38,12 +39,14 @@ if course.InstructorID != userID && userRole != "admin" {
 ```
 
 **Behavior**:
+
 - ✅ **Course Owner (Instructor)**: Can edit their own courses
 - ✅ **Admin**: Can edit ANY course
 - ❌ **Other Instructors**: Cannot edit courses they don't own
 - ❌ **Students**: Cannot edit courses
 
 **Test Cases**:
+
 ```bash
 # ✅ PASS: Owner edits own course
 PATCH /courses/1 (instructor_id=2, userID=2) → 200 OK
@@ -63,6 +66,7 @@ PATCH /courses/1 (userID=5, role=student) → 403 Forbidden
 ### 2. **DELETE COURSE** (`DELETE /courses/:id`)
 
 **Authorization Logic**:
+
 ```go
 // service.go:217-219
 if course.InstructorID != userID && userRole != "admin" {
@@ -71,6 +75,7 @@ if course.InstructorID != userID && userRole != "admin" {
 ```
 
 **Behavior**:
+
 - ✅ **Course Owner (Instructor)**: Can delete their own courses
 - ✅ **Admin**: Can delete ANY course
 - ❌ **Other Instructors**: Cannot delete courses they don't own
@@ -83,6 +88,7 @@ if course.InstructorID != userID && userRole != "admin" {
 ### 3. **LIST COURSES** (`GET /courses`)
 
 **Authorization Logic**:
+
 ```go
 // handler.go:122-137
 if userRole == "instructor" && query.InstructorID == nil {
@@ -91,6 +97,7 @@ if userRole == "instructor" && query.InstructorID == nil {
 ```
 
 **Behavior**:
+
 - ✅ **Admin**: Sees ALL courses (no filter)
 - ✅ **Instructor**: Auto-filtered to see ONLY their courses
 - ✅ **Student/Guest**: Sees ALL published courses
@@ -105,6 +112,7 @@ if userRole == "instructor" && query.InstructorID == nil {
 ### 4. **CREATE LESSON** (`POST /courses/:id/lessons`)
 
 **Authorization Logic**:
+
 ```go
 // service.go:234-237
 if course.InstructorID != userID {
@@ -115,11 +123,13 @@ if course.InstructorID != userID {
 **Problem**: ❌ **Admin CANNOT create lessons for other instructors' courses**
 
 **Current Behavior**:
+
 - ✅ Course Owner: Can create lessons
 - ❌ **Admin**: BLOCKED (should be allowed!)
 - ❌ Other Instructors: Blocked (correct)
 
 **Should Be**:
+
 ```go
 // RECOMMENDED FIX:
 if course.InstructorID != userID && userRole != "admin" {
@@ -132,6 +142,7 @@ if course.InstructorID != userID && userRole != "admin" {
 ### 5. **UPDATE LESSON** (`PATCH /lessons/:id`)
 
 **Authorization Logic**:
+
 ```go
 // service.go:327-330
 if course.InstructorID != userID {
@@ -142,6 +153,7 @@ if course.InstructorID != userID {
 **Problem**: ❌ **Same as CREATE - Admin blocked**
 
 **Should Include**:
+
 ```go
 if course.InstructorID != userID && userRole != "admin" {
     return nil, ErrUnauthorized
@@ -153,6 +165,7 @@ if course.InstructorID != userID && userRole != "admin" {
 ### 6. **DELETE LESSON** (`DELETE /lessons/:id`)
 
 **Authorization Logic**:
+
 ```go
 // service.go:367-370
 if course.InstructorID != userID {
@@ -167,6 +180,7 @@ if course.InstructorID != userID {
 ### 7. **REORDER LESSONS** (`PATCH /lessons/reorder`)
 
 **Authorization Logic**:
+
 ```go
 // service.go:394-397
 if course.InstructorID != userID {
@@ -206,6 +220,7 @@ if course.InstructorID != userID && userRole != "admin" {
 #### **Option 2: Keep current behavior** (Document it)
 
 If you want Admins to ONLY manage courses (not lessons), document this clearly:
+
 - Admin: Full course CRUD, no lesson access
 - Instructor: Full control over their courses AND lessons
 
@@ -216,12 +231,14 @@ If you want Admins to ONLY manage courses (not lessons), document this clearly:
 ### **Should Admin be able to manage lessons?**
 
 #### **YES** (Recommended for full admin control):
+
 - ✅ Consistent with course permissions
 - ✅ Admin can fix instructor mistakes
 - ✅ Better for support/moderation
 - ❌ Requires code changes (4 methods)
 
 #### **NO** (Current behavior):
+
 - ✅ No code changes needed
 - ✅ Instructors have full autonomy
 - ❌ Admin can't help with lesson issues
@@ -233,20 +250,20 @@ If you want Admins to ONLY manage courses (not lessons), document this clearly:
 
 ### Test Matrix
 
-| Scenario | Endpoint | User | Expected | Current |
-|----------|----------|------|----------|---------|
-| Owner edits course | PATCH /courses/1 | Instructor (owner) | ✅ 200 | ✅ 200 |
-| Admin edits course | PATCH /courses/1 | Admin | ✅ 200 | ✅ 200 |
-| Other instructor edits | PATCH /courses/1 | Instructor (not owner) | ❌ 403 | ✅ 403 |
-| Owner deletes course | DELETE /courses/1 | Instructor (owner) | ✅ 200 | ✅ 200 |
-| Admin deletes course | DELETE /courses/1 | Admin | ✅ 200 | ✅ 200 |
-| Owner creates lesson | POST /courses/1/lessons | Instructor (owner) | ✅ 201 | ✅ 201 |
-| **Admin creates lesson** | **POST /courses/1/lessons** | **Admin** | **✅ 201** | **❌ 403** |
-| Other instructor creates lesson | POST /courses/1/lessons | Instructor (not owner) | ❌ 403 | ✅ 403 |
-| Owner edits lesson | PATCH /lessons/1 | Instructor (owner) | ✅ 200 | ✅ 200 |
-| **Admin edits lesson** | **PATCH /lessons/1** | **Admin** | **✅ 200** | **❌ 403** |
-| **Admin deletes lesson** | **DELETE /lessons/1** | **Admin** | **✅ 200** | **❌ 403** |
-| **Admin reorders lessons** | **PATCH /lessons/reorder** | **Admin** | **✅ 200** | **❌ 403** |
+| Scenario                        | Endpoint                    | User                   | Expected   | Current    |
+| ------------------------------- | --------------------------- | ---------------------- | ---------- | ---------- |
+| Owner edits course              | PATCH /courses/1            | Instructor (owner)     | ✅ 200     | ✅ 200     |
+| Admin edits course              | PATCH /courses/1            | Admin                  | ✅ 200     | ✅ 200     |
+| Other instructor edits          | PATCH /courses/1            | Instructor (not owner) | ❌ 403     | ✅ 403     |
+| Owner deletes course            | DELETE /courses/1           | Instructor (owner)     | ✅ 200     | ✅ 200     |
+| Admin deletes course            | DELETE /courses/1           | Admin                  | ✅ 200     | ✅ 200     |
+| Owner creates lesson            | POST /courses/1/lessons     | Instructor (owner)     | ✅ 201     | ✅ 201     |
+| **Admin creates lesson**        | **POST /courses/1/lessons** | **Admin**              | **✅ 201** | **❌ 403** |
+| Other instructor creates lesson | POST /courses/1/lessons     | Instructor (not owner) | ❌ 403     | ✅ 403     |
+| Owner edits lesson              | PATCH /lessons/1            | Instructor (owner)     | ✅ 200     | ✅ 200     |
+| **Admin edits lesson**          | **PATCH /lessons/1**        | **Admin**              | **✅ 200** | **❌ 403** |
+| **Admin deletes lesson**        | **DELETE /lessons/1**       | **Admin**              | **✅ 200** | **❌ 403** |
+| **Admin reorders lessons**      | **PATCH /lessons/reorder**  | **Admin**              | **✅ 200** | **❌ 403** |
 
 ---
 
@@ -267,6 +284,7 @@ If you decide to give Admin full lesson access:
 ### Files to Modify
 
 1. `internal/course/service.go`:
+
    - Line 32-37: Service interface
    - Line 230: `CreateLesson` signature + auth check
    - Line 320: `UpdateLesson` signature + auth check
@@ -296,13 +314,16 @@ curl -X POST http://localhost:8080/api/v1/courses/1/lessons \
 ## ✅ **CONCLUSION**
 
 ### Current State:
+
 - ✅ **Course operations**: Properly secured (Owner OR Admin)
 - ⚠️ **Lesson operations**: Only owner allowed (Admin blocked)
 - ✅ **Auto-filter**: Working correctly for instructors
 - ✅ **No security vulnerabilities**: Authorization is enforced
 
 ### Recommendation:
+
 **Allow Admin to manage lessons** for consistency and better platform management.
 
 ### Priority:
+
 **MEDIUM** - Current behavior is secure, just inconsistent. Can be fixed in next sprint.
