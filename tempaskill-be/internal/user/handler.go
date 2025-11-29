@@ -202,6 +202,49 @@ func (h *Handler) ChangeUserRole(c *gin.Context) {
 	response.Success(c, http.StatusOK, "User role updated successfully", nil)
 }
 
+// ToggleUserStatus godoc
+// @Summary Toggle user status (Admin only)
+// @Description Suspend or activate a user account
+// @Tags users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "User ID"
+// @Param suspend query bool true "Suspend user (true) or activate (false)"
+// @Success 200 {object} response.Response
+// @Failure 400 {object} response.Response
+// @Failure 401 {object} response.Response
+// @Failure 403 {object} response.Response
+// @Failure 404 {object} response.Response
+// @Router /users/{id}/status [patch]
+func (h *Handler) ToggleUserStatus(c *gin.Context) {
+	idParam := c.Param("id")
+	id, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
+		response.Error(c, http.StatusBadRequest, "Invalid user ID", nil)
+		return
+	}
+
+	// Get suspend query parameter
+	suspendStr := c.Query("suspend")
+	suspend := suspendStr == "true"
+
+	if err := h.service.ToggleUserStatus(c.Request.Context(), uint(id), suspend); err != nil {
+		if err == ErrUserNotFound {
+			response.NotFound(c, "User not found")
+			return
+		}
+		response.Error(c, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	statusMsg := "activated"
+	if suspend {
+		statusMsg = "suspended"
+	}
+	response.Success(c, http.StatusOK, "User "+statusMsg+" successfully", nil)
+}
+
 // DeleteUser godoc
 // @Summary Delete user (Admin only)
 // @Description Delete a user by ID

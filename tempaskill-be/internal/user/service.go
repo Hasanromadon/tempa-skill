@@ -20,6 +20,7 @@ type Service interface {
 	UpdateProfile(ctx context.Context, userID uint, req *UpdateProfileRequest) (*auth.User, error)
 	ChangePassword(ctx context.Context, userID uint, req *ChangePasswordRequest) error
 	ChangeUserRole(ctx context.Context, userID uint, req *ChangeRoleRequest) error
+	ToggleUserStatus(ctx context.Context, userID uint, suspend bool) error
 	DeleteUser(ctx context.Context, id uint) error
 }
 
@@ -106,6 +107,7 @@ func (s *service) ListUsers(ctx context.Context, query *UserListQuery) (*UserLis
 			Name:           user.Name,
 			Email:          user.Email,
 			Role:           user.Role,
+			Status:         user.Status,
 			Bio:            user.Bio,
 			AvatarURL:      user.AvatarURL,
 			CreatedAt:      user.CreatedAt.Format("2006-01-02 15:04:05"),
@@ -148,6 +150,21 @@ func (s *service) ChangeUserRole(ctx context.Context, userID uint, req *ChangeRo
 	}
 
 	return s.repo.UpdateRole(ctx, userID, req.Role)
+}
+
+func (s *service) ToggleUserStatus(ctx context.Context, userID uint, suspend bool) error {
+	// Check if user exists
+	_, err := s.repo.FindByID(ctx, userID)
+	if err != nil {
+		return ErrUserNotFound
+	}
+
+	status := "active"
+	if suspend {
+		status = "suspended"
+	}
+
+	return s.repo.UpdateStatus(ctx, userID, status)
 }
 
 func (s *service) DeleteUser(ctx context.Context, id uint) error {

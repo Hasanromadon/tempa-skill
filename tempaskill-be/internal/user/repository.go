@@ -16,6 +16,7 @@ type Repository interface {
 	Update(ctx context.Context, user *auth.User) error
 	UpdatePassword(ctx context.Context, id uint, hashedPassword string) error
 	UpdateRole(ctx context.Context, id uint, role string) error
+	UpdateStatus(ctx context.Context, id uint, status string) error
 	Delete(ctx context.Context, id uint) error
 	GetUserStats(ctx context.Context, userID uint) (enrolledCount int, completedCount int, err error)
 }
@@ -102,6 +103,18 @@ func (r *repository) UpdateRole(ctx context.Context, id uint, role string) error
 	err := r.db.WithContext(ctx).Model(&auth.User{}).Where("id = ?", id).Update("role", role).Error
 	if err != nil {
 		logger.Error("Failed to update user role in database",
+			zap.Error(err),
+			zap.Uint("user_id", id),
+		)
+		return err
+	}
+	return nil
+}
+
+func (r *repository) UpdateStatus(ctx context.Context, id uint, status string) error {
+	err := r.db.WithContext(ctx).Model(&auth.User{}).Where("id = ?", id).Update("status", status).Error
+	if err != nil {
+		logger.Error("Failed to update user status in database",
 			zap.Error(err),
 			zap.Uint("user_id", id),
 		)
