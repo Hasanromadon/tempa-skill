@@ -19,6 +19,7 @@ type Repository interface {
 	UpdateStatus(ctx context.Context, id uint, status string) error
 	Delete(ctx context.Context, id uint) error
 	GetUserStats(ctx context.Context, userID uint) (enrolledCount int, completedCount int, err error)
+	GetBatchUserStats(ctx context.Context, userIDs []uint) (map[uint]UserStats, error) // BATCH QUERY
 	GetUserEnrollments(ctx context.Context, userID uint) ([]UserEnrollment, error)
 	GetUserCertificates(ctx context.Context, userID uint) ([]UserCertificate, error)
 }
@@ -170,6 +171,70 @@ func (r *repository) GetUserStats(ctx context.Context, userID uint) (enrolledCou
 	}
 
 	return int(enrolled), int(completed), nil
+}
+
+// GetBatchUserStats fetches stats for multiple users in ONE query (N+1 fix)
+func (r *repository) GetBatchUserStats(ctx context.Context, userIDs []uint) (map[uint]UserStats, error) {
+	if len(userIDs) == 0 {
+		return make(map[uint]UserStats), nil
+	}
+
+	type StatsRow struct {
+		UserID         uint `gorm:"column:user_id"`
+		EnrolledCount  int  `gorm:"column:enrolled_count"`
+		CompletedCount int  `gorm:"column:completed_count"`
+	}
+
+	var results []StatsRow
+
+	// Single optimized query to get both enrolled and completed counts for all users
+	query := `
+		SELECT 
+			e.user_id,
+			COUNT(DISTINCT e.course_id) as enrolled_count,
+			COUNT(DISTINCT CASE 
+				WHEN NOT EXISTS (
+					SELECT 1 FROM lessons l
+					WHERE l.course_id = e.course_id
+					AND l.deleted_at IS NULL
+					AND NOT EXISTS (
+						SELECT 1 FROM lesson_progress lp
+						WHERE lp.user_id = e.user_id
+						AND lp.lesson_id = l.id
+					)
+				) THEN e.course_id 
+			END) as completed_count
+		FROM enrollments e
+		WHERE e.user_id IN (?) AND e.deleted_at IS NULL
+		GROUP BY e.user_id
+	`
+
+	err := r.db.WithContext(ctx).Raw(query, userIDs).Scan(&results).Error
+	if err != nil {
+		logger.Error("Failed to batch fetch user stats", zap.Error(err))
+		return nil, err
+	}
+
+	// Convert to map for O(1) lookup
+	statsMap := make(map[uint]UserStats)
+	for _, row := range results {
+		statsMap[row.UserID] = UserStats{
+			EnrolledCount:  row.EnrolledCount,
+			CompletedCount: row.CompletedCount,
+		}
+	}
+
+	// Fill in zeros for users with no enrollments
+	for _, userID := range userIDs {
+		if _, exists := statsMap[userID]; !exists {
+			statsMap[userID] = UserStats{
+				EnrolledCount:  0,
+				CompletedCount: 0,
+			}
+		}
+	}
+
+	return statsMap, nil
 }
 
 func (r *repository) GetUserEnrollments(ctx context.Context, userID uint) ([]UserEnrollment, error) {

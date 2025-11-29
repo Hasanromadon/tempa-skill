@@ -105,10 +105,22 @@ func (s *service) ListUsers(ctx context.Context, userID uint, userRole string, q
 		return nil, err
 	}
 
+	// OPTIMIZATION: Batch fetch stats for all users in ONE query (N+1 fix)
+	userIDs := make([]uint, len(users))
+	for i, user := range users {
+		userIDs[i] = user.ID
+	}
+
+	statsMap, err := s.repo.GetBatchUserStats(ctx, userIDs)
+	if err != nil {
+		// Log error but continue with empty stats
+		statsMap = make(map[uint]UserStats)
+	}
+
 	// Convert to response with statistics
 	userResponses := make([]UserResponse, len(users))
 	for i, user := range users {
-		enrolledCount, completedCount, _ := s.repo.GetUserStats(ctx, user.ID)
+		stats := statsMap[user.ID] // O(1) lookup
 		userResponses[i] = UserResponse{
 			ID:             user.ID,
 			Name:           user.Name,
@@ -118,8 +130,8 @@ func (s *service) ListUsers(ctx context.Context, userID uint, userRole string, q
 			Bio:            user.Bio,
 			AvatarURL:      user.AvatarURL,
 			CreatedAt:      user.CreatedAt.Format("2006-01-02 15:04:05"),
-			EnrolledCount:  enrolledCount,
-			CompletedCount: completedCount,
+			EnrolledCount:  stats.EnrolledCount,
+			CompletedCount: stats.CompletedCount,
 		}
 	}
 

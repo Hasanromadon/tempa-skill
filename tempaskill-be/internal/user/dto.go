@@ -75,3 +75,9 @@ type UserCertificate struct {
 	CertificateID string `json:"certificate_id"`
 	IssuedAt      string `json:"issued_at"`
 }
+
+// UserStats represents enrollment statistics for a user
+type UserStats struct {
+	EnrolledCount  int `json:"enrolled_count"`
+	CompletedCount int `json:"completed_count"`
+}
