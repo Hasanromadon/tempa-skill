@@ -162,66 +162,27 @@ func (r *repository) GetUserStats(ctx context.Context, userID uint) (enrolledCou
 func (r *repository) GetUserEnrollments(ctx context.Context, userID uint) ([]UserEnrollment, error) {
 	var enrollments []UserEnrollment
 
-	query := `
-		SELECT 
+	// Use GORM's simpler query builder instead of raw SQL
+	err := r.db.WithContext(ctx).
+		Table("enrollments e").
+		Select(`
 			c.id,
 			c.title,
 			c.slug,
-			c.thumbnail_url,
-			e.progress_percentage,
+			COALESCE(c.thumbnail_url, '') as thumbnail_url,
+			COALESCE(e.progress_percentage, 0) as progress_percentage,
 			e.created_at as enrolled_at,
-			e.last_accessed_at,
-			e.completed_at
-		FROM enrollments e
-		JOIN courses c ON e.course_id = c.id
-		WHERE e.user_id = ?
-		ORDER BY e.created_at DESC
-	`
+			e.updated_at as last_accessed_at,
+			NULL as completed_at
+		`).
+		Joins("JOIN courses c ON e.course_id = c.id").
+		Where("e.user_id = ?", userID).
+		Order("e.created_at DESC").
+		Scan(&enrollments).Error
 
-	rows, err := r.db.WithContext(ctx).Raw(query, userID).Rows()
 	if err != nil {
 		logger.Error("Failed to get user enrollments", zap.Error(err), zap.Uint("user_id", userID))
 		return nil, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var e UserEnrollment
-		var enrolledAt, lastAccessedAt, completedAt interface{}
-
-		err := rows.Scan(
-			&e.ID,
-			&e.Title,
-			&e.Slug,
-			&e.ThumbnailURL,
-			&e.ProgressPercentage,
-			&enrolledAt,
-			&lastAccessedAt,
-			&completedAt,
-		)
-		if err != nil {
-			logger.Error("Failed to scan enrollment", zap.Error(err))
-			continue
-		}
-
-		// Format dates
-		if t, ok := enrolledAt.([]uint8); ok {
-			e.EnrolledAt = string(t)
-		}
-		if lastAccessedAt != nil {
-			if t, ok := lastAccessedAt.([]uint8); ok {
-				s := string(t)
-				e.LastAccessedAt = &s
-			}
-		}
-		if completedAt != nil {
-			if t, ok := completedAt.([]uint8); ok {
-				s := string(t)
-				e.CompletedAt = &s
-			}
-		}
-
-		enrollments = append(enrollments, e)
 	}
 
 	return enrollments, nil
