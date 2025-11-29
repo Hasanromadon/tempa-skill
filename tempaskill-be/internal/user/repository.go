@@ -146,11 +146,24 @@ func (r *repository) GetUserStats(ctx context.Context, userID uint) (enrolledCou
 		return 0, 0, err
 	}
 
-	// Count completed courses (100% progress)
+	// Count completed courses
+	// A course is completed when ALL lessons in that course are completed by the user
 	var completed int64
-	err = r.db.WithContext(ctx).Table("enrollments").
-		Where("user_id = ? AND progress_percentage = ?", userID, 100).
-		Count(&completed).Error
+	query := `
+		SELECT COUNT(DISTINCT e.course_id)
+		FROM enrollments e
+		WHERE e.user_id = ?
+		AND NOT EXISTS (
+			SELECT 1 FROM lessons l
+			WHERE l.course_id = e.course_id
+			AND NOT EXISTS (
+				SELECT 1 FROM lesson_progress lp
+				WHERE lp.user_id = e.user_id
+				AND lp.lesson_id = l.id
+			)
+		)
+	`
+	err = r.db.WithContext(ctx).Raw(query, userID).Count(&completed).Error
 	if err != nil {
 		logger.Error("Failed to count completed courses", zap.Error(err), zap.Uint("user_id", userID))
 		return 0, 0, err
