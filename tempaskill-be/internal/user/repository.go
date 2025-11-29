@@ -162,8 +162,9 @@ func (r *repository) GetUserStats(ctx context.Context, userID uint) (enrolledCou
 func (r *repository) GetUserEnrollments(ctx context.Context, userID uint) ([]UserEnrollment, error) {
 	var enrollments []UserEnrollment
 
-	// Query based on actual database schema (enrollments has: user_id, course_id, enrolled_at)
-	// Calculate progress from progresses table
+	// Query based on actual database schema
+	// Table: enrollments (user_id, course_id, enrolled_at)
+	// Table: lesson_progress (for calculating progress percentage)
 	err := r.db.WithContext(ctx).
 		Table("enrollments e").
 		Select(`
@@ -173,13 +174,13 @@ func (r *repository) GetUserEnrollments(ctx context.Context, userID uint) ([]Use
 			COALESCE(c.thumbnail_url, '') as thumbnail_url,
 			COALESCE(
 				(SELECT COUNT(*) * 100.0 / NULLIF((SELECT COUNT(*) FROM lessons WHERE course_id = c.id), 0)
-				 FROM progresses p 
-				 WHERE p.user_id = e.user_id AND p.course_id = e.course_id), 
+				 FROM lesson_progress lp 
+				 WHERE lp.user_id = e.user_id AND lp.course_id = e.course_id), 
 				0
 			) as progress_percentage,
 			e.enrolled_at,
 			COALESCE(
-				(SELECT MAX(completed_at) FROM progresses p WHERE p.user_id = e.user_id AND p.course_id = e.course_id),
+				(SELECT MAX(completed_at) FROM lesson_progress lp WHERE lp.user_id = e.user_id AND lp.course_id = e.course_id),
 				e.enrolled_at
 			) as last_accessed_at,
 			NULL as completed_at
