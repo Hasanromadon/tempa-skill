@@ -11,6 +11,8 @@ func RegisterRoutes(rg *gin.RouterGroup, handler *Handler, authMiddleware *middl
 	{
 		// Public routes
 		users.GET("/:id", handler.GetUserByID)
+		users.GET("/:id/enrollments", handler.GetUserEnrollments)
+		users.GET("/:id/certificates", handler.GetUserCertificates)
 
 		// Protected routes
 		protected := users.Group("")

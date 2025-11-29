@@ -278,3 +278,67 @@ func (h *Handler) DeleteUser(c *gin.Context) {
 
 	response.Success(c, http.StatusOK, "User deleted successfully", nil)
 }
+
+// GetUserEnrollments godoc
+// @Summary Get user enrollments
+// @Description Get all courses enrolled by a specific user
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} response.Response{data=[]UserEnrollment}
+// @Failure 400 {object} response.Response
+// @Failure 404 {object} response.Response
+// @Router /users/{id}/enrollments [get]
+func (h *Handler) GetUserEnrollments(c *gin.Context) {
+	idParam := c.Param("id")
+	id, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
+		response.Error(c, http.StatusBadRequest, "Invalid user ID", nil)
+		return
+	}
+
+	enrollments, err := h.service.GetUserEnrollments(c.Request.Context(), uint(id))
+	if err != nil {
+		if err == ErrUserNotFound {
+			response.NotFound(c, "User not found")
+			return
+		}
+		response.Error(c, http.StatusInternalServerError, err.Error(), nil)
+		return
+	}
+
+	response.Success(c, http.StatusOK, "User enrollments retrieved successfully", enrollments)
+}
+
+// GetUserCertificates godoc
+// @Summary Get user certificates
+// @Description Get all certificates earned by a specific user
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} response.Response{data=[]UserCertificate}
+// @Failure 400 {object} response.Response
+// @Failure 404 {object} response.Response
+// @Router /users/{id}/certificates [get]
+func (h *Handler) GetUserCertificates(c *gin.Context) {
+	idParam := c.Param("id")
+	id, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
+		response.Error(c, http.StatusBadRequest, "Invalid user ID", nil)
+		return
+	}
+
+	certificates, err := h.service.GetUserCertificates(c.Request.Context(), uint(id))
+	if err != nil {
+		if err == ErrUserNotFound {
+			response.NotFound(c, "User not found")
+			return
+		}
+		response.Error(c, http.StatusInternalServerError, err.Error(), nil)
+		return
+	}
+
+	response.Success(c, http.StatusOK, "User certificates retrieved successfully", certificates)
+}

@@ -22,6 +22,8 @@ type Service interface {
 	ChangeUserRole(ctx context.Context, userID uint, req *ChangeRoleRequest) error
 	ToggleUserStatus(ctx context.Context, userID uint, suspend bool) error
 	DeleteUser(ctx context.Context, id uint) error
+	GetUserEnrollments(ctx context.Context, userID uint) ([]UserEnrollment, error)
+	GetUserCertificates(ctx context.Context, userID uint) ([]UserCertificate, error)
 }
 
 type service struct {
@@ -180,4 +182,24 @@ func (s *service) DeleteUser(ctx context.Context, id uint) error {
 	}
 
 	return s.repo.Delete(ctx, id)
+}
+
+func (s *service) GetUserEnrollments(ctx context.Context, userID uint) ([]UserEnrollment, error) {
+	// Check if user exists
+	_, err := s.repo.FindByID(ctx, userID)
+	if err != nil {
+		return nil, ErrUserNotFound
+	}
+
+	return s.repo.GetUserEnrollments(ctx, userID)
+}
+
+func (s *service) GetUserCertificates(ctx context.Context, userID uint) ([]UserCertificate, error) {
+	// Check if user exists
+	_, err := s.repo.FindByID(ctx, userID)
+	if err != nil {
+		return nil, ErrUserNotFound
+	}
+
+	return s.repo.GetUserCertificates(ctx, userID)
 }

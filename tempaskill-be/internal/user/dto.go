@@ -48,3 +48,30 @@ type UserResponse struct {
 	EnrolledCount  int    `json:"enrolled_count,omitempty"`
 	CompletedCount int    `json:"completed_count,omitempty"`
 }
+
+// UserEnrollment represents a user's course enrollment
+type UserEnrollment struct {
+	ID                 uint    `json:"id"`
+	Title              string  `json:"title"`
+	Slug               string  `json:"slug"`
+	ThumbnailURL       string  `json:"thumbnail_url"`
+	ProgressPercentage float64 `json:"progress_percentage"`
+	EnrolledAt         string  `json:"enrolled_at"`
+	LastAccessedAt     *string `json:"last_accessed_at"`
+	CompletedAt        *string `json:"completed_at"`
+}
+
+// ToggleStatusRequest represents status toggle payload (admin only)
+type ToggleStatusRequest struct {
+	Status string `json:"status" binding:"required,oneof=active suspended"`
+}
+
+// UserCertificate represents a user's earned certificate
+type UserCertificate struct {
+	ID            uint   `json:"id"`
+	CourseID      uint   `json:"course_id"`
+	CourseTitle   string `json:"course_title"`
+	CourseSlug    string `json:"course_slug"`
+	CertificateID string `json:"certificate_id"`
+	IssuedAt      string `json:"issued_at"`
+}

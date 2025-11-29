@@ -19,6 +19,8 @@ type Repository interface {
 	UpdateStatus(ctx context.Context, id uint, status string) error
 	Delete(ctx context.Context, id uint) error
 	GetUserStats(ctx context.Context, userID uint) (enrolledCount int, completedCount int, err error)
+	GetUserEnrollments(ctx context.Context, userID uint) ([]UserEnrollment, error)
+	GetUserCertificates(ctx context.Context, userID uint) ([]UserCertificate, error)
 }
 
 type repository struct {
@@ -155,4 +157,125 @@ func (r *repository) GetUserStats(ctx context.Context, userID uint) (enrolledCou
 	}
 
 	return int(enrolled), int(completed), nil
+}
+
+func (r *repository) GetUserEnrollments(ctx context.Context, userID uint) ([]UserEnrollment, error) {
+	var enrollments []UserEnrollment
+
+	query := `
+		SELECT 
+			c.id,
+			c.title,
+			c.slug,
+			c.thumbnail_url,
+			e.progress_percentage,
+			e.created_at as enrolled_at,
+			e.last_accessed_at,
+			e.completed_at
+		FROM enrollments e
+		JOIN courses c ON e.course_id = c.id
+		WHERE e.user_id = ?
+		ORDER BY e.created_at DESC
+	`
+
+	rows, err := r.db.WithContext(ctx).Raw(query, userID).Rows()
+	if err != nil {
+		logger.Error("Failed to get user enrollments", zap.Error(err), zap.Uint("user_id", userID))
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var e UserEnrollment
+		var enrolledAt, lastAccessedAt, completedAt interface{}
+
+		err := rows.Scan(
+			&e.ID,
+			&e.Title,
+			&e.Slug,
+			&e.ThumbnailURL,
+			&e.ProgressPercentage,
+			&enrolledAt,
+			&lastAccessedAt,
+			&completedAt,
+		)
+		if err != nil {
+			logger.Error("Failed to scan enrollment", zap.Error(err))
+			continue
+		}
+
+		// Format dates
+		if t, ok := enrolledAt.([]uint8); ok {
+			e.EnrolledAt = string(t)
+		}
+		if lastAccessedAt != nil {
+			if t, ok := lastAccessedAt.([]uint8); ok {
+				s := string(t)
+				e.LastAccessedAt = &s
+			}
+		}
+		if completedAt != nil {
+			if t, ok := completedAt.([]uint8); ok {
+				s := string(t)
+				e.CompletedAt = &s
+			}
+		}
+
+		enrollments = append(enrollments, e)
+	}
+
+	return enrollments, nil
+}
+
+// GetUserCertificates fetches all certificates earned by a user
+func (r *repository) GetUserCertificates(ctx context.Context, userID uint) ([]UserCertificate, error) {
+	var certificates []UserCertificate
+
+	query := `
+		SELECT 
+			cert.id,
+			cert.course_id,
+			c.title AS course_title,
+			c.slug AS course_slug,
+			cert.certificate_id,
+			cert.issued_at
+		FROM certificates cert
+		INNER JOIN courses c ON cert.course_id = c.id
+		WHERE cert.user_id = ?
+		ORDER BY cert.issued_at DESC
+	`
+
+	rows, err := r.db.WithContext(ctx).Raw(query, userID).Rows()
+	if err != nil {
+		logger.Error("Failed to get user certificates", zap.Error(err), zap.Uint("user_id", userID))
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var cert UserCertificate
+		var issuedAt interface{}
+
+		err := rows.Scan(
+			&cert.ID,
+			&cert.CourseID,
+			&cert.CourseTitle,
+			&cert.CourseSlug,
+			&cert.CertificateID,
+			&issuedAt,
+		)
+		if err != nil {
+			logger.Error("Failed to scan certificate", zap.Error(err))
+			continue
+		}
+
+		// Format date
+		if t, ok := issuedAt.([]uint8); ok {
+			cert.IssuedAt = string(t)
+		}
+
+		certificates = append(certificates, cert)
+	}
+
+	return certificates, nil
 }
