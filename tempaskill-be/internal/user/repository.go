@@ -12,6 +12,7 @@ import (
 
 type Repository interface {
 	FindByID(ctx context.Context, id uint) (*auth.User, error)
+	List(ctx context.Context, query *UserListQuery) ([]*auth.User, int64, error)
 	Update(ctx context.Context, user *auth.User) error
 	UpdatePassword(ctx context.Context, id uint, hashedPassword string) error
 }
@@ -60,4 +61,36 @@ func (r *repository) UpdatePassword(ctx context.Context, id uint, hashedPassword
 		return err
 	}
 	return nil
+}
+
+func (r *repository) List(ctx context.Context, query *UserListQuery) ([]*auth.User, int64, error) {
+	var users []*auth.User
+	var total int64
+
+	db := r.db.WithContext(ctx).Model(&auth.User{})
+
+	// Apply filters
+	if query.Role != "" {
+		db = db.Where("role = ?", query.Role)
+	}
+
+	if query.Search != "" {
+		searchPattern := "%" + query.Search + "%"
+		db = db.Where("name LIKE ? OR email LIKE ?", searchPattern, searchPattern)
+	}
+
+	// Count total
+	if err := db.Count(&total).Error; err != nil {
+		logger.Error("Failed to count users", zap.Error(err))
+		return nil, 0, err
+	}
+
+	// Apply pagination
+	offset := (query.Page - 1) * query.Limit
+	if err := db.Order("created_at DESC").Offset(offset).Limit(query.Limit).Find(&users).Error; err != nil {
+		logger.Error("Failed to list users", zap.Error(err))
+		return nil, 0, err
+	}
+
+	return users, total, nil
 }

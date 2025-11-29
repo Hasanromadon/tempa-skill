@@ -19,6 +19,7 @@
 - [Payment Management](#payment-management)
 - [Review Management](#review-management)
 - [Session Management](#session-management)
+- [Admin Dashboard](#admin-dashboard)
 - [Error Codes](#error-codes)
 
 ---
@@ -284,6 +285,58 @@ Response (200 OK):
 - Course thumbnail upload
 - Inline images in MDX editor
 - User avatar upload (future)
+
+---
+
+### List All Users (Admin Only)
+
+Get paginated list of all users with optional filters.
+
+```http
+GET /api/v1/users?page=1&limit=10&role=student&search=john
+Authorization: Bearer <admin_token>
+```
+
+**Query Parameters:**
+
+- `page`: Optional, page number (default: 1)
+- `limit`: Optional, items per page (default: 10, max: 100)
+- `role`: Optional, filter by role (`student`, `instructor`, `admin`)
+- `search`: Optional, search by name or email (case-insensitive)
+
+**Response (200 OK):**
+
+```json
+{
+  "data": {
+    "users": [
+      {
+        "id": 123,
+        "name": "John Doe",
+        "email": "john@example.com",
+        "role": "student",
+        "bio": "Passionate learner",
+        "avatar_url": "https://...",
+        "created_at": "2025-11-02 10:00:00"
+      }
+    ],
+    "total": 150,
+    "page": 1,
+    "limit": 10,
+    "total_pages": 15
+  }
+}
+```
+
+**Authentication Required**: ✅ Yes (Admin only)
+
+**Error Responses:**
+
+- `401` - Unauthorized (invalid/missing token)
+- `403` - Forbidden (non-admin user)
+
+**Use Case:**
+Admin user management page at `/admin/users`
 
 ---
 
@@ -1896,6 +1949,67 @@ Authorization: Bearer <instructor_token>
 ```
 
 **Authentication Required**: ✅ Yes (Instructor only)
+
+---
+
+## 📊 Admin Dashboard
+
+### Get Dashboard Statistics
+
+Get comprehensive dashboard statistics for admin panel. Returns aggregated data from all modules.
+
+```http
+GET /api/v1/admin/stats
+Authorization: Bearer <admin_token>
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "data": {
+    "total_courses": 25,
+    "published_courses": 20,
+    "unpublished_courses": 5,
+    "total_students": 150,
+    "total_instructors": 8,
+    "total_enrollments": 320,
+    "total_revenue": 149700000,
+    "pending_payments": 3,
+    "completed_payments": 45,
+    "total_lessons": 180,
+    "total_sessions": 12,
+    "upcoming_sessions": 5
+  }
+}
+```
+
+**Fields Description:**
+
+- `total_courses`: Total number of courses (published + unpublished)
+- `published_courses`: Number of published courses
+- `unpublished_courses`: Number of draft/unpublished courses
+- `total_students`: Count of users with role 'student'
+- `total_instructors`: Count of users with role 'instructor'
+- `total_enrollments`: Total course enrollments
+- `total_revenue`: Sum of completed payment transactions (IDR)
+- `pending_payments`: Count of pending payment transactions
+- `completed_payments`: Count of successfully completed payments
+- `total_lessons`: Total number of lessons across all courses
+- `total_sessions`: Total live sessions created
+- `upcoming_sessions`: Count of future sessions (not cancelled)
+
+**Authentication Required**: ✅ Yes (Admin only)
+
+**Performance:**
+
+- Uses efficient SQL COUNT aggregations
+- No need to fetch full datasets
+- Response time: < 100ms typically
+- Cached for 5 minutes on frontend
+
+**Use Case:**
+Display comprehensive statistics on `/admin/dashboard` page without loading all data.
 
 ---
 

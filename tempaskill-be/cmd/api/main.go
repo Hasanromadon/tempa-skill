@@ -7,7 +7,9 @@ import (
 	"strings"
 
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/config"
+	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/admin"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/auth"
+	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/certificate"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/course"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/middleware"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/payment"
@@ -16,7 +18,6 @@ import (
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/session"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/upload"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/user"
-	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/certificate"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/database"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/firebase"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/logger"
@@ -207,6 +208,24 @@ func main() {
 
 		// Register review routes
 		review.RegisterRoutes(router, reviewHandler, authMiddleware.RequireAuth())
+
+		// Initialize admin module
+		adminService := admin.NewService(db)
+		adminHandler := admin.NewHandler(adminService)
+
+		// Admin middleware - check if user role is admin
+		adminMiddleware := func(c *gin.Context) {
+			userRole, exists := c.Get("userRole")
+			if !exists || userRole != "admin" {
+				c.JSON(http.StatusForbidden, gin.H{"error": "Admin access required"})
+				c.Abort()
+				return
+			}
+			c.Next()
+		}
+
+		// Register admin routes
+		admin.RegisterRoutes(v1, adminHandler, authMiddleware, adminMiddleware)
 	}
 
 	// Start server

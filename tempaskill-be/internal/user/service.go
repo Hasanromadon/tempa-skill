@@ -16,6 +16,7 @@ var (
 
 type Service interface {
 	GetUserByID(ctx context.Context, id uint) (*auth.User, error)
+	ListUsers(ctx context.Context, query *UserListQuery) (*UserListResult, error)
 	UpdateProfile(ctx context.Context, userID uint, req *UpdateProfileRequest) (*auth.User, error)
 	ChangePassword(ctx context.Context, userID uint, req *ChangePasswordRequest) error
 }
@@ -78,4 +79,46 @@ func (s *service) ChangePassword(ctx context.Context, userID uint, req *ChangePa
 	}
 
 	return s.repo.UpdatePassword(ctx, userID, string(hashedPassword))
+}
+
+func (s *service) ListUsers(ctx context.Context, query *UserListQuery) (*UserListResult, error) {
+	// Set defaults
+	if query.Page == 0 {
+		query.Page = 1
+	}
+	if query.Limit == 0 {
+		query.Limit = 10
+	}
+
+	users, total, err := s.repo.List(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert to response
+	userResponses := make([]UserResponse, len(users))
+	for i, user := range users {
+		userResponses[i] = UserResponse{
+			ID:        user.ID,
+			Name:      user.Name,
+			Email:     user.Email,
+			Role:      user.Role,
+			Bio:       user.Bio,
+			AvatarURL: user.AvatarURL,
+			CreatedAt: user.CreatedAt.Format("2006-01-02 15:04:05"),
+		}
+	}
+
+	totalPages := int(total) / query.Limit
+	if int(total)%query.Limit > 0 {
+		totalPages++
+	}
+
+	return &UserListResult{
+		Users:      userResponses,
+		Total:      total,
+		Page:       query.Page,
+		Limit:      query.Limit,
+		TotalPages: totalPages,
+	}, nil
 }

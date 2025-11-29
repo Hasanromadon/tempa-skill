@@ -129,3 +129,34 @@ func (h *Handler) ChangePassword(c *gin.Context) {
 
 	response.Success(c, http.StatusOK, "Password changed successfully", nil)
 }
+
+// ListUsers godoc
+// @Summary List all users (Admin only)
+// @Description Get paginated list of all users with optional filters
+// @Tags users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param page query int false "Page number" default(1)
+// @Param limit query int false "Items per page" default(10)
+// @Param role query string false "Filter by role" Enums(student, instructor, admin)
+// @Param search query string false "Search by name or email"
+// @Success 200 {object} response.Response{data=UserListResult}
+// @Failure 401 {object} response.Response
+// @Failure 403 {object} response.Response
+// @Router /users [get]
+func (h *Handler) ListUsers(c *gin.Context) {
+	var query UserListQuery
+	if err := c.ShouldBindQuery(&query); err != nil {
+		response.ValidationError(c, err)
+		return
+	}
+
+	result, err := h.service.ListUsers(c.Request.Context(), &query)
+	if err != nil {
+		response.Error(c, http.StatusInternalServerError, err.Error(), nil)
+		return
+	}
+
+	response.Success(c, http.StatusOK, "Users retrieved successfully", result)
+}

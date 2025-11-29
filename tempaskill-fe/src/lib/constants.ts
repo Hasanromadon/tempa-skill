@@ -102,6 +102,9 @@ export const API_ENDPOINTS = {
     MARK_ATTENDANCE: (sessionId: number, participantId: number) =>
       `/sessions/${sessionId}/attendance/${participantId}`,
   },
+  ADMIN: {
+    STATS: "/admin/stats",
+  },
 } as const;
 
 // Difficulty levels

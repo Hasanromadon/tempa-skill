@@ -320,3 +320,19 @@ export interface CertificateEligibilityResponse {
   progress: number;
   message: string;
 }
+
+// Admin Dashboard Stats
+export interface AdminDashboardStats {
+  total_courses: number;
+  published_courses: number;
+  unpublished_courses: number;
+  total_students: number;
+  total_instructors: number;
+  total_enrollments: number;
+  total_revenue: number;
+  pending_payments: number;
+  completed_payments: number;
+  total_lessons: number;
+  total_sessions: number;
+  upcoming_sessions: number;
+}

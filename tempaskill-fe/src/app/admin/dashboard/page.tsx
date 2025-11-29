@@ -4,7 +4,16 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDashboardStats } from "@/hooks";
-import { BookOpen, DollarSign, TrendingUp, Users } from "lucide-react";
+import {
+  BookOpen,
+  Calendar,
+  CreditCard,
+  DollarSign,
+  FileText,
+  GraduationCap,
+  TrendingUp,
+  Users,
+} from "lucide-react";
 
 export default function AdminDashboardPage() {
   const { data: stats, isLoading, isError } = useDashboardStats();
@@ -23,6 +32,7 @@ export default function AdminDashboardPage() {
     {
       label: "Total Kursus",
       value: stats?.total_courses ?? 0,
+      subtitle: `${stats?.published_courses ?? 0} dipublikasi`,
       icon: BookOpen,
       color: "text-orange-600",
       bgColor: "bg-orange-100",
@@ -30,23 +40,58 @@ export default function AdminDashboardPage() {
     {
       label: "Total Siswa",
       value: stats?.total_students ?? 0,
+      subtitle: `${stats?.total_enrollments ?? 0} pendaftaran`,
       icon: Users,
       color: "text-blue-600",
       bgColor: "bg-blue-100",
     },
     {
-      label: "Kursus Aktif",
-      value: stats?.active_courses ?? 0,
-      icon: TrendingUp,
-      color: "text-green-600",
-      bgColor: "bg-green-100",
+      label: "Total Instruktur",
+      value: stats?.total_instructors ?? 0,
+      subtitle: `Pengajar aktif`,
+      icon: GraduationCap,
+      color: "text-purple-600",
+      bgColor: "bg-purple-100",
     },
     {
       label: "Total Pendapatan",
       value: formatCurrency(stats?.total_revenue ?? 0),
+      subtitle: `${stats?.completed_payments ?? 0} transaksi berhasil`,
       icon: DollarSign,
-      color: "text-purple-600",
-      bgColor: "bg-purple-100",
+      color: "text-green-600",
+      bgColor: "bg-green-100",
+    },
+    {
+      label: "Total Pelajaran",
+      value: stats?.total_lessons ?? 0,
+      subtitle: "Konten pembelajaran",
+      icon: FileText,
+      color: "text-indigo-600",
+      bgColor: "bg-indigo-100",
+    },
+    {
+      label: "Sesi Mendatang",
+      value: stats?.upcoming_sessions ?? 0,
+      subtitle: `dari ${stats?.total_sessions ?? 0} total sesi`,
+      icon: Calendar,
+      color: "text-pink-600",
+      bgColor: "bg-pink-100",
+    },
+    {
+      label: "Pembayaran Pending",
+      value: stats?.pending_payments ?? 0,
+      subtitle: "Menunggu konfirmasi",
+      icon: CreditCard,
+      color: "text-yellow-600",
+      bgColor: "bg-yellow-100",
+    },
+    {
+      label: "Kursus Tidak Dipublikasi",
+      value: stats?.unpublished_courses ?? 0,
+      subtitle: "Draft kursus",
+      icon: TrendingUp,
+      color: "text-gray-600",
+      bgColor: "bg-gray-100",
     },
   ];
 
@@ -73,20 +118,24 @@ export default function AdminDashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {isLoading
           ? // Loading skeleton
-            [...Array(4)].map((_, i) => (
+            [...Array(8)].map((_, i) => (
               <Card key={i}>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <Skeleton className="h-4 w-24" />
                   <Skeleton className="h-9 w-9 rounded-lg" />
                 </CardHeader>
                 <CardContent>
-                  <Skeleton className="h-8 w-16" />
+                  <Skeleton className="h-8 w-16 mb-1" />
+                  <Skeleton className="h-3 w-20" />
                 </CardContent>
               </Card>
             ))
           : // Real data
             statCards.map((stat) => (
-              <Card key={stat.label}>
+              <Card
+                key={stat.label}
+                className="hover:shadow-md transition-shadow"
+              >
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-gray-600">
                     {stat.label}
@@ -99,6 +148,7 @@ export default function AdminDashboardPage() {
                   <div className="text-2xl font-bold text-gray-900">
                     {stat.value}
                   </div>
+                  <p className="text-xs text-gray-500 mt-1">{stat.subtitle}</p>
                 </CardContent>
               </Card>
             ))}

@@ -19,5 +19,21 @@ func RegisterRoutes(rg *gin.RouterGroup, handler *Handler, authMiddleware *middl
 			protected.PATCH("/me", handler.UpdateProfile)
 			protected.PATCH("/me/password", handler.ChangePassword)
 		}
+
+		// Admin routes
+		admin := users.Group("")
+		admin.Use(authMiddleware.RequireAuth())
+		admin.Use(func(c *gin.Context) {
+			userRole, exists := c.Get("userRole")
+			if !exists || userRole != "admin" {
+				c.JSON(403, gin.H{"error": "Admin access required"})
+				c.Abort()
+				return
+			}
+			c.Next()
+		})
+		{
+			admin.GET("", handler.ListUsers) // GET /users (admin only)
+		}
 	}
 }

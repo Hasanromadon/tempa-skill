@@ -956,35 +956,227 @@ Based on dependencies and business value:
 
 ---
 
+## 📊 Admin Dashboard Enhancements (Future)
+
+### 21. Dashboard - Charts & Graphs
+
+**Status**: ⏸️ Not Started  
+**Estimated Time**: 6 hours  
+**Priority**: 🟢 Low
+
+**Description**:
+Tambahkan visualisasi data pada admin dashboard:
+
+- Revenue trend chart (monthly/weekly)
+- Enrollment growth chart
+- Course popularity chart
+- Active users chart
+
+**Files to Create/Update**:
+
+```
+tempaskill-fe/src/app/admin/dashboard/page.tsx
+tempaskill-fe/src/components/admin/
+├── revenue-chart.tsx         # Line chart for revenue
+├── enrollment-chart.tsx      # Bar chart for enrollments
+└── stats-overview.tsx        # Enhanced stats grid
+```
+
+**NPM Packages**:
+
+```bash
+yarn add recharts @tremor/react
+```
+
+**Dependencies**: Admin Stats Endpoint ✅
+**Blocks**: None
+
+---
+
+### 22. Dashboard - Recent Activity
+
+**Status**: ⏸️ Not Started  
+**Estimated Time**: 4 hours  
+**Priority**: 🟢 Low
+
+**Description**:
+Tampilkan aktivitas terbaru di dashboard:
+
+- 10 transaksi pembayaran terbaru
+- 10 enrollment terbaru
+- Recent course updates
+- Recent user registrations
+
+**Files to Create**:
+
+```
+tempaskill-fe/src/components/admin/
+├── recent-transactions.tsx   # Latest payments
+├── recent-enrollments.tsx    # Latest enrollments
+└── activity-feed.tsx         # Combined activity
+```
+
+**Backend Endpoints** (New):
+
+```
+GET /api/v1/admin/activity/payments?limit=10
+GET /api/v1/admin/activity/enrollments?limit=10
+```
+
+**Dependencies**: Admin Stats Endpoint ✅
+**Blocks**: None
+
+---
+
+### 23. Dashboard - Quick Actions
+
+**Status**: ⏸️ Not Started  
+**Estimated Time**: 3 hours  
+**Priority**: 🟢 Low
+
+**Description**:
+Shortcuts ke tugas admin yang pending:
+
+- View unpublished courses (with count badge)
+- View pending payment approvals
+- Manage upcoming sessions
+- Review flagged content
+
+**Files to Update**:
+
+```
+tempaskill-fe/src/app/admin/dashboard/page.tsx
+```
+
+**Components**:
+
+```
+tempaskill-fe/src/components/admin/
+└── quick-actions.tsx        # Action cards with badges
+```
+
+**Dependencies**: Admin Stats Endpoint ✅
+**Blocks**: None
+
+---
+
+### 24. Dashboard - Export Reports
+
+**Status**: ⏸️ Not Started  
+**Estimated Time**: 5 hours  
+**Priority**: 🟢 Low
+
+**Description**:
+Export dashboard statistics ke berbagai format:
+
+- CSV export untuk spreadsheet
+- PDF export untuk reporting
+- Date range filter
+- Custom metric selection
+
+**Files to Create**:
+
+```
+tempaskill-fe/src/lib/
+├── export-csv.ts            # CSV generation
+└── export-pdf.ts            # PDF generation
+
+tempaskill-fe/src/components/admin/
+└── export-button.tsx        # Export dropdown
+```
+
+**NPM Packages**:
+
+```bash
+yarn add papaparse jspdf
+```
+
+**Dependencies**: Admin Stats Endpoint ✅
+**Blocks**: None
+
+---
+
+### 25. Dashboard - Real-time Updates (Advanced)
+
+**Status**: ⏸️ Not Started  
+**Estimated Time**: 12 hours  
+**Priority**: 🟢 Low (Advanced)
+
+**Description**:
+Real-time dashboard updates menggunakan WebSocket:
+
+- Live payment notifications
+- Live enrollment updates
+- Auto-refresh stats
+- Live user count
+
+**Backend Files**:
+
+```
+tempaskill-be/internal/websocket/
+├── hub.go                   # WebSocket hub
+├── client.go                # Client connection
+├── handler.go               # WS endpoints
+└── routes.go
+```
+
+**Frontend Files**:
+
+```
+tempaskill-fe/src/lib/
+└── websocket-client.ts      # WS client
+
+tempaskill-fe/src/hooks/
+└── use-websocket.ts         # WS hook
+```
+
+**NPM Packages**:
+
+```bash
+yarn add socket.io-client
+go get github.com/gorilla/websocket
+```
+
+**Dependencies**: Admin Stats Endpoint ✅
+**Blocks**: None
+
+---
+
 ## 🎯 Next Actions
 
 **Immediate Priority** (Start this week):
 
-1. [ ] **Course Reviews & Ratings** - User feedback system (4 hours)
+1. [ ] **Custom MDX Components** - Callout, Tabs, Quiz (6 hours)
 2. [ ] **Discussion Forum per Course** - Community interaction (8 hours)
 
 **Medium Priority** (Next 2 weeks):
 
-4. [ ] **Discussion Forum per Course** - Community interaction (8 hours)
-5. [ ] **Certificate Generation** - Course completion certificates (4 hours)
-6. [ ] **Email Notifications** - Automated email system (6 hours)
+3. [ ] **Certificate Generation** - Course completion certificates (4 hours)
+4. [ ] **Email Notifications** - Automated email system (6 hours)
+5. [ ] **Search & Filter Improvements** - Advanced filtering (4 hours)
 
 **Future Enhancements** (Post-MVP):
 
-7. [ ] **Analytics Dashboard** - Instructor/admin analytics (8 hours)
-8. [ ] **Content Migration Script** - Import existing content (4 hours)
-9. [ ] **E2E Tests** - Automated testing suite (6 hours)
-10. [ ] **Performance Optimization** - CDN and caching (4 hours)
+6. [ ] **Analytics Dashboard** - Instructor/admin analytics (8 hours)
+7. [ ] **Content Migration Script** - Import existing content (4 hours)
+8. [ ] **E2E Tests** - Automated testing suite (6 hours)
+9. [ ] **Performance Optimization** - CDN and caching (4 hours)
 
-- [ ] Midtrans integration docs
-- [ ] PDF generation libraries
-- [ ] Monaco Editor setup
+**Admin Dashboard Enhancements** (Optional):
+
+10. [ ] **Dashboard - Charts & Graphs** - Revenue trends, enrollment growth (6 hours)
+11. [ ] **Dashboard - Recent Activity** - Latest transactions and enrollments (4 hours)
+12. [ ] **Dashboard - Quick Actions** - Shortcuts to pending tasks (3 hours)
+13. [ ] **Dashboard - Export Reports** - CSV/PDF export functionality (5 hours)
+14. [ ] **Dashboard - Real-time Updates** - WebSocket live updates (12 hours - Advanced)
 
 ---
 
-**Last Updated**: November 6, 2025  
-**Total Estimated Time**: ~112 hours  
-**Progress**: 1/20 tasks completed (5%)
+**Last Updated**: November 29, 2025  
+**Total Estimated Time**: ~142 hours (with dashboard enhancements)  
+**Core Tasks**: 20 tasks  
+**Dashboard Enhancements**: 5 optional tasks (30 hours)  
+**Progress**: 8/20 core tasks completed (40%)
 
 ---
 
