@@ -14,14 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Bell,
-  Building2,
-  Globe,
-  Mail,
-  Save,
-  Shield,
-} from "lucide-react";
+import { Bell, Building2, Globe, Mail, Save, Shield } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -30,7 +23,6 @@ import { toast } from "sonner";
  * Manage platform settings, configurations, and preferences
  */
 export default function AdminSettingsPage() {
-
   // General Settings
   const [platformName, setPlatformName] = useState("TempaSKill");
   const [platformDescription, setPlatformDescription] = useState(
@@ -312,9 +304,7 @@ export default function AdminSettingsPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="sessionTimeout">
-                  Session Timeout (menit)
-                </Label>
+                <Label htmlFor="sessionTimeout">Session Timeout (menit)</Label>
                 <Input
                   id="sessionTimeout"
                   type="number"
@@ -330,9 +320,7 @@ export default function AdminSettingsPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="passwordExpiry">
-                  Password Expiry (hari)
-                </Label>
+                <Label htmlFor="passwordExpiry">Password Expiry (hari)</Label>
                 <Input
                   id="passwordExpiry"
                   type="number"

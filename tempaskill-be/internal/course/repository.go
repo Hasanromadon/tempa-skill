@@ -187,8 +187,9 @@ func (r *repository) FindAllCoursesWithMeta(ctx context.Context, userID uint, qu
 		db = db.Where("price <= ?", query.MaxPrice)
 	}
 
-	if query.InstructorID > 0 {
-		db = db.Where("instructor_id = ?", query.InstructorID)
+	// Filter by instructor (support pointer for optional filtering)
+	if query.InstructorID != nil && *query.InstructorID > 0 {
+		db = db.Where("instructor_id = ?", *query.InstructorID)
 	}
 
 	// Count total
@@ -270,8 +271,9 @@ func (r *repository) FindAllCoursesWithMeta(ctx context.Context, userID uint, qu
 		db = db.Where("courses.price <= ?", query.MaxPrice)
 	}
 
-	if query.InstructorID > 0 {
-		db = db.Where("courses.instructor_id = ?", query.InstructorID)
+	// Filter by instructor (support pointer for optional filtering)
+	if query.InstructorID != nil && *query.InstructorID > 0 {
+		db = db.Where("courses.instructor_id = ?", *query.InstructorID)
 	}
 
 	// Add WHERE for soft deletes

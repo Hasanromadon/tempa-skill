@@ -51,7 +51,7 @@ type CourseListQuery struct {
 	SortOrder    string  `form:"sort_order" binding:"omitempty,oneof=asc desc"`
 	MinPrice     float64 `form:"min_price" binding:"omitempty,min=0"`
 	MaxPrice     float64 `form:"max_price" binding:"omitempty,min=0"`
-	InstructorID uint    `form:"instructor_id" binding:"omitempty,min=1"`
+	InstructorID *uint   `form:"instructor_id" binding:"omitempty,min=1"` // Changed to pointer for optional filtering
 }
 
 // PaginationMeta represents pagination metadata

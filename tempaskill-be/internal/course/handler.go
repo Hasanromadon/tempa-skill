@@ -120,10 +120,20 @@ func (h *Handler) ListCourses(c *gin.Context) {
 		query.SortOrder = "desc"
 	}
 
-	// Get user ID if authenticated (optional)
+	// Get user ID and role if authenticated (optional)
 	var userID uint
+	var userRole string
 	if uid, exists := c.Get("userID"); exists {
 		userID = uid.(uint)
+	}
+	if role, exists := c.Get("userRole"); exists {
+		userRole = role.(string)
+	}
+
+	// INSTRUCTOR FILTER: Instructor only sees their own courses
+	// Admin sees all courses, Students see all courses
+	if userRole == "instructor" && query.InstructorID == nil {
+		query.InstructorID = &userID
 	}
 
 	result, err := h.service.ListCourses(c.Request.Context(), userID, &query)
