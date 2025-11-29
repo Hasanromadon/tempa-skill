@@ -162,7 +162,8 @@ func (r *repository) GetUserStats(ctx context.Context, userID uint) (enrolledCou
 func (r *repository) GetUserEnrollments(ctx context.Context, userID uint) ([]UserEnrollment, error) {
 	var enrollments []UserEnrollment
 
-	// Use GORM's simpler query builder instead of raw SQL
+	// Query based on actual database schema (enrollments has: user_id, course_id, enrolled_at)
+	// Calculate progress from progresses table
 	err := r.db.WithContext(ctx).
 		Table("enrollments e").
 		Select(`
@@ -170,14 +171,22 @@ func (r *repository) GetUserEnrollments(ctx context.Context, userID uint) ([]Use
 			c.title,
 			c.slug,
 			COALESCE(c.thumbnail_url, '') as thumbnail_url,
-			COALESCE(e.progress_percentage, 0) as progress_percentage,
-			e.created_at as enrolled_at,
-			e.updated_at as last_accessed_at,
+			COALESCE(
+				(SELECT COUNT(*) * 100.0 / NULLIF((SELECT COUNT(*) FROM lessons WHERE course_id = c.id), 0)
+				 FROM progresses p 
+				 WHERE p.user_id = e.user_id AND p.course_id = e.course_id), 
+				0
+			) as progress_percentage,
+			e.enrolled_at,
+			COALESCE(
+				(SELECT MAX(completed_at) FROM progresses p WHERE p.user_id = e.user_id AND p.course_id = e.course_id),
+				e.enrolled_at
+			) as last_accessed_at,
 			NULL as completed_at
 		`).
 		Joins("JOIN courses c ON e.course_id = c.id").
 		Where("e.user_id = ?", userID).
-		Order("e.created_at DESC").
+		Order("e.enrolled_at DESC").
 		Scan(&enrollments).Error
 
 	if err != nil {
