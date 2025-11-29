@@ -10,6 +10,7 @@ export * from "./use-debug";
 export * from "./use-delete-user";
 export * from "./use-lessons";
 export * from "./use-payment";
+export * from "./use-permissions";
 export * from "./use-progress";
 export * from "./use-reviews";
 export * from "./use-server-table";

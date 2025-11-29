@@ -10,12 +10,14 @@
 ### ✅ BACKEND - Yang Sudah Ada
 
 #### 1. **Autentikasi & Otorisasi**
+
 - ✅ Role system: `student`, `instructor`, `admin`
 - ✅ JWT authentication dengan role claim
 - ✅ Middleware `RequireRole()` untuk role-based access
 - ✅ Context propagation (`userID`, `userRole`)
 
 #### 2. **Course Management**
+
 ```go
 // internal/course/service.go
 - CreateCourse() - Instructor dapat create course
@@ -28,6 +30,7 @@
 ```
 
 **Validasi:**
+
 ```go
 if course.InstructorID != userID && userRole != "admin" {
     return ErrUnauthorized // "Only course instructor or admin can perform this action"
@@ -35,6 +38,7 @@ if course.InstructorID != userID && userRole != "admin" {
 ```
 
 #### 3. **Session Management**
+
 ```go
 // internal/session/service.go
 - CreateSession() - Instructor bisa create session
@@ -45,6 +49,7 @@ if course.InstructorID != userID && userRole != "admin" {
 ```
 
 **Validasi:**
+
 ```go
 if session.InstructorID != userID {
     return errors.New("only instructor can access session participants")
@@ -52,6 +57,7 @@ if session.InstructorID != userID {
 ```
 
 #### 4. **Upload**
+
 - ✅ Image upload untuk thumbnail (authenticated users)
 
 ---
@@ -59,6 +65,7 @@ if session.InstructorID != userID {
 ### ❌ BACKEND - Yang BELUM Ada
 
 #### 1. **Dashboard Analytics untuk Instruktur**
+
 - ❌ Total siswa enrolled di kursus instruktur
 - ❌ Total revenue dari kursus berbayar
 - ❌ Course completion rates
@@ -68,24 +75,28 @@ if session.InstructorID != userID {
 - ❌ Review statistics (avg rating, total reviews)
 
 #### 2. **Student Management**
+
 - ❌ List students enrolled in instructor's courses
 - ❌ View individual student progress
 - ❌ Export student data (CSV/Excel)
 - ❌ Send notifications to enrolled students
 
 #### 3. **Content Management**
+
 - ❌ Bulk upload lessons
 - ❌ Course draft/published status
 - ❌ Schedule course publication
 - ❌ Course preview before publish
 
 #### 4. **Revenue & Analytics**
+
 - ❌ Revenue tracking per course
 - ❌ Payment history
 - ❌ Revenue reports (daily/monthly/yearly)
 - ❌ Top earning courses
 
 #### 5. **Communication**
+
 - ❌ Announcement system to students
 - ❌ Q&A/Discussion forum per course
 - ❌ Direct messaging with students
@@ -95,6 +106,7 @@ if session.InstructorID != userID {
 ### ✅ FRONTEND - Yang Sudah Ada
 
 #### 1. **Route Protection**
+
 ```tsx
 // middleware.ts
 - Admin routes protected (including instructor)
@@ -102,6 +114,7 @@ if session.InstructorID != userID {
 ```
 
 #### 2. **Role Check**
+
 ```tsx
 // hooks/use-auth.ts
 - useIsAdmin() → returns true untuk admin & instructor
@@ -109,6 +122,7 @@ if session.InstructorID != userID {
 ```
 
 #### 3. **Admin Layout**
+
 ```tsx
 // app/admin/layout.tsx
 - Sidebar navigation
@@ -117,6 +131,7 @@ if session.InstructorID != userID {
 ```
 
 #### 4. **Admin Pages (Accessible untuk Instructor)**
+
 - ✅ `/admin/dashboard` - Overview
 - ✅ `/admin/courses` - Course list dengan create/edit
 - ✅ `/admin/users` - User management
@@ -129,6 +144,7 @@ if session.InstructorID != userID {
 ### ❌ FRONTEND - Yang BELUM Ada
 
 #### 1. **Instructor-Specific Pages**
+
 - ❌ `/instructor/dashboard` - Dashboard khusus instruktur
 - ❌ `/instructor/courses` - My courses (hanya milik instruktur)
 - ❌ `/instructor/students` - My students
@@ -136,11 +152,13 @@ if session.InstructorID != userID {
 - ❌ `/instructor/earnings` - Revenue tracking
 
 #### 2. **Filtering & Permissions**
+
 - ❌ Admin melihat SEMUA courses
 - ❌ Instructor hanya melihat courses MILIKNYA
 - ❌ Filter by instructor_id di backend
 
 #### 3. **UI Indicators**
+
 - ❌ Badge "Instruktur Kursus Ini" di course card
 - ❌ Disable edit/delete untuk course bukan miliknya
 - ❌ Warning saat mencoba akses course orang lain
@@ -152,6 +170,7 @@ if session.InstructorID != userID {
 ### **FASE 1: Backend API Enhancement** (Prioritas Tinggi)
 
 #### 1.1 Instructor Dashboard Stats API
+
 **Endpoint:** `GET /api/v1/instructor/dashboard`
 
 ```go
@@ -181,11 +200,13 @@ if session.InstructorID != userID {
 ```
 
 **Implementasi:**
+
 - File: `internal/instructor/handler.go`
 - File: `internal/instructor/service.go`
 - File: `internal/instructor/repository.go`
 
 #### 1.2 My Courses API (Filtered)
+
 **Endpoint:** `GET /api/v1/instructor/courses`
 
 ```go
@@ -194,6 +215,7 @@ if session.InstructorID != userID {
 ```
 
 #### 1.3 My Students API
+
 **Endpoint:** `GET /api/v1/instructor/students`
 
 ```go
@@ -218,6 +240,7 @@ if session.InstructorID != userID {
 ```
 
 #### 1.4 Revenue Analytics API
+
 **Endpoint:** `GET /api/v1/instructor/revenue`
 
 ```go
@@ -247,6 +270,7 @@ if session.InstructorID != userID {
 ### **FASE 2: Frontend Instructor Dashboard** (Prioritas Tinggi)
 
 #### 2.1 Create Instructor Routes
+
 ```
 /instructor/
   ├── dashboard/          # Overview stats
@@ -258,6 +282,7 @@ if session.InstructorID != userID {
 ```
 
 #### 2.2 Instructor Layout Component
+
 ```tsx
 // app/instructor/layout.tsx
 - Similar to admin layout
@@ -267,6 +292,7 @@ if session.InstructorID != userID {
 ```
 
 #### 2.3 Instructor Dashboard Page
+
 ```tsx
 // app/instructor/dashboard/page.tsx
 Components:
@@ -278,6 +304,7 @@ Components:
 ```
 
 #### 2.4 My Courses Page
+
 ```tsx
 // app/instructor/courses/page.tsx
 Features:
@@ -289,6 +316,7 @@ Features:
 ```
 
 #### 2.5 My Students Page
+
 ```tsx
 // app/instructor/students/page.tsx
 Features:
@@ -304,6 +332,7 @@ Features:
 ### **FASE 3: Permission & Authorization Enhancement** (Prioritas Sedang)
 
 #### 3.1 Backend Middleware Improvement
+
 ```go
 // Add instructor-specific middleware
 func RequireInstructor() gin.HandlerFunc {
@@ -320,6 +349,7 @@ func RequireInstructor() gin.HandlerFunc {
 ```
 
 #### 3.2 Course Ownership Check Helper
+
 ```go
 // internal/course/service.go
 func (s *Service) IsOwner(courseID uint, userID uint) (bool, error) {
@@ -332,15 +362,16 @@ func (s *Service) IsOwner(courseID uint, userID uint) (bool, error) {
 ```
 
 #### 3.3 Frontend Permission Guards
+
 ```tsx
 // hooks/use-course-permissions.ts
 export const useCoursePermissions = (courseId: number) => {
   const { user } = useIsAuthenticated();
   const { data: course } = useCourse(courseId);
-  
+
   return {
-    canEdit: user?.role === 'admin' || course?.instructor_id === user?.id,
-    canDelete: user?.role === 'admin' || course?.instructor_id === user?.id,
+    canEdit: user?.role === "admin" || course?.instructor_id === user?.id,
+    canDelete: user?.role === "admin" || course?.instructor_id === user?.id,
     isOwner: course?.instructor_id === user?.id,
   };
 };
@@ -351,6 +382,7 @@ export const useCoursePermissions = (courseId: number) => {
 ### **FASE 4: Feature Enhancement** (Prioritas Rendah)
 
 #### 4.1 Course Draft System
+
 ```go
 // Add status field to courses table
 type Course struct {
@@ -363,16 +395,19 @@ type Course struct {
 ```
 
 #### 4.2 Bulk Operations
+
 - Bulk lesson upload (CSV/JSON)
 - Bulk student enrollment
 - Bulk message to students
 
 #### 4.3 Communication System
+
 - Announcement per course
 - Q&A forum
 - Direct messaging
 
 #### 4.4 Advanced Analytics
+
 - Student engagement metrics
 - Lesson completion heatmap
 - Drop-off points analysis
@@ -383,6 +418,7 @@ type Course struct {
 ## 📋 IMPLEMENTATION PRIORITY
 
 ### **Priority 1 - CRITICAL (Minggu 1-2)**
+
 1. ✅ Backend: Instructor dashboard stats API
 2. ✅ Backend: My courses API (filtered)
 3. ✅ Frontend: Instructor dashboard page
@@ -390,6 +426,7 @@ type Course struct {
 5. ✅ Permission guards di UI
 
 ### **Priority 2 - HIGH (Minggu 3-4)**
+
 1. Backend: My students API
 2. Backend: Revenue analytics API
 3. Frontend: My students page
@@ -397,12 +434,14 @@ type Course struct {
 5. Frontend: Earnings page
 
 ### **Priority 3 - MEDIUM (Minggu 5-6)**
+
 1. Course draft system
 2. Bulk operations
 3. Enhanced permissions
 4. UI polish & UX improvements
 
 ### **Priority 4 - LOW (Future)**
+
 1. Communication system
 2. Advanced analytics
 3. Mobile app support
@@ -412,7 +451,9 @@ type Course struct {
 ## 🔧 QUICK WINS (Implementasi Cepat)
 
 ### 1. Filter Admin Courses by Instructor
+
 **Backend:**
+
 ```go
 // internal/course/handler.go - ListCourses
 if userRole == "instructor" {
@@ -424,7 +465,9 @@ if userRole == "instructor" {
 **Impact:** Instruktur langsung hanya lihat course miliknya di `/admin/courses`
 
 ### 2. Disable Edit/Delete Button
+
 **Frontend:**
+
 ```tsx
 // components/course/course-card.tsx
 const { canEdit } = useCoursePermissions(course.id);
@@ -436,13 +479,15 @@ const { canEdit } = useCoursePermissions(course.id);
 **Impact:** UI lebih jelas, prevent unauthorized actions
 
 ### 3. Add Instructor Badge
+
 **Frontend:**
+
 ```tsx
-{course.instructor_id === user?.id && (
-  <Badge className="bg-blue-100 text-blue-800">
-    Kursus Anda
-  </Badge>
-)}
+{
+  course.instructor_id === user?.id && (
+    <Badge className="bg-blue-100 text-blue-800">Kursus Anda</Badge>
+  );
+}
 ```
 
 **Impact:** Visual indicator ownership
@@ -452,16 +497,19 @@ const { canEdit } = useCoursePermissions(course.id);
 ## 🎨 UI/UX RECOMMENDATIONS
 
 ### 1. Separate Instructor Dashboard
+
 - Different route: `/instructor/*` vs `/admin/*`
 - Different color theme (blue for instructor, orange for admin)
 - Focused metrics relevant to instructors
 
 ### 2. Clear Role Indicators
+
 - Badge on navbar: "Instruktur" or "Admin"
 - Different sidebar menus for admin vs instructor
 - Tooltip explanations for permissions
 
 ### 3. Onboarding for New Instructors
+
 - Welcome modal with quick start guide
 - Tutorial overlay for first course creation
 - Help center with instructor documentation

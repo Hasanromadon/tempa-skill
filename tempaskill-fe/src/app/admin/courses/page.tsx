@@ -2,6 +2,7 @@
 
 import { SearchAndFilters } from "@/components/admin/search-and-filters";
 import { ColumnDef, DataTable } from "@/components/common";
+import { CourseActions } from "@/components/course/course-actions";
 import { DeleteCourseDialog } from "@/components/course/delete-course-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,13 +13,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   useDeleteCourse,
   useServerTable,
@@ -31,7 +25,7 @@ import {
 } from "@/lib/constants";
 import { formatCurrency } from "@/lib/utils";
 import type { Course } from "@/types/api";
-import { Edit, Eye, EyeOff, MoreVertical, Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -199,61 +193,12 @@ export default function AdminCoursesPage() {
         cell: (ctx) => {
           const course = ctx.row.original;
           return (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label={`Aksi untuk ${course.title}`}
-                >
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
-                  <Link href={`/admin/courses/${course.id}/edit`}>
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href={`/admin/courses/${course.id}/lessons`}>
-                    <Eye className="h-4 w-4 mr-2" />
-                    Kelola Pelajaran
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() =>
-                    handleTogglePublish(
-                      course.id,
-                      course.is_published,
-                      course.title
-                    )
-                  }
-                  disabled={togglePublish.isPending}
-                >
-                  {course.is_published ? (
-                    <>
-                      <EyeOff className="h-4 w-4 mr-2" />
-                      Unpublish
-                    </>
-                  ) : (
-                    <>
-                      <Eye className="h-4 w-4 mr-2" />
-                      Publish
-                    </>
-                  )}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-red-600"
-                  onClick={() => handleDeleteClick(course.id, course.title)}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Hapus
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <CourseActions
+              course={course}
+              onTogglePublish={handleTogglePublish}
+              onDelete={handleDeleteClick}
+              isToggling={togglePublish.isPending}
+            />
           );
         },
       },
