@@ -14,3 +14,4 @@ export * from "./use-sessions";
 export * from "./use-table-filters";
 export * from "./use-user";
 export * from "./use-users";
+export * from "./use-delete-user";

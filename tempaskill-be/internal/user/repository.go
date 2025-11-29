@@ -15,6 +15,7 @@ type Repository interface {
 	List(ctx context.Context, query *UserListQuery) ([]*auth.User, int64, error)
 	Update(ctx context.Context, user *auth.User) error
 	UpdatePassword(ctx context.Context, id uint, hashedPassword string) error
+	Delete(ctx context.Context, id uint) error
 }
 
 type repository struct {
@@ -93,4 +94,16 @@ func (r *repository) List(ctx context.Context, query *UserListQuery) ([]*auth.Us
 	}
 
 	return users, total, nil
+}
+
+func (r *repository) Delete(ctx context.Context, id uint) error {
+	err := r.db.WithContext(ctx).Delete(&auth.User{}, id).Error
+	if err != nil {
+		logger.Error("Failed to delete user from database",
+			zap.Error(err),
+			zap.Uint("user_id", id),
+		)
+		return err
+	}
+	return nil
 }

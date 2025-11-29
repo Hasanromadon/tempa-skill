@@ -19,6 +19,7 @@ type Service interface {
 	ListUsers(ctx context.Context, query *UserListQuery) (*UserListResult, error)
 	UpdateProfile(ctx context.Context, userID uint, req *UpdateProfileRequest) (*auth.User, error)
 	ChangePassword(ctx context.Context, userID uint, req *ChangePasswordRequest) error
+	DeleteUser(ctx context.Context, id uint) error
 }
 
 type service struct {
@@ -121,4 +122,19 @@ func (s *service) ListUsers(ctx context.Context, query *UserListQuery) (*UserLis
 		Limit:      query.Limit,
 		TotalPages: totalPages,
 	}, nil
+}
+
+func (s *service) DeleteUser(ctx context.Context, id uint) error {
+	// Check if user exists
+	user, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		return ErrUserNotFound
+	}
+
+	// Prevent deleting admin users (optional safety check)
+	if user.Role == "admin" {
+		return errors.New("cannot delete admin users")
+	}
+
+	return s.repo.Delete(ctx, id)
 }

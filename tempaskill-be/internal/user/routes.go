@@ -33,7 +33,8 @@ func RegisterRoutes(rg *gin.RouterGroup, handler *Handler, authMiddleware *middl
 			c.Next()
 		})
 		{
-			admin.GET("", handler.ListUsers) // GET /users (admin only)
+			admin.GET("", handler.ListUsers)       // GET /users (admin only)
+			admin.DELETE("/:id", handler.DeleteUser) // DELETE /users/:id (admin only)
 		}
 	}
 }

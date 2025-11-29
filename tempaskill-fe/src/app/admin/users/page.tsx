@@ -1,9 +1,17 @@
 "use client";
 
 import { ColumnDef, DataTable } from "@/components/common";
+import { DeleteUserDialog } from "@/components/user/delete-user-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -12,10 +20,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useServerTable } from "@/hooks";
+import { useDeleteUser, useServerTable } from "@/hooks";
 import type { User } from "@/hooks/use-users";
-import { Search, X } from "lucide-react";
-import { useMemo } from "react";
+import { Edit, MoreVertical, Plus, Search, Trash2, X } from "lucide-react";
+import Link from "next/link";
+import { useCallback, useMemo, useState } from "react";
+import { toast } from "sonner";
 
 // Response type from backend /users endpoint
 interface UsersApiResponse {
@@ -35,6 +45,12 @@ interface UsersApiResponse {
  * - Filter controls for role and search
  */
 export default function AdminUsersPage() {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<{
+    id: number;
+    name: string;
+  } | null>(null);
+
   // Server-side table with filters
   // Custom response parser for users endpoint
   const table = useServerTable<User>({
@@ -49,6 +65,39 @@ export default function AdminUsersPage() {
         (res as UsersApiResponse)?.total_pages || 1,
     },
   });
+
+  const deleteUser = useDeleteUser();
+
+  // Handle delete
+  const handleDeleteClick = useCallback(
+    (userId: number, userName: string) => {
+      setUserToDelete({ id: userId, name: userName });
+      setDeleteDialogOpen(true);
+    },
+    []
+  );
+
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!userToDelete) return;
+
+    try {
+      await deleteUser.mutateAsync(userToDelete.id);
+
+      toast.success("Pengguna berhasil dihapus", {
+        description: `"${userToDelete.name}" telah dihapus dari platform.`,
+      });
+
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
+
+      // Refetch users
+      table.refetch();
+    } catch {
+      toast.error("Gagal menghapus pengguna", {
+        description: "Silakan coba lagi.",
+      });
+    }
+  }, [userToDelete, deleteUser, table]);
 
   // Role badge renderer
   const getRoleBadge = (role: string) => {
@@ -114,18 +163,66 @@ export default function AdminUsersPage() {
           );
         },
       },
+      {
+        id: "actions",
+        header: "Aksi",
+        cell: (ctx) => {
+          const user = ctx.row.original;
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={`Aksi untuk ${user.name}`}
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link href={`/admin/users/${user.id}/edit`}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-red-600"
+                  onClick={() => handleDeleteClick(user.id, user.name)}
+                  disabled={user.role === "admin"}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Hapus
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        },
+      },
     ],
-    []
+    [handleDeleteClick]
   );
 
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Kelola Pengguna</h1>
-        <p className="text-gray-600 mt-1">
-          Lihat dan kelola semua pengguna platform
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Kelola Pengguna</h1>
+          <p className="text-gray-600 mt-1">
+            Lihat dan kelola semua pengguna platform
+          </p>
+        </div>
+        <Link href="/admin/users/new">
+          <Button
+            className="bg-orange-600 hover:bg-orange-700"
+            aria-label="Tambah pengguna baru"
+          >
+            <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
+            Tambah Pengguna
+          </Button>
+        </Link>
       </div>
 
       {/* Filters Card */}
@@ -223,6 +320,15 @@ export default function AdminUsersPage() {
           />
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteUserDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        userName={userToDelete?.name || ""}
+        isDeleting={deleteUser.isPending}
+      />
     </div>
   );
 }

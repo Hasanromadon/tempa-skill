@@ -160,3 +160,37 @@ func (h *Handler) ListUsers(c *gin.Context) {
 
 	response.Success(c, http.StatusOK, "Users retrieved successfully", result)
 }
+
+// DeleteUser godoc
+// @Summary Delete user (Admin only)
+// @Description Delete a user by ID
+// @Tags users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "User ID"
+// @Success 200 {object} response.Response
+// @Failure 400 {object} response.Response
+// @Failure 401 {object} response.Response
+// @Failure 403 {object} response.Response
+// @Failure 404 {object} response.Response
+// @Router /users/{id} [delete]
+func (h *Handler) DeleteUser(c *gin.Context) {
+	idParam := c.Param("id")
+	id, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
+		response.Error(c, http.StatusBadRequest, "Invalid user ID", nil)
+		return
+	}
+
+	if err := h.service.DeleteUser(c.Request.Context(), uint(id)); err != nil {
+		if err == ErrUserNotFound {
+			response.NotFound(c, "User not found")
+			return
+		}
+		response.Error(c, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	response.Success(c, http.StatusOK, "User deleted successfully", nil)
+}
