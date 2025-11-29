@@ -11,10 +11,7 @@ export interface ExportColumn<T> {
 /**
  * Convert array of objects to CSV string
  */
-export function convertToCSV<T>(
-  data: T[],
-  columns: ExportColumn<T>[]
-): string {
+export function convertToCSV<T>(data: T[], columns: ExportColumn<T>[]): string {
   // Create header row
   const headers = columns.map((col) => col.label).join(",");
 

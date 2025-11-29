@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import apiClient from "@/lib/api-client";
+import type { ApiResponse } from "@/types/api";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -17,8 +19,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { use } from "react";
-import apiClient from "@/lib/api-client";
-import type { ApiResponse } from "@/types/api";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -57,7 +57,7 @@ interface UserCertificate {
 
 /**
  * User Detail Page
- * 
+ *
  * Shows comprehensive user information including:
  * - Profile details
  * - Enrolled courses with progress
@@ -103,7 +103,10 @@ export default function UserDetailPage({ params }: PageProps) {
   const getRoleBadge = (role: string) => {
     const variants: Record<string, { color: string; label: string }> = {
       admin: { color: "bg-red-100 text-red-800", label: "Admin" },
-      instructor: { color: "bg-purple-100 text-purple-800", label: "Instruktur" },
+      instructor: {
+        color: "bg-purple-100 text-purple-800",
+        label: "Instruktur",
+      },
       student: { color: "bg-blue-100 text-blue-800", label: "Siswa" },
     };
     const variant = variants[role] || variants.student;
@@ -188,7 +191,9 @@ export default function UserDetailPage({ params }: PageProps) {
             {/* User Info */}
             <div className="flex-1 space-y-4">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">{user.name}</h2>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {user.name}
+                </h2>
                 <div className="flex items-center gap-3 mt-2">
                   {getRoleBadge(user.role)}
                   {getStatusBadge(user.status)}
@@ -277,7 +282,9 @@ export default function UserDetailPage({ params }: PageProps) {
       {/* Enrolled Courses */}
       <Card>
         <CardHeader>
-          <CardTitle>Kursus yang Diambil ({enrolledCourses?.length || 0})</CardTitle>
+          <CardTitle>
+            Kursus yang Diambil ({enrolledCourses?.length || 0})
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {coursesLoading ? (
@@ -313,7 +320,9 @@ export default function UserDetailPage({ params }: PageProps) {
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
                         Terdaftar{" "}
-                        {new Date(course.enrolled_at).toLocaleDateString("id-ID")}
+                        {new Date(course.enrolled_at).toLocaleDateString(
+                          "id-ID"
+                        )}
                       </span>
                       {course.last_accessed_at && (
                         <span className="flex items-center gap-1">

@@ -139,7 +139,9 @@ export default function AdminUsersPage() {
       },
     ];
 
-    const filename = `pengguna_tempaskill_${new Date().toISOString().split("T")[0]}.csv`;
+    const filename = `pengguna_tempaskill_${
+      new Date().toISOString().split("T")[0]
+    }.csv`;
 
     exportToCSV(table.data, columns, filename);
 
