@@ -15,7 +15,9 @@ type Repository interface {
 	List(ctx context.Context, query *UserListQuery) ([]*auth.User, int64, error)
 	Update(ctx context.Context, user *auth.User) error
 	UpdatePassword(ctx context.Context, id uint, hashedPassword string) error
+	UpdateRole(ctx context.Context, id uint, role string) error
 	Delete(ctx context.Context, id uint) error
+	GetUserStats(ctx context.Context, userID uint) (enrolledCount int, completedCount int, err error)
 }
 
 type repository struct {
@@ -96,6 +98,18 @@ func (r *repository) List(ctx context.Context, query *UserListQuery) ([]*auth.Us
 	return users, total, nil
 }
 
+func (r *repository) UpdateRole(ctx context.Context, id uint, role string) error {
+	err := r.db.WithContext(ctx).Model(&auth.User{}).Where("id = ?", id).Update("role", role).Error
+	if err != nil {
+		logger.Error("Failed to update user role in database",
+			zap.Error(err),
+			zap.Uint("user_id", id),
+		)
+		return err
+	}
+	return nil
+}
+
 func (r *repository) Delete(ctx context.Context, id uint) error {
 	err := r.db.WithContext(ctx).Delete(&auth.User{}, id).Error
 	if err != nil {
@@ -106,4 +120,26 @@ func (r *repository) Delete(ctx context.Context, id uint) error {
 		return err
 	}
 	return nil
+}
+
+func (r *repository) GetUserStats(ctx context.Context, userID uint) (enrolledCount int, completedCount int, err error) {
+	// Count enrolled courses
+	var enrolled int64
+	err = r.db.WithContext(ctx).Table("enrollments").Where("user_id = ?", userID).Count(&enrolled).Error
+	if err != nil {
+		logger.Error("Failed to count user enrollments", zap.Error(err), zap.Uint("user_id", userID))
+		return 0, 0, err
+	}
+
+	// Count completed courses (100% progress)
+	var completed int64
+	err = r.db.WithContext(ctx).Table("enrollments").
+		Where("user_id = ? AND progress_percentage = ?", userID, 100).
+		Count(&completed).Error
+	if err != nil {
+		logger.Error("Failed to count completed courses", zap.Error(err), zap.Uint("user_id", userID))
+		return 0, 0, err
+	}
+
+	return int(enrolled), int(completed), nil
 }

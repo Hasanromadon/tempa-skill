@@ -161,6 +161,47 @@ func (h *Handler) ListUsers(c *gin.Context) {
 	response.Success(c, http.StatusOK, "Users retrieved successfully", result)
 }
 
+// ChangeUserRole godoc
+// @Summary Change user role (Admin only)
+// @Description Change a user's role (student, instructor, admin)
+// @Tags users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "User ID"
+// @Param request body ChangeRoleRequest true "Change role request"
+// @Success 200 {object} response.Response
+// @Failure 400 {object} response.Response
+// @Failure 401 {object} response.Response
+// @Failure 403 {object} response.Response
+// @Failure 404 {object} response.Response
+// @Router /users/{id}/role [patch]
+func (h *Handler) ChangeUserRole(c *gin.Context) {
+	idParam := c.Param("id")
+	id, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
+		response.Error(c, http.StatusBadRequest, "Invalid user ID", nil)
+		return
+	}
+
+	var req ChangeRoleRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.ValidationError(c, err)
+		return
+	}
+
+	if err := h.service.ChangeUserRole(c.Request.Context(), uint(id), &req); err != nil {
+		if err == ErrUserNotFound {
+			response.NotFound(c, "User not found")
+			return
+		}
+		response.Error(c, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	response.Success(c, http.StatusOK, "User role updated successfully", nil)
+}
+
 // DeleteUser godoc
 // @Summary Delete user (Admin only)
 // @Description Delete a user by ID

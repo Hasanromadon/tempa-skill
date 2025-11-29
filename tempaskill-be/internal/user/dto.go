@@ -13,6 +13,11 @@ type ChangePasswordRequest struct {
 	NewPassword     string `json:"new_password" binding:"required,min=6,max=100"`
 }
 
+// ChangeRoleRequest represents role change payload (admin only)
+type ChangeRoleRequest struct {
+	Role string `json:"role" binding:"required,oneof=student instructor admin"`
+}
+
 // UserListQuery represents query parameters for listing users
 type UserListQuery struct {
 	Page   int    `form:"page" binding:"omitempty,min=1"`
@@ -32,11 +37,13 @@ type UserListResult struct {
 
 // UserResponse represents public user data
 type UserResponse struct {
-	ID        uint   `json:"id"`
-	Name      string `json:"name"`
-	Email     string `json:"email"`
-	Role      string `json:"role"`
-	Bio       string `json:"bio"`
-	AvatarURL string `json:"avatar_url"`
-	CreatedAt string `json:"created_at"`
+	ID             uint   `json:"id"`
+	Name           string `json:"name"`
+	Email          string `json:"email"`
+	Role           string `json:"role"`
+	Bio            string `json:"bio"`
+	AvatarURL      string `json:"avatar_url"`
+	CreatedAt      string `json:"created_at"`
+	EnrolledCount  int    `json:"enrolled_count,omitempty"`
+	CompletedCount int    `json:"completed_count,omitempty"`
 }

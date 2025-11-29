@@ -19,6 +19,7 @@ type Service interface {
 	ListUsers(ctx context.Context, query *UserListQuery) (*UserListResult, error)
 	UpdateProfile(ctx context.Context, userID uint, req *UpdateProfileRequest) (*auth.User, error)
 	ChangePassword(ctx context.Context, userID uint, req *ChangePasswordRequest) error
+	ChangeUserRole(ctx context.Context, userID uint, req *ChangeRoleRequest) error
 	DeleteUser(ctx context.Context, id uint) error
 }
 
@@ -96,17 +97,20 @@ func (s *service) ListUsers(ctx context.Context, query *UserListQuery) (*UserLis
 		return nil, err
 	}
 
-	// Convert to response
+	// Convert to response with statistics
 	userResponses := make([]UserResponse, len(users))
 	for i, user := range users {
+		enrolledCount, completedCount, _ := s.repo.GetUserStats(ctx, user.ID)
 		userResponses[i] = UserResponse{
-			ID:        user.ID,
-			Name:      user.Name,
-			Email:     user.Email,
-			Role:      user.Role,
-			Bio:       user.Bio,
-			AvatarURL: user.AvatarURL,
-			CreatedAt: user.CreatedAt.Format("2006-01-02 15:04:05"),
+			ID:             user.ID,
+			Name:           user.Name,
+			Email:          user.Email,
+			Role:           user.Role,
+			Bio:            user.Bio,
+			AvatarURL:      user.AvatarURL,
+			CreatedAt:      user.CreatedAt.Format("2006-01-02 15:04:05"),
+			EnrolledCount:  enrolledCount,
+			CompletedCount: completedCount,
 		}
 	}
 
@@ -122,6 +126,28 @@ func (s *service) ListUsers(ctx context.Context, query *UserListQuery) (*UserLis
 		Limit:      query.Limit,
 		TotalPages: totalPages,
 	}, nil
+}
+
+func (s *service) ChangeUserRole(ctx context.Context, userID uint, req *ChangeRoleRequest) error {
+	// Check if user exists
+	user, err := s.repo.FindByID(ctx, userID)
+	if err != nil {
+		return ErrUserNotFound
+	}
+
+	// Prevent changing own role if they're the last admin
+	if user.Role == "admin" && req.Role != "admin" {
+		// Check if there are other admins
+		users, _, err := s.repo.List(ctx, &UserListQuery{Role: "admin", Page: 1, Limit: 10})
+		if err != nil {
+			return err
+		}
+		if len(users) <= 1 {
+			return errors.New("cannot change role of the last admin user")
+		}
+	}
+
+	return s.repo.UpdateRole(ctx, userID, req.Role)
 }
 
 func (s *service) DeleteUser(ctx context.Context, id uint) error {

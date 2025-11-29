@@ -33,8 +33,9 @@ func RegisterRoutes(rg *gin.RouterGroup, handler *Handler, authMiddleware *middl
 			c.Next()
 		})
 		{
-			admin.GET("", handler.ListUsers)       // GET /users (admin only)
-			admin.DELETE("/:id", handler.DeleteUser) // DELETE /users/:id (admin only)
+			admin.GET("", handler.ListUsers)              // GET /users (admin only)
+			admin.PATCH("/:id/role", handler.ChangeUserRole) // PATCH /users/:id/role (admin only)
+			admin.DELETE("/:id", handler.DeleteUser)       // DELETE /users/:id (admin only)
 		}
 	}
 }
