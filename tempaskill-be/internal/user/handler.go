@@ -131,28 +131,41 @@ func (h *Handler) ChangePassword(c *gin.Context) {
 }
 
 // ListUsers godoc
-// @Summary List all users (Admin only)
-// @Description Get paginated list of all users with optional filters
+// @Summary List all users (Admin + Instructor)
+// @Description Get paginated list of users. Admin sees all users, Instructor sees only students
 // @Tags users
 // @Accept json
 // @Produce json
 // @Security BearerAuth
 // @Param page query int false "Page number" default(1)
 // @Param limit query int false "Items per page" default(10)
-// @Param role query string false "Filter by role" Enums(student, instructor, admin)
+// @Param role query string false "Filter by role (admin only)" Enums(student, instructor, admin)
 // @Param search query string false "Search by name or email"
 // @Success 200 {object} response.Response{data=UserListResult}
 // @Failure 401 {object} response.Response
 // @Failure 403 {object} response.Response
 // @Router /users [get]
 func (h *Handler) ListUsers(c *gin.Context) {
+	// Get user ID and role from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		response.Unauthorized(c, "User not authenticated")
+		return
+	}
+
+	userRole, exists := c.Get("userRole")
+	if !exists {
+		response.Unauthorized(c, "User role not found")
+		return
+	}
+
 	var query UserListQuery
 	if err := c.ShouldBindQuery(&query); err != nil {
 		response.ValidationError(c, err)
 		return
 	}
 
-	result, err := h.service.ListUsers(c.Request.Context(), &query)
+	result, err := h.service.ListUsers(c.Request.Context(), userID.(uint), userRole.(string), &query)
 	if err != nil {
 		response.Error(c, http.StatusInternalServerError, err.Error(), nil)
 		return

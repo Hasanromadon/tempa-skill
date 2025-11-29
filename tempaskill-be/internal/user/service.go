@@ -16,7 +16,7 @@ var (
 
 type Service interface {
 	GetUserByID(ctx context.Context, id uint) (*auth.User, error)
-	ListUsers(ctx context.Context, query *UserListQuery) (*UserListResult, error)
+	ListUsers(ctx context.Context, userID uint, userRole string, query *UserListQuery) (*UserListResult, error)
 	UpdateProfile(ctx context.Context, userID uint, req *UpdateProfileRequest) (*auth.User, error)
 	ChangePassword(ctx context.Context, userID uint, req *ChangePasswordRequest) error
 	ChangeUserRole(ctx context.Context, userID uint, req *ChangeRoleRequest) error
@@ -86,13 +86,18 @@ func (s *service) ChangePassword(ctx context.Context, userID uint, req *ChangePa
 	return s.repo.UpdatePassword(ctx, userID, string(hashedPassword))
 }
 
-func (s *service) ListUsers(ctx context.Context, query *UserListQuery) (*UserListResult, error) {
+func (s *service) ListUsers(ctx context.Context, userID uint, userRole string, query *UserListQuery) (*UserListResult, error) {
 	// Set defaults
 	if query.Page == 0 {
 		query.Page = 1
 	}
 	if query.Limit == 0 {
 		query.Limit = 10
+	}
+
+	// INSTRUCTOR FILTER: Instructors only see students (not other instructors or admins)
+	if userRole == "instructor" {
+		query.Role = "student" // Force filter to students only
 	}
 
 	users, total, err := s.repo.List(ctx, query)
