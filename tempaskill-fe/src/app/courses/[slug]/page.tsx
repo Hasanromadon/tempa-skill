@@ -288,43 +288,58 @@ export default function CourseDetailPage({ params }: PageProps) {
                 <CardTitle>Ringkasan Kursus</CardTitle>
               </CardHeader>
               <CardContent className="prose max-w-none">
-                <h3>Apa yang akan Anda pelajari</h3>
-                <ul>
-                  <li>
-                    Menguasai fundamental melalui materi berbasis teks yang
-                    komprehensif
-                  </li>
-                  <li>
-                    Berpartisipasi dalam sesi Q&A dan coding langsung dua minggu
-                    sekali
-                  </li>
-                  <li>
-                    Membangun proyek nyata dan mendapatkan pengalaman praktis
-                  </li>
-                  <li>
-                    Mendapatkan feedback personal dari instruktur berpengalaman
-                  </li>
-                </ul>
+                {course.description && (
+                  <div className="mb-6">
+                    <p className="text-gray-800 leading-relaxed">
+                      {course.description}
+                    </p>
+                  </div>
+                )}
 
-                <h3>Format Kursus</h3>
-                <p>
-                  Kursus ini menggunakan pendekatan pembelajaran hybrid unik
-                  TempaSKill:
-                </p>
-                <ul>
-                  <li>
-                    <strong>Pelajaran Berbasis Teks:</strong> Baca dan belajar
-                    sesuai kecepatan Anda
-                  </li>
-                  <li>
-                    <strong>Sesi Langsung:</strong> Ikuti sesi interaktif setiap
-                    2 minggu
-                  </li>
-                  <li>
-                    <strong>Pelacakan Kemajuan:</strong> Pantau perkembangan
-                    Anda dalam kursus
-                  </li>
-                </ul>
+                {/* Fallback content if no description */}
+                {!course.description && (
+                  <>
+                    <h3>Apa yang akan Anda pelajari</h3>
+                    <ul>
+                      <li>
+                        Menguasai fundamental melalui materi berbasis teks yang
+                        komprehensif
+                      </li>
+                      <li>
+                        Berpartisipasi dalam sesi Q&A dan coding langsung dua
+                        minggu sekali
+                      </li>
+                      <li>
+                        Membangun proyek nyata dan mendapatkan pengalaman
+                        praktis
+                      </li>
+                      <li>
+                        Mendapatkan feedback personal dari instruktur
+                        berpengalaman
+                      </li>
+                    </ul>
+
+                    <h3>Format Kursus</h3>
+                    <p>
+                      Kursus ini menggunakan pendekatan pembelajaran hybrid unik
+                      TempaSKill:
+                    </p>
+                    <ul>
+                      <li>
+                        <strong>Pelajaran Berbasis Teks:</strong> Baca dan
+                        belajar sesuai kecepatan Anda
+                      </li>
+                      <li>
+                        <strong>Sesi Langsung:</strong> Ikuti sesi interaktif
+                        setiap 2 minggu
+                      </li>
+                      <li>
+                        <strong>Pelacakan Kemajuan:</strong> Pantau perkembangan
+                        Anda dalam kursus
+                      </li>
+                    </ul>
+                  </>
+                )}
               </CardContent>
             </Card>
 
