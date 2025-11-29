@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useUserActivities } from "@/hooks/use-activities";
 import apiClient from "@/lib/api-client";
 import type { ApiResponse } from "@/types/api";
 import { useQuery } from "@tanstack/react-query";
@@ -15,6 +16,7 @@ import {
   Calendar,
   CheckCircle,
   Clock,
+  LogIn,
   Mail,
 } from "lucide-react";
 import Link from "next/link";
@@ -99,6 +101,12 @@ export default function UserDetailPage({ params }: PageProps) {
       return response.data.data || [];
     },
   });
+
+  // Fetch recent activities
+  const { data: activities, isLoading: activitiesLoading } = useUserActivities(
+    Number(id),
+    10
+  );
 
   const getRoleBadge = (role: string) => {
     const variants: Record<string, { color: string; label: string }> = {
@@ -387,6 +395,69 @@ export default function UserDetailPage({ params }: PageProps) {
           </CardContent>
         </Card>
       )}
+
+      {/* Recent Activity Log */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Aktivitas Terbaru</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {activitiesLoading ? (
+            <div className="space-y-3">
+              {[...Array(5)].map((_, i) => (
+                <Skeleton key={i} className="h-16 w-full" />
+              ))}
+            </div>
+          ) : activities && activities.length > 0 ? (
+            <div className="space-y-3">
+              {activities.map((activity) => (
+                <div
+                  key={activity.id}
+                  className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg"
+                >
+                  <div className="p-2 bg-orange-100 rounded-lg">
+                    <LogIn className="h-4 w-4 text-orange-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-900">
+                      {activity.action === "user.login" && "Login"}
+                      {activity.action === "course.enroll" && "Mendaftar Kursus"}
+                      {activity.action === "lesson.complete" &&
+                        "Menyelesaikan Pelajaran"}
+                      {activity.action === "certificate.generate" &&
+                        "Mendapatkan Sertifikat"}
+                      {!activity.action.startsWith("user.") &&
+                        !activity.action.startsWith("course.") &&
+                        !activity.action.startsWith("lesson.") &&
+                        !activity.action.startsWith("certificate.") &&
+                        activity.action}
+                    </p>
+                    {activity.description && (
+                      <p className="text-sm text-gray-600">
+                        {activity.description}
+                      </p>
+                    )}
+                    <p className="text-xs text-gray-500 mt-1">
+                      {new Date(activity.created_at).toLocaleString("id-ID", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <Clock className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+              <p className="text-gray-600">Belum ada aktivitas tercatat</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
