@@ -54,7 +54,7 @@ interface UserCertificate {
   id: number;
   course_title: string;
   issued_at: string;
-  certificate_url: string;
+  certificate_url?: string; // Optional - might not be available yet
 }
 
 /**
@@ -384,11 +384,17 @@ export default function UserDetailPage({ params }: PageProps) {
                       {new Date(cert.issued_at).toLocaleDateString("id-ID")}
                     </p>
                   </div>
-                  <Link href={cert.certificate_url} target="_blank">
-                    <Button size="sm" variant="outline">
-                      Lihat
+                  {cert.certificate_url ? (
+                    <Link href={cert.certificate_url as string} target="_blank">
+                      <Button size="sm" variant="outline">
+                        Lihat
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Button size="sm" variant="outline" disabled>
+                      Tidak Tersedia
                     </Button>
-                  </Link>
+                  )}
                 </div>
               ))}
             </div>
