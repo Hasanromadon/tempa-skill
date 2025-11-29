@@ -3,6 +3,7 @@ package auth
 import (
 	"errors"
 	"strings"
+	"time"
 
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/config"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/middleware"
@@ -139,6 +140,18 @@ func (s *service) Login(c *gin.Context, req *LoginRequest) (*User, string, error
 			zap.Error(err),
 		)
 		return nil, "", errors.New("failed to generate token")
+	}
+
+	// Update last login time
+	now := time.Now()
+	user.LastLoginAt = &now
+	if err := s.repo.Update(user); err != nil {
+		logger.Warn("Failed to update last login time",
+			zap.String("request_id", requestID),
+			zap.Uint("user_id", user.ID),
+			zap.Error(err),
+		)
+		// Don't fail login if update fails
 	}
 
 	logger.Info("User logged in successfully",

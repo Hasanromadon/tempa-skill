@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/config"
+	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/activity"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/admin"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/auth"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/certificate"
@@ -65,6 +66,7 @@ func main() {
 		&payment.PaymentTransaction{},
 		&progress.LessonProgress{},
 		&review.CourseReview{},
+		&activity.ActivityLog{},
 	); err != nil {
 		logger.Fatal("Failed to migrate database", zap.Error(err))
 	}
@@ -226,6 +228,14 @@ func main() {
 
 		// Register admin routes
 		admin.RegisterRoutes(v1, adminHandler, authMiddleware, adminMiddleware)
+
+		// Initialize activity log module
+		activityRepo := activity.NewRepository(db)
+		activityService := activity.NewService(activityRepo)
+		activityHandler := activity.NewHandler(activityService)
+
+		// Register activity routes
+		activity.RegisterRoutes(router, activityHandler, authMiddleware.RequireAuth(), adminMiddleware)
 	}
 
 	// Start server

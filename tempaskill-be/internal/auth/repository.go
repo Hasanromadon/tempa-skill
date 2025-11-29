@@ -13,6 +13,7 @@ type Repository interface {
 	Create(user *User) error
 	FindByEmail(email string) (*User, error)
 	FindByID(id uint) (*User, error)
+	Update(user *User) error
 }
 
 type repository struct {
@@ -69,4 +70,17 @@ func (r *repository) FindByID(id uint) (*User, error) {
 		return nil, err
 	}
 	return &user, nil
+}
+
+// Update updates user data
+func (r *repository) Update(user *User) error {
+	err := r.db.Save(user).Error
+	if err != nil {
+		logger.Error("Failed to update user in database",
+			zap.Error(err),
+			zap.Uint("user_id", user.ID),
+		)
+		return err
+	}
+	return nil
 }
