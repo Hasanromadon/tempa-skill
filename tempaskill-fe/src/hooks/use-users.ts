@@ -14,9 +14,12 @@ export interface User {
   name: string;
   email: string;
   role: "student" | "instructor" | "admin";
+  status: "active" | "suspended";
   bio: string;
   avatar_url: string;
   created_at: string;
+  enrolled_count?: number;
+  completed_count?: number;
 }
 
 interface UserListResult {

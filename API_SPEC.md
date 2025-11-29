@@ -340,6 +340,89 @@ Admin user management page at `/admin/users`
 
 ---
 
+### Change User Role (Admin Only)
+
+Change a user's role (student, instructor, admin).
+
+```http
+PATCH /api/v1/users/:id/role
+Authorization: Bearer <admin_token>
+Content-Type: application/json
+
+{
+  "role": "instructor"
+}
+```
+
+**Path Parameters:**
+
+- `id`: User ID (required)
+
+**Request Body:**
+
+- `role`: New role value (`student`, `instructor`, or `admin`)
+
+**Response (200 OK):**
+
+```json
+{
+  "message": "User role updated successfully"
+}
+```
+
+**Authentication Required**: ✅ Yes (Admin only)
+
+**Error Responses:**
+
+- `400` - Invalid role value or cannot change last admin
+- `401` - Unauthorized (invalid/missing token)
+- `403` - Forbidden (non-admin user)
+- `404` - User not found
+
+**Use Case:**
+Admin changing user permissions
+
+---
+
+### Toggle User Status (Admin Only)
+
+Suspend or activate a user account.
+
+```http
+PATCH /api/v1/users/:id/status?suspend=true
+Authorization: Bearer <admin_token>
+```
+
+**Path Parameters:**
+
+- `id`: User ID (required)
+
+**Query Parameters:**
+
+- `suspend`: Boolean (`true` to suspend, `false` to activate)
+
+**Response (200 OK):**
+
+```json
+{
+  "message": "User suspended successfully"
+}
+```
+
+**Authentication Required**: ✅ Yes (Admin only)
+
+**Error Responses:**
+
+- `400` - Invalid user ID
+- `401` - Unauthorized (invalid/missing token)
+- `403` - Forbidden (non-admin user)
+- `404` - User not found
+
+**Use Case:**
+Admin suspending/activating user accounts
+
+---
+
 ### Change Password
 
 ```http

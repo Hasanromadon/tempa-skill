@@ -1,7 +1,6 @@
 "use client";
 
 import { ColumnDef, DataTable } from "@/components/common";
-import { DeleteUserDialog } from "@/components/user/delete-user-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,9 +19,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useDeleteUser, useServerTable } from "@/hooks";
+import { ChangeRoleDialog } from "@/components/user/change-role-dialog";
+import { DeleteUserDialog } from "@/components/user/delete-user-dialog";
+import {
+  useChangeUserRole,
+  useDeleteUser,
+  useServerTable,
+  useToggleUserStatus,
+} from "@/hooks";
 import type { User } from "@/hooks/use-users";
-import { Edit, MoreVertical, Plus, Search, Trash2, X } from "lucide-react";
+import {
+  Ban,
+  CheckCircle,
+  Edit,
+  Eye,
+  MoreVertical,
+  Plus,
+  Search,
+  Shield,
+  Trash2,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -51,6 +68,13 @@ export default function AdminUsersPage() {
     name: string;
   } | null>(null);
 
+  const [roleDialogOpen, setRoleDialogOpen] = useState(false);
+  const [userToChangeRole, setUserToChangeRole] = useState<{
+    id: number;
+    name: string;
+    currentRole: string;
+  } | null>(null);
+
   // Server-side table with filters
   // Custom response parser for users endpoint
   const table = useServerTable<User>({
@@ -67,15 +91,14 @@ export default function AdminUsersPage() {
   });
 
   const deleteUser = useDeleteUser();
+  const changeUserRole = useChangeUserRole();
+  const toggleUserStatus = useToggleUserStatus();
 
   // Handle delete
-  const handleDeleteClick = useCallback(
-    (userId: number, userName: string) => {
-      setUserToDelete({ id: userId, name: userName });
-      setDeleteDialogOpen(true);
-    },
-    []
-  );
+  const handleDeleteClick = useCallback((userId: number, userName: string) => {
+    setUserToDelete({ id: userId, name: userName });
+    setDeleteDialogOpen(true);
+  }, []);
 
   const handleDeleteConfirm = useCallback(async () => {
     if (!userToDelete) return;
@@ -99,6 +122,77 @@ export default function AdminUsersPage() {
     }
   }, [userToDelete, deleteUser, table]);
 
+  // Handle change role
+  const handleChangeRoleClick = useCallback(
+    (userId: number, userName: string, currentRole: string) => {
+      setUserToChangeRole({ id: userId, name: userName, currentRole });
+      setRoleDialogOpen(true);
+    },
+    []
+  );
+
+  const handleRoleChangeConfirm = useCallback(
+    async (newRole: "student" | "instructor" | "admin") => {
+      if (!userToChangeRole) return;
+
+      try {
+        await changeUserRole.mutateAsync({
+          userId: userToChangeRole.id,
+          role: newRole,
+        });
+
+        const roleLabels = {
+          student: "Siswa",
+          instructor: "Instruktur",
+          admin: "Admin",
+        };
+
+        toast.success("Role berhasil diubah", {
+          description: `"${userToChangeRole.name}" sekarang ${roleLabels[newRole]}.`,
+        });
+
+        setRoleDialogOpen(false);
+        setUserToChangeRole(null);
+
+        // Refetch users
+        table.refetch();
+      } catch (error: unknown) {
+        const err = error as { response?: { data?: { error?: string } } };
+        toast.error("Gagal mengubah role", {
+          description: err?.response?.data?.error || "Silakan coba lagi.",
+        });
+      }
+    },
+    [userToChangeRole, changeUserRole, table]
+  );
+
+  // Handle toggle user status
+  const handleToggleStatus = useCallback(
+    async (userId: number, userName: string, currentStatus: string) => {
+      const suspend = currentStatus === "active";
+      const action = suspend ? "suspend" : "aktifkan";
+
+      try {
+        await toggleUserStatus.mutateAsync({ userId, suspend });
+
+        toast.success(
+          suspend ? "Pengguna berhasil disuspend" : "Pengguna berhasil diaktifkan",
+          {
+            description: `"${userName}" sekarang ${suspend ? "suspended" : "active"}.`,
+          }
+        );
+
+        // Refetch users
+        table.refetch();
+      } catch {
+        toast.error(`Gagal ${action} pengguna`, {
+          description: "Silakan coba lagi.",
+        });
+      }
+    },
+    [toggleUserStatus, table]
+  );
+
   // Role badge renderer
   const getRoleBadge = (role: string) => {
     const variants: Record<string, { color: string; label: string }> = {
@@ -113,6 +207,22 @@ export default function AdminUsersPage() {
     return (
       <Badge className={variant.color} variant="secondary">
         {variant.label}
+      </Badge>
+    );
+  };
+
+  // Status badge renderer
+  const getStatusBadge = (status: string) => {
+    if (status === "suspended") {
+      return (
+        <Badge className="bg-red-100 text-red-800" variant="secondary">
+          Suspended
+        </Badge>
+      );
+    }
+    return (
+      <Badge className="bg-green-100 text-green-800" variant="secondary">
+        Active
       </Badge>
     );
   };
@@ -144,6 +254,35 @@ export default function AdminUsersPage() {
         header: "Role",
         enableSorting: false,
         cell: (ctx) => getRoleBadge(ctx.getValue() as string),
+      },
+      {
+        id: "status",
+        accessor: "status",
+        header: "Status",
+        enableSorting: false,
+        cell: (ctx) => getStatusBadge(ctx.getValue() as string),
+      },
+      {
+        id: "enrolled_count",
+        accessor: "enrolled_count",
+        header: "Kursus",
+        enableSorting: false,
+        cell: (ctx) => (
+          <span className="text-gray-700">
+            {(ctx.getValue() as number) || 0}
+          </span>
+        ),
+      },
+      {
+        id: "completed_count",
+        accessor: "completed_count",
+        header: "Selesai",
+        enableSorting: false,
+        cell: (ctx) => (
+          <span className="text-green-700 font-medium">
+            {(ctx.getValue() as number) || 0}
+          </span>
+        ),
       },
       {
         id: "created_at",
@@ -181,10 +320,42 @@ export default function AdminUsersPage() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>
+                  <Link href={`/users/${user.id}`}>
+                    <Eye className="h-4 w-4 mr-2" />
+                    Lihat Detail
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
                   <Link href={`/admin/users/${user.id}/edit`}>
                     <Edit className="h-4 w-4 mr-2" />
-                    Edit
+                    Edit Profile
                   </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() =>
+                    handleChangeRoleClick(user.id, user.name, user.role)
+                  }
+                >
+                  <Shield className="h-4 w-4 mr-2" />
+                  Ubah Role
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() =>
+                    handleToggleStatus(user.id, user.name, user.status)
+                  }
+                  disabled={toggleUserStatus.isPending}
+                >
+                  {user.status === "active" ? (
+                    <>
+                      <Ban className="h-4 w-4 mr-2" />
+                      Suspend
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Aktifkan
+                    </>
+                  )}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -201,7 +372,7 @@ export default function AdminUsersPage() {
         },
       },
     ],
-    [handleDeleteClick]
+    [handleDeleteClick, handleChangeRoleClick, handleToggleStatus, toggleUserStatus.isPending]
   );
 
   return (
@@ -328,6 +499,16 @@ export default function AdminUsersPage() {
         onConfirm={handleDeleteConfirm}
         userName={userToDelete?.name || ""}
         isDeleting={deleteUser.isPending}
+      />
+
+      {/* Change Role Dialog */}
+      <ChangeRoleDialog
+        open={roleDialogOpen}
+        onOpenChange={setRoleDialogOpen}
+        onConfirm={handleRoleChangeConfirm}
+        userName={userToChangeRole?.name || ""}
+        currentRole={userToChangeRole?.currentRole || "student"}
+        isChanging={changeUserRole.isPending}
       />
     </div>
   );
