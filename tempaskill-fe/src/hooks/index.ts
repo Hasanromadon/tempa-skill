@@ -1,5 +1,6 @@
 // Export all hooks from a single entry point
 export * from "./use-auth";
+export * from "./use-bulk-selection";
 export * from "./use-certificate";
 export * from "./use-change-user-role";
 export * from "./use-courses";

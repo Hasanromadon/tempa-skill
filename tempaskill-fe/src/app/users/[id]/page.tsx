@@ -427,7 +427,8 @@ export default function UserDetailPage({ params }: PageProps) {
                   <div className="flex-1">
                     <p className="font-medium text-gray-900">
                       {activity.action === "user.login" && "Login"}
-                      {activity.action === "course.enroll" && "Mendaftar Kursus"}
+                      {activity.action === "course.enroll" &&
+                        "Mendaftar Kursus"}
                       {activity.action === "lesson.complete" &&
                         "Menyelesaikan Pelajaran"}
                       {activity.action === "certificate.generate" &&

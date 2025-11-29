@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import apiClient from "@/lib/api-client";
 import type { ApiResponse } from "@/types/api";
+import { useQuery } from "@tanstack/react-query";
 
 export interface ActivityLog {
   id: number;

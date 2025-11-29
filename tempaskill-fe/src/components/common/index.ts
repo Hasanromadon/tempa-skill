@@ -6,6 +6,10 @@ export { PageHeader } from "./page-header";
 export { Pagination } from "./pagination";
 export { ProgressRing } from "./progress-ring";
 
+// Bulk action components
+export { BulkActionsToolbar } from "./bulk-actions-toolbar";
+export { BulkConfirmDialog } from "./bulk-confirm-dialog";
+
 // Form components
 export {
   FilterForm,

@@ -1,9 +1,12 @@
 "use client";
 
 import { ColumnDef, DataTable } from "@/components/common";
+import { BulkActionsToolbar } from "@/components/common/bulk-actions-toolbar";
+import { BulkConfirmDialog } from "@/components/common/bulk-confirm-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,13 +24,13 @@ import {
 } from "@/components/ui/select";
 import { ChangeRoleDialog } from "@/components/user/change-role-dialog";
 import { DeleteUserDialog } from "@/components/user/delete-user-dialog";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   useChangeUserRole,
   useDeleteUser,
   useServerTable,
   useToggleUserStatus,
 } from "@/hooks";
+import { useBulkSelection } from "@/hooks/use-bulk-selection";
 import type { User } from "@/hooks/use-users";
 import { ExportColumn, exportToCSV } from "@/lib/export-csv";
 import {
@@ -65,9 +68,10 @@ interface UsersApiResponse {
  * - Filter controls for role and search
  */
 export default function AdminUsersPage() {
-  // Bulk selection state
-  const [selectedUsers, setSelectedUsers] = useState<Set<number>>(new Set());
+  // Bulk selection using reusable hook
+  const selection = useBulkSelection<number>();
 
+  // Dialog states
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<{
     id: number;
@@ -80,6 +84,11 @@ export default function AdminUsersPage() {
     name: string;
     currentRole: string;
   } | null>(null);
+
+  // Bulk action dialog states
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
+  const [bulkSuspendDialogOpen, setBulkSuspendDialogOpen] = useState(false);
+  const [bulkActivateDialogOpen, setBulkActivateDialogOpen] = useState(false);
 
   // Server-side table with filters
   // Custom response parser for users endpoint
@@ -100,42 +109,31 @@ export default function AdminUsersPage() {
   const changeUserRole = useChangeUserRole();
   const toggleUserStatus = useToggleUserStatus();
 
-  // Bulk selection handlers
-  const toggleUserSelection = useCallback((userId: number) => {
-    setSelectedUsers((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(userId)) {
-        newSet.delete(userId);
-      } else {
-        newSet.add(userId);
-      }
-      return newSet;
-    });
-  }, []);
+  // Bulk selection handlers (using reusable hook)
+  const toggleUserSelection = useCallback(
+    (userId: number) => {
+      selection.toggleItem(userId);
+    },
+    [selection]
+  );
 
   const toggleSelectAll = useCallback(() => {
-    if (selectedUsers.size === table.data.length) {
-      setSelectedUsers(new Set());
-    } else {
-      setSelectedUsers(new Set(table.data.map((user) => user.id)));
-    }
-  }, [selectedUsers.size, table.data]);
+    const allIds = table.data.map((user) => user.id);
+    selection.toggleSelectAll(allIds);
+  }, [table.data, selection]);
 
   const clearSelection = useCallback(() => {
-    setSelectedUsers(new Set());
-  }, []);
+    selection.clearSelection();
+  }, [selection]);
 
   // Bulk actions
   const handleBulkDelete = useCallback(async () => {
-    const count = selectedUsers.size;
-    if (count === 0) return;
-
-    const confirmMsg = `Apakah Anda yakin ingin menghapus ${count} pengguna yang dipilih?`;
-    if (!confirm(confirmMsg)) return;
+    const selectedIds = selection.getSelectedItems();
+    if (selectedIds.length === 0) return;
 
     const errors: string[] = [];
 
-    for (const userId of selectedUsers) {
+    for (const userId of selectedIds) {
       try {
         await deleteUser.mutateAsync(userId);
       } catch {
@@ -145,7 +143,7 @@ export default function AdminUsersPage() {
     }
 
     if (errors.length === 0) {
-      toast.success(`${count} pengguna berhasil dihapus`);
+      toast.success(`${selectedIds.length} pengguna berhasil dihapus`);
     } else {
       toast.error(`Gagal menghapus ${errors.length} pengguna`, {
         description: errors.join(", "),
@@ -154,18 +152,16 @@ export default function AdminUsersPage() {
 
     clearSelection();
     table.refetch();
-  }, [selectedUsers, deleteUser, table, clearSelection]);
+    setBulkDeleteDialogOpen(false);
+  }, [selection, deleteUser, table, clearSelection]);
 
   const handleBulkSuspend = useCallback(async () => {
-    const count = selectedUsers.size;
-    if (count === 0) return;
-
-    const confirmMsg = `Suspend ${count} pengguna yang dipilih?`;
-    if (!confirm(confirmMsg)) return;
+    const selectedIds = selection.getSelectedItems();
+    if (selectedIds.length === 0) return;
 
     const errors: string[] = [];
 
-    for (const userId of selectedUsers) {
+    for (const userId of selectedIds) {
       try {
         await toggleUserStatus.mutateAsync({ userId, suspend: true });
       } catch {
@@ -175,7 +171,7 @@ export default function AdminUsersPage() {
     }
 
     if (errors.length === 0) {
-      toast.success(`${count} pengguna berhasil di-suspend`);
+      toast.success(`${selectedIds.length} pengguna berhasil di-suspend`);
     } else {
       toast.error(`Gagal suspend ${errors.length} pengguna`, {
         description: errors.join(", "),
@@ -184,18 +180,16 @@ export default function AdminUsersPage() {
 
     clearSelection();
     table.refetch();
-  }, [selectedUsers, toggleUserStatus, table, clearSelection]);
+    setBulkSuspendDialogOpen(false);
+  }, [selection, toggleUserStatus, table, clearSelection]);
 
   const handleBulkActivate = useCallback(async () => {
-    const count = selectedUsers.size;
-    if (count === 0) return;
-
-    const confirmMsg = `Aktifkan ${count} pengguna yang dipilih?`;
-    if (!confirm(confirmMsg)) return;
+    const selectedIds = selection.getSelectedItems();
+    if (selectedIds.length === 0) return;
 
     const errors: string[] = [];
 
-    for (const userId of selectedUsers) {
+    for (const userId of selectedIds) {
       try {
         await toggleUserStatus.mutateAsync({ userId, suspend: false });
       } catch {
@@ -205,7 +199,7 @@ export default function AdminUsersPage() {
     }
 
     if (errors.length === 0) {
-      toast.success(`${count} pengguna berhasil diaktifkan`);
+      toast.success(`${selectedIds.length} pengguna berhasil diaktifkan`);
     } else {
       toast.error(`Gagal aktifkan ${errors.length} pengguna`, {
         description: errors.join(", "),
@@ -214,7 +208,8 @@ export default function AdminUsersPage() {
 
     clearSelection();
     table.refetch();
-  }, [selectedUsers, toggleUserStatus, table, clearSelection]);
+    setBulkActivateDialogOpen(false);
+  }, [selection, toggleUserStatus, table, clearSelection]);
 
   // Handle export to CSV
   const handleExportCSV = useCallback(() => {
@@ -415,16 +410,14 @@ export default function AdminUsersPage() {
         id: "select",
         header: () => (
           <Checkbox
-            checked={
-              selectedUsers.size === table.data.length && table.data.length > 0
-            }
+            checked={selection.isAllSelected(table.data.map((u) => u.id))}
             onCheckedChange={toggleSelectAll}
             aria-label="Pilih semua pengguna"
           />
         ),
         cell: (ctx) => (
           <Checkbox
-            checked={selectedUsers.has(ctx.row.original.id)}
+            checked={selection.isSelected(ctx.row.original.id)}
             onCheckedChange={() => toggleUserSelection(ctx.row.original.id)}
             aria-label={`Pilih ${ctx.row.original.name}`}
           />
@@ -573,14 +566,14 @@ export default function AdminUsersPage() {
       },
     ],
     [
-      selectedUsers,
+      selection,
+      table.data,
       toggleSelectAll,
       toggleUserSelection,
       handleDeleteClick,
       handleChangeRoleClick,
       handleToggleStatus,
       toggleUserStatus.isPending,
-      table.data.length,
     ]
   );
 
@@ -684,49 +677,35 @@ export default function AdminUsersPage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Bulk Actions Toolbar */}
-          {selectedUsers.size > 0 && (
-            <div className="flex items-center justify-between bg-orange-50 border border-orange-200 rounded-lg px-4 py-3">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700">
-                  {selectedUsers.size} pengguna dipilih
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleBulkActivate}
-                  disabled={toggleUserStatus.isPending}
-                >
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  Aktifkan Semua
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleBulkSuspend}
-                  disabled={toggleUserStatus.isPending}
-                >
-                  <Ban className="h-4 w-4 mr-2" />
-                  Suspend Semua
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleBulkDelete}
-                  disabled={deleteUser.isPending}
-                  className="text-red-600 hover:text-red-700"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Hapus Semua
-                </Button>
-                <Button variant="ghost" size="sm" onClick={clearSelection}>
-                  <X className="h-4 w-4 mr-2" />
-                  Batal
-                </Button>
-              </div>
-            </div>
+          {/* Bulk Actions Toolbar - Reusable Component */}
+          {selection.selectedCount > 0 && (
+            <BulkActionsToolbar
+              selectedCount={selection.selectedCount}
+              onClearSelection={clearSelection}
+              actions={[
+                {
+                  label: "Aktifkan Semua",
+                  icon: <CheckCircle className="h-4 w-4" />,
+                  variant: "outline",
+                  onClick: () => setBulkActivateDialogOpen(true),
+                  disabled: toggleUserStatus.isPending,
+                },
+                {
+                  label: "Suspend Semua",
+                  icon: <Ban className="h-4 w-4" />,
+                  variant: "outline",
+                  onClick: () => setBulkSuspendDialogOpen(true),
+                  disabled: toggleUserStatus.isPending,
+                },
+                {
+                  label: "Hapus Semua",
+                  icon: <Trash2 className="h-4 w-4" />,
+                  variant: "destructive",
+                  onClick: () => setBulkDeleteDialogOpen(true),
+                  disabled: deleteUser.isPending,
+                },
+              ]}
+            />
           )}
 
           <DataTable<User>
@@ -774,6 +753,66 @@ export default function AdminUsersPage() {
         userName={userToChangeRole?.name || ""}
         currentRole={userToChangeRole?.currentRole || "student"}
         isChanging={changeUserRole.isPending}
+      />
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <BulkConfirmDialog
+        open={bulkDeleteDialogOpen}
+        onOpenChange={setBulkDeleteDialogOpen}
+        onConfirm={handleBulkDelete}
+        title="Hapus Pengguna Terpilih"
+        description="Tindakan ini akan menghapus semua pengguna yang dipilih secara permanen. Data pengguna tidak dapat dipulihkan setelah dihapus."
+        itemCount={selection.selectedCount}
+        itemType="pengguna"
+        variant="destructive"
+        isLoading={deleteUser.isPending}
+        details={selection
+          .getSelectedItems()
+          .slice(0, 5)
+          .map((id) => {
+            const user = table.data.find((u) => u.id === id);
+            return user ? `${user.name} (${user.email})` : `User #${id}`;
+          })}
+      />
+
+      {/* Bulk Suspend Confirmation Dialog */}
+      <BulkConfirmDialog
+        open={bulkSuspendDialogOpen}
+        onOpenChange={setBulkSuspendDialogOpen}
+        onConfirm={handleBulkSuspend}
+        title="Suspend Pengguna Terpilih"
+        description="Pengguna yang di-suspend tidak akan dapat mengakses platform sampai diaktifkan kembali."
+        itemCount={selection.selectedCount}
+        itemType="pengguna"
+        variant="default"
+        isLoading={toggleUserStatus.isPending}
+        details={selection
+          .getSelectedItems()
+          .slice(0, 5)
+          .map((id) => {
+            const user = table.data.find((u) => u.id === id);
+            return user ? user.name : `User #${id}`;
+          })}
+      />
+
+      {/* Bulk Activate Confirmation Dialog */}
+      <BulkConfirmDialog
+        open={bulkActivateDialogOpen}
+        onOpenChange={setBulkActivateDialogOpen}
+        onConfirm={handleBulkActivate}
+        title="Aktifkan Pengguna Terpilih"
+        description="Pengguna yang diaktifkan akan dapat mengakses platform kembali."
+        itemCount={selection.selectedCount}
+        itemType="pengguna"
+        variant="default"
+        isLoading={toggleUserStatus.isPending}
+        details={selection
+          .getSelectedItems()
+          .slice(0, 5)
+          .map((id) => {
+            const user = table.data.find((u) => u.id === id);
+            return user ? user.name : `User #${id}`;
+          })}
       />
     </div>
   );
