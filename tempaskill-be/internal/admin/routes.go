@@ -9,9 +9,9 @@ import (
 func RegisterRoutes(rg *gin.RouterGroup, handler *Handler, authMiddleware *middleware.AuthMiddleware, adminMiddleware gin.HandlerFunc) {
 	admin := rg.Group("/admin")
 	admin.Use(authMiddleware.RequireAuth())
-	admin.Use(adminMiddleware)
+	admin.Use(adminMiddleware) // Allows both admin and instructor
 	{
-		// Dashboard statistics
+		// Dashboard statistics (filtered by role in handler)
 		admin.GET("/stats", handler.GetDashboardStats)
 	}
 }

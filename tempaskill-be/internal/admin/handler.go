@@ -15,10 +15,31 @@ func NewHandler(service Service) *Handler {
 }
 
 // GetDashboardStats handles GET /api/v1/admin/stats
-// Returns aggregated statistics for admin dashboard
-// Requires admin authentication
+// Returns aggregated statistics for admin/instructor dashboard
+// Data is filtered based on user role
 func (h *Handler) GetDashboardStats(c *gin.Context) {
-	stats, err := h.service.GetDashboardStats(c.Request.Context())
+	// Get user info from context (set by auth middleware)
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "User not authenticated",
+		})
+		return
+	}
+
+	userRole, exists := c.Get("user_role")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "User role not found",
+		})
+		return
+	}
+
+	stats, err := h.service.GetDashboardStats(
+		c.Request.Context(),
+		userID.(uint),
+		userRole.(string),
+	)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to fetch dashboard statistics",
