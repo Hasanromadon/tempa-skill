@@ -101,6 +101,20 @@ export function CourseForm({
     }
   }, [title, course, methods]);
 
+  // Function to manually regenerate slug
+  const regenerateSlug = () => {
+    const currentTitle = methods.getValues("title");
+    if (currentTitle) {
+      const generatedSlug = currentTitle
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
+        .trim();
+      methods.setValue("slug", generatedSlug);
+    }
+  };
+
   const handleFormSubmit = async (data: CourseFormData) => {
     await onSubmit(data);
   };
@@ -130,18 +144,33 @@ export function CourseForm({
               placeholder="Contoh: Pemrograman Web Modern dengan React & Next.js"
             />
 
-            <FormField
-              name="slug"
-              label="Slug (URL)"
-              type="text"
-              placeholder="pemrograman-web-modern-react-nextjs"
-              description={
-                !course
-                  ? "Otomatis dari judul. URL kursus: /courses/" +
-                    methods.watch("slug")
-                  : "URL kursus: /courses/" + methods.watch("slug")
-              }
-            />
+            <div className="space-y-2">
+              <FormField
+                name="slug"
+                label="Slug (URL)"
+                type="text"
+                placeholder="pemrograman-web-modern-react-nextjs"
+                description={
+                  course
+                    ? "⚠️ Mengubah slug akan mengubah URL kursus. Pastikan tidak ada link yang sudah tersebar."
+                    : "Otomatis dari judul. Anda bisa mengubahnya manual jika diperlukan."
+                }
+              />
+              {course && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={regenerateSlug}
+                  className="text-xs"
+                >
+                  Regenerate dari Judul
+                </Button>
+              )}
+              <p className="text-xs text-gray-500">
+                URL: /courses/{methods.watch("slug")}
+              </p>
+            </div>
 
             <TextareaField
               name="description"

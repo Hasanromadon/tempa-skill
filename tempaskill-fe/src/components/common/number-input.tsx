@@ -62,7 +62,9 @@ export function NumberInput({
   const { control } = useFormContext();
   const [displayValue, setDisplayValue] = useState<string>("");
 
-  const formatNumberDisplay = (value: number | string | null | undefined): string => {
+  const formatNumberDisplay = (
+    value: number | string | null | undefined
+  ): string => {
     // Handle null, undefined, atau empty string
     if (value === null || value === undefined || value === "") return "";
 
