@@ -1,10 +1,11 @@
 "use client";
 
-import { EmptyState, LoadingScreen, PageHeader } from "@/components/common";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { EmptyState, LoadingScreen } from "@/components/common";
+import { SiteHeader } from "@/components/common/site-header";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   useIsAuthenticated,
   useRegisterForSession,
@@ -14,11 +15,13 @@ import {
 import { ROUTES } from "@/lib/constants";
 import type { Session } from "@/types/api";
 import {
-  Bell,
   Calendar,
   CalendarDays,
   Clock,
   ExternalLink,
+  History,
+  Info,
+  Loader2,
   Users,
   Video,
 } from "lucide-react";
@@ -78,104 +81,172 @@ export default function SessionsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <PageHeader
-        title="Sesi Live"
-        description="Bergabung dalam sesi tanya jawab dan live coding bersama instruktur"
-        backHref={ROUTES.DASHBOARD}
-      />
+    <div className="min-h-screen bg-slate-50 font-sans pb-20">
+      {/* 🌟 1. CLEAN HEADER */}
+      <SiteHeader title="Jadwal Sesi Live" backHref={ROUTES.DASHBOARD} />
 
-      <div className="container mx-auto px-4 py-8">
-        {/* Next Session Highlight */}
+      <div className="container mx-auto px-4 py-8 max-w-5xl">
+        {/* 🌟 2. NEXT SESSION HIGHLIGHT */}
         {nextSession && (
-          <Card className="mb-8 bg-linear-to-r from-orange-50 to-orange-100 border-orange-200">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Bell className="h-5 w-5 text-orange-600" />
-                <CardTitle className="text-orange-800">
-                  Sesi Selanjutnya
-                </CardTitle>
+          <div className="mb-10">
+            <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+              <Video className="w-5 h-5 text-orange-600" />
+              Sesi Mendatang Terdekat
+            </h2>
+            <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-white shadow-sm overflow-hidden relative">
+              <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+                <Video className="w-32 h-32 text-orange-600 rotate-12" />
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    {nextSession.title}
-                  </h3>
-                  <p className="text-gray-600 mt-1">
-                    {nextSession.course_title}
-                  </p>
-                  <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4" />
-                      {new Date(nextSession.scheduled_at).toLocaleDateString(
-                        "id-ID",
-                        {
-                          weekday: "long",
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                        }
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      {new Date(nextSession.scheduled_at).toLocaleTimeString(
-                        "id-ID",
-                        {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        }
-                      )}{" "}
-                      WIB
+
+              <CardContent className="p-6 md:p-8 relative z-10">
+                <div className="flex flex-col md:flex-row gap-6 md:items-start justify-between">
+                  <div className="flex-1">
+                    <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100 border-none mb-3">
+                      Recommended
+                    </Badge>
+                    <h3 className="text-2xl font-bold text-slate-900 mb-2">
+                      {nextSession.title}
+                    </h3>
+                    <p className="text-slate-600 mb-6 max-w-2xl">
+                      {nextSession.description ||
+                        "Bergabunglah untuk diskusi mendalam tentang topik ini bersama instruktur ahli kami."}
+                    </p>
+
+                    <div className="flex flex-wrap gap-6 text-sm text-slate-600">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 bg-white rounded-lg border border-orange-100">
+                          <Calendar className="h-4 w-4 text-orange-600" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-xs text-slate-400">
+                            Tanggal
+                          </span>
+                          <span className="font-semibold">
+                            {new Date(
+                              nextSession.scheduled_at
+                            ).toLocaleDateString("id-ID", {
+                              weekday: "long",
+                              day: "numeric",
+                              month: "long",
+                            })}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 bg-white rounded-lg border border-orange-100">
+                          <Clock className="h-4 w-4 text-orange-600" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-xs text-slate-400">Waktu</span>
+                          <span className="font-semibold">
+                            {new Date(
+                              nextSession.scheduled_at
+                            ).toLocaleTimeString("id-ID", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}{" "}
+                            WIB
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 bg-white rounded-lg border border-orange-100">
+                          <Users className="h-4 w-4 text-orange-600" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-xs text-slate-400">Kuota</span>
+                          <span className="font-semibold">
+                            {nextSession.current_participants}/
+                            {nextSession.max_participants} Peserta
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
+
+                  <div className="flex flex-col gap-3 min-w-[200px]">
+                    {nextSession.is_registered ? (
+                      <Button
+                        className="bg-orange-600 hover:bg-orange-700 text-white shadow-md shadow-orange-200 h-11"
+                        onClick={() =>
+                          window.open(nextSession.meeting_url, "_blank")
+                        }
+                      >
+                        <Video className="w-4 h-4 mr-2" /> Gabung Sesi
+                      </Button>
+                    ) : (
+                      <Button
+                        className="bg-orange-600 hover:bg-orange-700 text-white shadow-md shadow-orange-200 h-11"
+                        onClick={() =>
+                          handleRegisterToggle(nextSession.id, false)
+                        }
+                        disabled={registerForSession.isPending}
+                      >
+                        {registerForSession.isPending ? (
+                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        ) : (
+                          "Daftar Sesi Ini"
+                        )}
+                      </Button>
+                    )}
+
+                    {nextSession.is_registered && (
+                      <Button
+                        variant="outline"
+                        className="border-orange-200 text-orange-700 hover:bg-orange-50 bg-white"
+                        onClick={() =>
+                          handleRegisterToggle(nextSession.id, true)
+                        }
+                        disabled={unregisterFromSession.isPending}
+                      >
+                        {unregisterFromSession.isPending
+                          ? "Membatalkan..."
+                          : "Batalkan Pendaftaran"}
+                      </Button>
+                    )}
+                  </div>
                 </div>
-                <div className="text-right">
-                  <Button
-                    className="bg-orange-600 hover:bg-orange-700"
-                    onClick={() =>
-                      window.open(nextSession.meeting_url, "_blank")
-                    }
-                  >
-                    <Video className="h-4 w-4 mr-2" />
-                    Gabung Sesi
-                  </Button>
-                  <p className="text-sm text-gray-600 mt-2">
-                    {nextSession.current_participants}/
-                    {nextSession.max_participants} peserta
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         )}
 
-        {/* Sessions List */}
-        <div className="space-y-6">
-          {/* Upcoming Sessions */}
+        {/* 🌟 3. ALL SESSIONS LIST */}
+        <div className="space-y-10">
+          {/* Upcoming */}
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Sesi Mendatang
+            <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+              <CalendarDays className="w-5 h-5 text-slate-500" />
+              Jadwal Sesi Lainnya
             </h2>
+
             {upcomingSessions.length === 0 ? (
               <EmptyState
-                icon={CalendarDays}
+                icon={Calendar}
                 title="Tidak ada sesi mendatang"
-                description="Belum ada jadwal sesi live untuk saat ini. Pantau terus untuk update terbaru!"
+                description="Belum ada jadwal sesi live tambahan. Fokus pada sesi terdekat!"
               />
             ) : (
               <div className="grid gap-4">
-                {upcomingSessions.map((session) => (
-                  <SessionCard
-                    key={session.id}
-                    session={session}
-                    onRegisterToggle={handleRegisterToggle}
-                    registerPending={registerForSession.isPending}
-                    unregisterPending={unregisterFromSession.isPending}
-                  />
-                ))}
+                {upcomingSessions
+                  .filter((s) => s.id !== nextSession?.id) // Exclude highlighted session
+                  .map((session) => (
+                    <SessionCard
+                      key={session.id}
+                      session={session}
+                      onRegisterToggle={handleRegisterToggle}
+                      registerPending={registerForSession.isPending}
+                      unregisterPending={unregisterFromSession.isPending}
+                    />
+                  ))}
+                {upcomingSessions.length === 1 &&
+                  upcomingSessions[0].id === nextSession?.id && (
+                    <p className="text-slate-500 italic text-sm">
+                      Tidak ada sesi lain selain yang di atas.
+                    </p>
+                  )}
               </div>
             )}
           </div>
@@ -183,30 +254,30 @@ export default function SessionsPage() {
           {/* Past Sessions */}
           {pastSessions.length > 0 && (
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                Sesi Sebelumnya
-              </h2>
-              <div className="grid gap-4">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                  <History className="w-5 h-5 text-slate-500" />
+                  Riwayat Sesi
+                </h2>
+              </div>
+              <div className="grid gap-4 opacity-75 hover:opacity-100 transition-opacity">
                 {pastSessions.slice(0, 3).map((session) => (
                   <SessionCard key={session.id} session={session} isPast />
                 ))}
               </div>
-              {pastSessions.length > 3 && (
-                <div className="text-center mt-4">
-                  <Button variant="outline">Lihat Semua Sesi Sebelumnya</Button>
-                </div>
-              )}
             </div>
           )}
         </div>
 
-        {/* Info Alert */}
-        <Alert className="mt-8">
-          <Calendar className="h-4 w-4" />
-          <AlertDescription>
-            <strong>Jadwal Regular:</strong> Sesi live diadakan setiap 2 minggu
-            sekali. Pastikan untuk mendaftar kursus yang Anda minati agar
-            mendapat undangan otomatis.
+        {/* 🌟 4. INFO SECTION */}
+        <Alert className="mt-12 bg-blue-50 border-blue-100 text-blue-900">
+          <Info className="h-4 w-4 text-blue-600" />
+          <AlertTitle className="font-bold text-blue-800 mb-1">
+            Informasi Jadwal
+          </AlertTitle>
+          <AlertDescription className="text-blue-700/90 text-sm">
+            Sesi live diadakan secara rutin. Pastikan Anda mendaftar setidaknya
+            1 jam sebelum sesi dimulai untuk mendapatkan link akses.
           </AlertDescription>
         </Alert>
       </div>
@@ -214,6 +285,7 @@ export default function SessionsPage() {
   );
 }
 
+// --- SUB COMPONENT: Session Card ---
 function SessionCard({
   session,
   isPast = false,
@@ -231,7 +303,7 @@ function SessionCard({
   const now = new Date();
   const isUpcoming = sessionTime > now;
   const isLive =
-    isUpcoming && sessionTime.getTime() - now.getTime() < 15 * 60 * 1000; // 15 minutes
+    isUpcoming && sessionTime.getTime() - now.getTime() < 15 * 60 * 1000;
 
   const handleRegisterClick = () => {
     if (onRegisterToggle) {
@@ -241,102 +313,114 @@ function SessionCard({
 
   return (
     <Card
-      className={`transition-all hover:shadow-md ${
-        isLive ? "ring-2 ring-green-500" : ""
+      className={`transition-all hover:shadow-md border-slate-200 ${
+        isLive ? "ring-2 ring-green-500 border-green-500" : ""
       }`}
     >
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between">
+      <CardContent className="p-5 md:p-6">
+        <div className="flex flex-col md:flex-row gap-6 justify-between items-start">
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <h3 className="text-lg font-semibold text-gray-900">
+            <div className="flex flex-wrap items-center gap-3 mb-2">
+              <h3 className="text-lg font-bold text-slate-900">
                 {session.title}
               </h3>
               {isLive && (
-                <Badge className="bg-green-100 text-green-800">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-1 animate-pulse" />
-                  LIVE
+                <Badge className="bg-green-100 text-green-700 border-none animate-pulse">
+                  LIVE NOW
                 </Badge>
               )}
-              {isPast && <Badge variant="secondary">Selesai</Badge>}
+              {isPast && (
+                <Badge
+                  variant="secondary"
+                  className="bg-slate-100 text-slate-600"
+                >
+                  Selesai
+                </Badge>
+              )}
+              <Badge variant="outline" className="text-slate-500 font-normal">
+                {session.course_title}
+              </Badge>
             </div>
 
-            <p className="text-gray-600 mb-3">{session.course_title}</p>
-
-            <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
-              <div className="flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-500 mb-4">
+              <div className="flex items-center gap-1.5">
+                <Calendar className="h-4 w-4 text-slate-400" />
                 {sessionTime.toLocaleDateString("id-ID", {
                   weekday: "long",
                   day: "numeric",
                   month: "long",
                 })}
               </div>
-              <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
+              <div className="flex items-center gap-1.5">
+                <Clock className="h-4 w-4 text-slate-400" />
                 {sessionTime.toLocaleTimeString("id-ID", {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}{" "}
                 WIB
               </div>
-              <div className="flex items-center gap-1">
-                <Users className="h-4 w-4" />
-                {session.current_participants}/{session.max_participants}
+              <div className="flex items-center gap-1.5">
+                <Users className="h-4 w-4 text-slate-400" />
+                {session.current_participants} Peserta
               </div>
             </div>
 
-            <p className="text-sm text-gray-700 mb-4">{session.description}</p>
-
-            <div className="text-sm text-gray-600">
-              <strong>Instruktur:</strong> {session.instructor_name}
-            </div>
+            <p className="text-sm text-slate-600 leading-relaxed">
+              {session.description || "Tidak ada deskripsi tambahan."}
+            </p>
           </div>
 
-          <div className="ml-6 text-right">
+          <div className="flex flex-col items-end gap-3 w-full md:w-auto">
             {isUpcoming ? (
-              <div className="space-y-2">
+              <>
                 {session.is_registered ? (
                   <Button
-                    className="bg-orange-600 hover:bg-orange-700"
+                    size="sm"
+                    className="bg-orange-600 hover:bg-orange-700 text-white shadow-sm w-full md:w-auto"
                     onClick={() => window.open(session.meeting_url, "_blank")}
                   >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    {isLive ? "Gabung Sekarang" : "Gabung Sesi"}
+                    <ExternalLink className="h-3.5 w-3.5 mr-2" />
+                    Link Meeting
                   </Button>
                 ) : (
                   <Button
-                    className="bg-orange-600 hover:bg-orange-700"
+                    size="sm"
+                    className="bg-white border border-orange-200 text-orange-700 hover:bg-orange-50 w-full md:w-auto"
                     onClick={handleRegisterClick}
                     disabled={registerPending}
                   >
-                    {registerPending ? "Mendaftar..." : "Daftar Sesi"}
+                    {registerPending ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      "Daftar"
+                    )}
                   </Button>
                 )}
+
                 {session.is_registered && (
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
+                    className="text-xs text-slate-400 hover:text-red-600 h-auto p-0 hover:bg-transparent"
                     onClick={handleRegisterClick}
                     disabled={unregisterPending}
                   >
-                    {unregisterPending
-                      ? "Membatalkan..."
-                      : "Batalkan Pendaftaran"}
+                    {unregisterPending ? "Membatalkan..." : "Batalkan"}
                   </Button>
                 )}
-                <p className="text-xs text-gray-500">
-                  Durasi: {session.duration_minutes} menit
-                </p>
-              </div>
+              </>
             ) : (
-              <div className="space-y-2">
-                <Button variant="outline" disabled>
-                  Sesi Selesai
-                </Button>
-                <Link href={`/courses/${session.course_slug}`}>
-                  <Button variant="outline" size="sm">
-                    Lihat Kursus
+              <div className="flex gap-2 w-full md:w-auto">
+                <Link
+                  href={`/courses/${session.course_slug}`}
+                  className="w-full"
+                >
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full text-slate-600"
+                  >
+                    Lihat Materi Kursus
                   </Button>
                 </Link>
               </div>
