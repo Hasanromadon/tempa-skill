@@ -34,11 +34,13 @@ MIDTRANS_CLIENT_KEY=SB-Mid-client-ZBuTiayOZocEGgLJ
 ## ✅ Immediate Actions Taken
 
 1. **Sanitized Current Files** (Commit: `dfa6d5d`)
+
    - Replaced actual keys with placeholders in TODO.md
    - Added Midtrans section to .env.example with safe placeholders
    - Added security warnings to documentation
 
 2. **Updated .gitignore**
+
    - Already properly configured to ignore `.env` files
 
 3. **Documentation Updated**
@@ -59,6 +61,7 @@ Go to Midtrans Dashboard and revoke these keys:
 4. Copy new keys to your local `.env` file (NOT `.env.example`)
 
 **Why**: Even though these are sandbox keys, they can be used for:
+
 - Creating test transactions
 - Testing payment flows
 - Potentially spamming your sandbox environment
@@ -107,6 +110,7 @@ git push origin --force --all
 **Option C: Accept the Risk**
 
 Since these are **Sandbox keys** (not production), you may choose to:
+
 1. Revoke and regenerate keys
 2. Document incident (this file)
 3. Improve security practices going forward
@@ -134,11 +138,13 @@ MIDTRANS_CLIENT_KEY=SB-Mid-client-NEW_KEY_HERE
 ### Implemented:
 
 1. ✅ **`.gitignore`** properly configured
+
    - `.env` files are ignored
    - Firebase service account JSON ignored
    - All sensitive patterns covered
 
 2. ✅ **Documentation Guidelines**
+
    - `.env.example` uses only placeholders
    - Security warnings in comments
    - Clear instructions in setup docs
@@ -151,8 +157,9 @@ MIDTRANS_CLIENT_KEY=SB-Mid-client-NEW_KEY_HERE
 ### Recommended:
 
 1. **Pre-commit Hooks**
-   
+
    Install `git-secrets`:
+
    ```bash
    git secrets --install
    git secrets --register-aws  # If using AWS
@@ -160,13 +167,14 @@ MIDTRANS_CLIENT_KEY=SB-Mid-client-NEW_KEY_HERE
    ```
 
 2. **GitHub Secret Scanning**
-   
+
    Already enabled for public repos. Configure alerts:
+
    - Settings → Security → Code security and analysis
    - Enable "Secret scanning"
 
 3. **Developer Training**
-   
+
    - Never commit `.env` files
    - Always use `.env.example` with placeholders
    - Review git diff before committing
@@ -179,6 +187,7 @@ MIDTRANS_CLIENT_KEY=SB-Mid-client-NEW_KEY_HERE
 ### Actual Impact: **LOW**
 
 **Reasons**:
+
 - ✅ Sandbox keys only (no real financial risk)
 - ✅ No production keys exposed
 - ✅ Detected before production deployment
@@ -188,6 +197,7 @@ MIDTRANS_CLIENT_KEY=SB-Mid-client-NEW_KEY_HERE
 ### Potential Impact if Production Keys: **HIGH**
 
 **Could have enabled**:
+
 - Creating fraudulent transactions
 - Processing refunds
 - Accessing customer payment data
@@ -197,15 +207,15 @@ MIDTRANS_CLIENT_KEY=SB-Mid-client-NEW_KEY_HERE
 
 ## 📝 Timeline
 
-| Date | Time | Event |
-|------|------|-------|
+| Date         | Time  | Event                                      |
+| ------------ | ----- | ------------------------------------------ |
 | Nov 10, 2025 | 15:18 | Keys committed to TODO.md (commit a7fef81) |
-| Nov 10, 2025 | 15:18 | Pushed to GitHub |
-| Nov 30, 2025 | - | Incident discovered during security audit |
-| Nov 30, 2025 | - | Current files sanitized (commit dfa6d5d) |
-| Nov 30, 2025 | - | This incident report created |
-| **Pending** | - | Keys revoked in Midtrans Dashboard |
-| **Pending** | - | Git history cleaned (optional) |
+| Nov 10, 2025 | 15:18 | Pushed to GitHub                           |
+| Nov 30, 2025 | -     | Incident discovered during security audit  |
+| Nov 30, 2025 | -     | Current files sanitized (commit dfa6d5d)   |
+| Nov 30, 2025 | -     | This incident report created               |
+| **Pending**  | -     | Keys revoked in Midtrans Dashboard         |
+| **Pending**  | -     | Git history cleaned (optional)             |
 
 ---
 

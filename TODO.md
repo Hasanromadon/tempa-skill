@@ -412,7 +412,8 @@ MIDTRANS_IS_PRODUCTION=false
 MIDTRANS_BASE_URL=https://api.sandbox.midtrans.com
 ```
 
-**⚠️ IMPORTANT**: 
+**⚠️ IMPORTANT**:
+
 - Get your Midtrans keys from [Midtrans Dashboard](https://dashboard.midtrans.com/)
 - Use Sandbox keys for development
 - NEVER commit actual API keys to git!

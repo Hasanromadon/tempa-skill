@@ -10,7 +10,7 @@
 
 1. 📖 **[README.md](./README.md)** - Overview & intro proyek
 2. 🚀 **[QUICKSTART.md](./QUICKSTART.md)** - Setup & instalasi
-3. 🤖 **[CONTEXT.md](./CONTEXT.md)** - Aturan untuk AI (CRITICAL!)
+3. 🤖 **[.github/copilot-instructions.md](./.github/copilot-instructions.md)** - AI development guidelines
 
 **Jika Anda sudah setup dan mau mulai coding:**
 
@@ -27,7 +27,7 @@
 | File                                 | Isi                                                     | Kapan Dibaca                                    |
 | ------------------------------------ | ------------------------------------------------------- | ----------------------------------------------- |
 | **[README.md](./README.md)**         | Overview proyek, model bisnis, tech stack, roadmap umum | Pertama kali masuk proyek                       |
-| **[CONTEXT.md](./CONTEXT.md)**       | Aturan konteks workspace, guidelines untuk AI           | Setiap kali memulai conversation baru dengan AI |
+| **[.github/copilot-instructions.md](./.github/copilot-instructions.md)** | Comprehensive AI development guidelines & workspace rules | Setiap kali memulai conversation baru dengan AI |
 | **[QUICKSTART.md](./QUICKSTART.md)** | Setup lengkap backend & frontend, troubleshooting       | Saat pertama kali setup project                 |
 
 ### 🔧 Development
@@ -54,10 +54,11 @@
 | **[FRONTEND_API_GUIDE.md](./FRONTEND_API_GUIDE.md)** | Frontend API integration guide         | Saat implement API calls di frontend |
 | **[PRIVATE_ROUTES.md](./PRIVATE_ROUTES.md)**         | Route protection & authentication flow | Saat implement protected pages       |
 
-### 🛡️ Security & Quality
+### 🛡️ Security
 
 | File                                                 | Isi                                 | Kapan Dibaca                           |
 | ---------------------------------------------------- | ----------------------------------- | -------------------------------------- |
+| **[SECURITY_INCIDENT.md](./SECURITY_INCIDENT.md)**   | Security incident reports & actions | When security issues are detected       |
 | **[SECURITY_AUDIT.md](./SECURITY_AUDIT.md)**         | Security analysis & vulnerabilities | Before production deployment           |
 | **[SECURITY_CHECKLIST.md](./SECURITY_CHECKLIST.md)** | Security implementation checklist   | During development & before deployment |
 
@@ -136,10 +137,9 @@
 
 ### "Saya mau kerja dengan AI"
 
-1. ✅ [CONTEXT.md](./CONTEXT.md) - AI rules & guidelines
-2. ✅ [.github/copilot-instructions.md](./.github/copilot-instructions.md) - Comprehensive AI dev guide
-3. ✅ Open file yang relevan di workspace
-4. ✅ Ask dengan context yang jelas
+1. ✅ [.github/copilot-instructions.md](./.github/copilot-instructions.md) - Comprehensive AI dev guide
+2. ✅ Open file yang relevan di workspace
+3. ✅ Ask dengan context yang jelas
 
 ### "Saya mau review security"
 
@@ -272,7 +272,6 @@ Content with code examples
 | ------------------------------ | -------------------------------------------------------------------- |
 | Project overview               | [README.md](./README.md)                                             |
 | Setup instructions             | [QUICKSTART.md](./QUICKSTART.md)                                     |
-| AI guidelines                  | [CONTEXT.md](./CONTEXT.md)                                           |
 | AI development (comprehensive) | [.github/copilot-instructions.md](./.github/copilot-instructions.md) |
 | Coding standards               | [DEVELOPMENT.md](./DEVELOPMENT.md)                                   |
 | Folder structure               | [STRUCTURE.md](./STRUCTURE.md)                                       |
@@ -284,6 +283,7 @@ Content with code examples
 | Development timeline           | [ROADMAP.md](./ROADMAP.md)                                           |
 | Quick commands                 | [CHEATSHEET.md](./CHEATSHEET.md)                                     |
 | Scripts & automation           | [SCRIPTS.md](./SCRIPTS.md)                                           |
+| Security incidents             | [SECURITY_INCIDENT.md](./SECURITY_INCIDENT.md)                       |
 | Security audit                 | [SECURITY_AUDIT.md](./SECURITY_AUDIT.md)                             |
 | Security checklist             | [SECURITY_CHECKLIST.md](./SECURITY_CHECKLIST.md)                     |
 | Contributing                   | [CONTRIBUTING.md](./CONTRIBUTING.md)                                 |
@@ -322,7 +322,7 @@ Sebelum mulai development, pastikan Anda sudah:
 
 - [ ] Baca README.md (overview)
 - [ ] Baca QUICKSTART.md (setup)
-- [ ] Baca CONTEXT.md (AI rules)
+- [ ] Baca .github/copilot-instructions.md (AI guidelines)
 - [ ] Baca DEVELOPMENT.md (standards)
 - [ ] Bookmark CHEATSHEET.md (reference)
 - [ ] Familiar dengan STRUCTURE.md (folders)
@@ -359,7 +359,7 @@ Sebelum mulai development, pastikan Anda sudah:
 │
 ├── 🎯 Essential
 │   ├── README.md
-│   ├── CONTEXT.md
+│   ├── .github/copilot-instructions.md
 │   └── QUICKSTART.md
 │
 ├── 🔧 Development
@@ -378,6 +378,7 @@ Sebelum mulai development, pastikan Anda sudah:
 │   └── PRIVATE_ROUTES.md
 │
 ├── 🛡️ Security
+│   ├── SECURITY_INCIDENT.md
 │   ├── SECURITY_AUDIT.md
 │   └── SECURITY_CHECKLIST.md
 │
@@ -385,8 +386,12 @@ Sebelum mulai development, pastikan Anda sudah:
 │   ├── CONTRIBUTING.md
 │   └── SCRIPTS.md
 │
-└── 🤖 AI Development
-    └── .github/copilot-instructions.md
+└── 📁 Specialized Guides (in /docs)
+    ├── FRONTEND_ARCHITECTURE.md
+    ├── FILTER_TABLE_GUIDE.md
+    ├── SERVER_TABLE_USAGE.md
+    ├── FORM_COMPONENTS.md
+    └── MDX_GUIDE.md
 ```
 
 ---
@@ -407,5 +412,10 @@ Anda sudah siap untuk mulai development!
 
 ---
 
-**Last Updated**: November 3, 2025  
-**Documentation Version**: 1.1.0
+**Last Updated**: November 30, 2025  
+**Documentation Version**: 2.0.0
+
+**Changelog**:
+- v2.0.0 (Nov 30, 2025): Major cleanup - removed outdated analysis files, consolidated AI guidelines
+- v1.1.0 (Nov 3, 2025): Added comprehensive documentation index
+- v1.0.0: Initial documentation structure
