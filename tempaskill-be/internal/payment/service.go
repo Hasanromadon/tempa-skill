@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/course"
+	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/auth"
 	"github.com/google/uuid"
 )
 
@@ -24,8 +26,8 @@ type PaymentService interface {
 
 type paymentService struct {
 	repo           PaymentRepository
-	courseRepo     interface{} // We'll need to import course repository
-	userRepo       interface{} // We'll need to import user repository
+	courseRepo     course.Repository
+	userRepo       auth.Repository
 	midtransConfig MidtransConfig
 }
 
@@ -36,7 +38,7 @@ type MidtransConfig struct {
 	BaseURL      string
 }
 
-func NewPaymentService(repo PaymentRepository, courseRepo, userRepo interface{}, config MidtransConfig) PaymentService {
+func NewPaymentService(repo PaymentRepository, courseRepo course.Repository, userRepo auth.Repository, config MidtransConfig) PaymentService {
 	return &paymentService{
 		repo:           repo,
 		courseRepo:     courseRepo,
@@ -73,7 +75,7 @@ func (s *paymentService) CreatePayment(userID uint, req CreatePaymentRequest) (*
 		UserID:            userID,
 		CourseID:          req.CourseID,
 		OrderID:           orderID,
-		GrossAmount:       course.Price,
+		GrossAmount:       float64(course.Price),
 		TransactionStatus: "pending",
 		TransactionTime:   time.Now(),
 	}
@@ -447,43 +449,26 @@ func (s *paymentService) encodeBase64(str string) string {
 }
 
 // Helper methods (these will need to be implemented with proper repositories)
-func (s *paymentService) getCourseByID(courseID uint) (*Course, error) {
-	// This should use the course repository
-	// For now, return a mock course
-	return &Course{
-		ID:    courseID,
-		Title: "Sample Course",
-		Price: 50000, // 50,000 IDR
-	}, nil
+func (s *paymentService) getCourseByID(courseID uint) (*course.Course, error) {
+	// Use course repository to fetch actual course
+	c, err := s.courseRepo.FindCourseByID(nil, courseID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get course: %v", err)
+	}
+	return c, nil
 }
 
-func (s *paymentService) getUserByID(userID uint) (*User, error) {
-	// This should use the user repository
-	// For now, return a mock user
-	return &User{
-		ID:    userID,
-		Name:  "Sample User",
-		Email: "user@example.com",
-	}, nil
+func (s *paymentService) getUserByID(userID uint) (*auth.User, error) {
+	// Use user repository to fetch actual user
+	u, err := s.userRepo.FindByID(userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user: %v", err)
+	}
+	return u, nil
 }
 
 func (s *paymentService) enrollUserInCourse(orderID string) error {
 	// This should enroll the user in the course after successful payment
 	// Implementation depends on enrollment system
 	return nil
-}
-
-// Mock types (these should be imported from their respective packages)
-type Course struct {
-	ID         uint
-	Title      string
-	Slug       string
-	Price      float64
-	Instructor User
-}
-
-type User struct {
-	ID    uint
-	Name  string
-	Email string
 }

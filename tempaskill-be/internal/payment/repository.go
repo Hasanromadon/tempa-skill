@@ -118,10 +118,8 @@ func (r *paymentRepository) FindWithFilters(query PaymentListQuery) ([]PaymentTr
 	var transactions []PaymentTransaction
 	var total int64
 
-	// Base query with joins
-	db := r.db.Model(&PaymentTransaction{}).
-		Joins("LEFT JOIN users ON users.id = payment_transactions.user_id").
-		Joins("LEFT JOIN courses ON courses.id = payment_transactions.course_id")
+	// Build base query
+	db := r.db.Model(&PaymentTransaction{})
 
 	// Apply filters
 	if query.Status != "" {
@@ -133,13 +131,17 @@ func (r *paymentRepository) FindWithFilters(query PaymentListQuery) ([]PaymentTr
 	}
 
 	if query.InstructorID > 0 {
-		db = db.Where("courses.instructor_id = ?", query.InstructorID)
+		// Need to join courses table for instructor filter
+		db = db.Joins("JOIN courses ON courses.id = payment_transactions.course_id").
+			Where("courses.instructor_id = ?", query.InstructorID)
 	}
 
 	// Search by user name or email
 	if query.Search != "" {
 		searchPattern := "%" + query.Search + "%"
-		db = db.Where("users.name LIKE ? OR users.email LIKE ?", searchPattern, searchPattern)
+		// Need to join users table for search
+		db = db.Joins("JOIN users ON users.id = payment_transactions.user_id").
+			Where("users.name LIKE ? OR users.email LIKE ?", searchPattern, searchPattern)
 	}
 
 	// Count total before pagination
@@ -167,11 +169,8 @@ func (r *paymentRepository) FindWithFilters(query PaymentListQuery) ([]PaymentTr
 	// Pagination
 	offset := (query.Page - 1) * query.Limit
 	
-	// Execute query with preloads
-	err := r.db.Preload("User").Preload("Course").Preload("Course.Instructor").
-		Joins("LEFT JOIN users ON users.id = payment_transactions.user_id").
-		Joins("LEFT JOIN courses ON courses.id = payment_transactions.course_id").
-		Where(db.Statement.Clauses["WHERE"]).
+	// Execute query with preloads (use same db query chain)
+	err := db.Preload("User").Preload("Course").Preload("Course.Instructor").
 		Order(sortBy + " " + sortOrder).
 		Offset(offset).
 		Limit(query.Limit).

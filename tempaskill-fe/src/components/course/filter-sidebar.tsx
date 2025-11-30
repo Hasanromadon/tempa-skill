@@ -76,7 +76,9 @@ export function FilterSidebar({
           break;
         case "difficulty":
           newFilters.difficulty =
-            value === "beginner" || value === "intermediate" || value === "advanced"
+            value === "beginner" ||
+            value === "intermediate" ||
+            value === "advanced"
               ? value
               : undefined;
           break;
@@ -85,7 +87,12 @@ export function FilterSidebar({
           newFilters[key] = typeof value === "number" ? value : Number(value);
           break;
         case "instructorId":
-          newFilters.instructorId = typeof value === "number" ? value : value ? parseInt(value as string) : undefined;
+          newFilters.instructorId =
+            typeof value === "number"
+              ? value
+              : value
+              ? parseInt(value as string)
+              : undefined;
           break;
       }
     }
@@ -213,16 +220,19 @@ export function FilterSidebar({
         <div className="space-y-3">
           <Label className="text-sm font-medium">Instruktur</Label>
           <Select
-            value={filters.instructorId?.toString() || ""}
+            value={filters.instructorId?.toString() || "all"}
             onValueChange={(value) => {
-              updateFilter("instructorId", value ? parseInt(value) : undefined);
+              updateFilter(
+                "instructorId",
+                value === "all" ? undefined : parseInt(value)
+              );
             }}
           >
             <SelectTrigger>
               <SelectValue placeholder="Pilih instruktur" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Semua Instruktur</SelectItem>
+              <SelectItem value="all">Semua Instruktur</SelectItem>
               {instructors.map((instructor) => (
                 <SelectItem
                   key={instructor.id}

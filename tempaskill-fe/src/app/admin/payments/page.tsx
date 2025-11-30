@@ -274,16 +274,19 @@ export default function AdminPaymentsPage() {
 
             {/* Status Filter */}
             <Select
-              value={(table.filters.filters.status as string) || ""}
+              value={(table.filters.filters.status as string) || "all"}
               onValueChange={(value) =>
-                table.filters.setFilter("status", value || undefined)
+                table.filters.setFilter(
+                  "status",
+                  value === "all" ? undefined : value
+                )
               }
             >
               <SelectTrigger className="w-full md:w-[180px]">
                 <SelectValue placeholder="Semua Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Semua Status</SelectItem>
+                <SelectItem value="all">Semua Status</SelectItem>
                 <SelectItem value="settlement">Berhasil</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
                 <SelectItem value="expired">Kadaluarsa</SelectItem>

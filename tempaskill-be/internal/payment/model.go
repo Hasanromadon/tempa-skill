@@ -2,6 +2,9 @@ package payment
 
 import (
 	"time"
+	
+	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/auth"
+	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/course"
 )
 
 type PaymentTransaction struct {
@@ -20,6 +23,6 @@ type PaymentTransaction struct {
 	UpdatedAt         time.Time `json:"updated_at"`
 
 	// Relations
-	User   User   `gorm:"foreignKey:UserID" json:"user,omitempty"`
-	Course Course `gorm:"foreignKey:CourseID" json:"course,omitempty"`
+	User   auth.User     `gorm:"foreignKey:UserID" json:"user,omitempty"`
+	Course course.Course `gorm:"foreignKey:CourseID" json:"course,omitempty"`
 }

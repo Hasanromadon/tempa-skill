@@ -161,6 +161,9 @@ export interface DataTableProps<TData> {
 
   // Show page numbers
   showPageNumbers?: boolean;
+
+  // Function to get unique row ID (defaults to 'id' property)
+  getRowId?: (row: TData, index: number) => string | number;
 }
 
 /**
@@ -266,6 +269,10 @@ export function DataTable<TData>({
   showPagination = true,
   showPageSizeSelector = true,
   showPageNumbers = true,
+  getRowId = (row: TData, index: number) =>
+    ((row as Record<string, unknown>)?.id as string | number) ??
+    ((row as Record<string, unknown>)?.order_id as string | number) ??
+    index,
 }: DataTableProps<TData>) {
   // Memoize start and end row calculations
   const startRow = useMemo(() => (page - 1) * limit + 1, [page, limit]);
@@ -455,7 +462,7 @@ export function DataTable<TData>({
           <TableBody>
             {data.map((row, rowIndex) => (
               <DataTableRow
-                key={rowIndex}
+                key={getRowId(row, rowIndex)}
                 row={row}
                 rowIndex={rowIndex}
                 columns={columns}

@@ -207,7 +207,7 @@ func main() {
 			IsProduction: cfg.Midtrans.IsProduction,
 			BaseURL:      cfg.Midtrans.BaseURL,
 		}
-		paymentService := payment.NewPaymentService(paymentRepo, courseRepo, userRepo, paymentConfig)
+		paymentService := payment.NewPaymentService(paymentRepo, courseRepo, authRepo, paymentConfig)
 		paymentHandler := payment.NewPaymentHandler(paymentService)
 
 		// Register payment routes
