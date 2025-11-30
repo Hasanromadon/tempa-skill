@@ -1,7 +1,9 @@
 "use client";
 
-import { LoadingScreen, PageHeader } from "@/components/common";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { LoadingScreen } from "@/components/common";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import {
   useChangePassword,
@@ -20,10 +23,33 @@ import {
   useUpdateProfile,
 } from "@/hooks";
 import { PASSWORD_MIN_LENGTH, ROUTES } from "@/lib/constants";
-import { Loader2, Lock, User } from "lucide-react";
+import {
+  ChevronLeft,
+  GraduationCap,
+  Info,
+  KeyRound,
+  Loader2,
+  Lock,
+  Mail,
+  Save,
+  User,
+} from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+
+// ✅ Type Definitions
+interface ApiError {
+  response?: {
+    data?: {
+      error?: {
+        message?: string;
+      };
+    };
+  };
+  message?: string;
+}
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -35,89 +61,72 @@ export default function ProfilePage() {
   const updateProfile = useUpdateProfile();
   const changePassword = useChangePassword();
 
-  // Profile form state
-  const [name, setName] = useState("");
-  const [bio, setBio] = useState("");
+  // --- STATE ---
+  const [name, setName] = useState(user?.name || "");
+  const [bio, setBio] = useState(user?.bio || "");
+  const [currentPassword, setCurrentPassword] = useState<string>("");
+  const [newPassword, setNewPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
 
-  // Password form state
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  // Sync state with user data
+  useEffect(() => {
+    if (user) {
+      if (user.name && user.name !== name) {
+        setName(user.name);
+      }
+      if (user.bio && user.bio !== bio) {
+        setBio(user.bio);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.name, user?.bio]);
 
-  // Error states
-  const [profileError, setProfileError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
-
-  if (authLoading) {
-    return <LoadingScreen message="Memuat profil..." />;
-  }
-
-  if (!isAuthenticated) {
-    router.push(ROUTES.LOGIN);
-    return null;
-  }
-
+  // --- HANDLERS ---
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    setProfileError("");
-
-    const finalName = name.trim() || user?.name || "";
-    const finalBio = bio.trim() || user?.bio || "";
+    const finalName = name.trim();
 
     if (!finalName) {
-      setProfileError("Nama tidak boleh kosong");
-      toast.error("Validasi gagal", {
-        description: "Nama tidak boleh kosong",
-      });
+      toast.error("Validasi Gagal", { description: "Nama tidak boleh kosong" });
       return;
     }
 
     try {
       await updateProfile.mutateAsync({
         name: finalName,
-        bio: finalBio || undefined,
+        bio: bio.trim() || undefined,
       });
-
-      toast.success("Profil berhasil diperbarui!", {
-        description: "Perubahan profil Anda telah disimpan.",
+      toast.success("Profil Diperbarui", {
+        description: "Informasi Anda berhasil disimpan.",
       });
-    } catch (err) {
-      const errorMessage =
-        (err as { response?: { data?: { error?: { message?: string } } } })
-          .response?.data?.error?.message || "Gagal memperbarui profil";
-      setProfileError(errorMessage);
-      toast.error("Gagal memperbarui profil", {
-        description: errorMessage,
+    } catch (err: unknown) {
+      const error = err as ApiError;
+      toast.error("Gagal", {
+        description: error.message || "Terjadi kesalahan.",
       });
     }
   };
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setPasswordError("");
 
     if (!currentPassword || !newPassword || !confirmPassword) {
-      setPasswordError("Semua field kata sandi harus diisi");
-      toast.error("Validasi gagal", {
-        description: "Semua field kata sandi harus diisi",
+      toast.error("Validasi Gagal", {
+        description: "Mohon isi semua kolom kata sandi.",
       });
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setPasswordError("Kata sandi baru tidak cocok");
-      toast.error("Validasi gagal", {
-        description: "Kata sandi baru dan konfirmasi tidak cocok",
+      toast.error("Validasi Gagal", {
+        description: "Konfirmasi kata sandi tidak cocok.",
       });
       return;
     }
 
     if (newPassword.length < PASSWORD_MIN_LENGTH) {
-      setPasswordError(
-        `Kata sandi baru minimal ${PASSWORD_MIN_LENGTH} karakter`
-      );
-      toast.error("Validasi gagal", {
-        description: `Kata sandi baru minimal ${PASSWORD_MIN_LENGTH} karakter`,
+      toast.error("Kata Sandi Lemah", {
+        description: `Minimal ${PASSWORD_MIN_LENGTH} karakter diperlukan.`,
       });
       return;
     }
@@ -128,204 +137,326 @@ export default function ProfilePage() {
         new_password: newPassword,
         new_password_confirmation: confirmPassword,
       });
-
-      toast.success("Kata sandi berhasil diubah!", {
-        description: "Kata sandi Anda telah diperbarui.",
+      toast.success("Kata Sandi Diubah", {
+        description: "Akun Anda kini lebih aman. Silakan login ulang.",
       });
-
-      // Reset form
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-    } catch (err) {
-      const errorMessage =
-        (err as { response?: { data?: { error?: { message?: string } } } })
-          .response?.data?.error?.message || "Gagal mengubah kata sandi";
-      setPasswordError(errorMessage);
-      toast.error("Gagal mengubah kata sandi", {
-        description: errorMessage,
+    } catch (err: unknown) {
+      const error = err as ApiError;
+      toast.error("Gagal", {
+        description:
+          error.response?.data?.error?.message || "Kata sandi saat ini salah.",
       });
     }
   };
 
+  if (authLoading) return <LoadingScreen message="Memuat profil..." />;
+  if (!isAuthenticated) {
+    router.push(ROUTES.LOGIN);
+    return null;
+  }
+
+  const getInitials = (name: string) =>
+    name
+      ?.split(" ")
+      .map((n) => n[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase();
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <PageHeader
-        title="Profil Saya"
-        description="Kelola informasi profil Anda"
-        backHref={ROUTES.DASHBOARD}
-      />
+    <div className="min-h-screen bg-slate-50 font-sans pb-20">
+      {/* 🌟 1. CLEAN HEADER */}
+      <div className="bg-white border-b border-slate-200 sticky top-0 z-30">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link
+              href={ROUTES.DASHBOARD}
+              className="p-2 -ml-2 rounded-full hover:bg-slate-100 text-slate-500 transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </Link>
+            <h1 className="text-lg font-bold text-slate-900">
+              Pengaturan Akun
+            </h1>
+          </div>
+        </div>
+      </div>
 
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="space-y-6">
-          {/* User Info Card */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="h-16 w-16 rounded-full bg-orange-100 flex items-center justify-center">
-                  <User className="h-8 w-8 text-orange-600" />
-                </div>
-                <div>
-                  <CardTitle>{user?.name}</CardTitle>
-                  <CardDescription>{user?.email}</CardDescription>
-                </div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* 🌟 2. LEFT SIDEBAR: PROFILE & INFO */}
+          <div className="lg:col-span-4 space-y-6">
+            {/* Identity Card */}
+            <Card className="border-none shadow-sm bg-white overflow-hidden pt-0">
+              <div className="h-24 bg-linear-to-r from-orange-500 to-amber-500"></div>
+              <div className="px-4 pb-4 -mt-14 text-center">
+                <Avatar className="w-20 h-20 border-4 border-white mx-auto shadow-md">
+                  <AvatarImage src={user?.avatar_url} />
+                  <AvatarFallback className="bg-slate-800 text-white font-bold text-xl">
+                    {user?.name?.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <h3 className="font-bold text-lg mt-2">{user?.name}</h3>
+                <p className="text-sm text-gray-500">{user?.email}</p>
+                <Badge
+                  variant="secondary"
+                  className="mt-2 bg-orange-100 text-orange-700 hover:bg-orange-100"
+                >
+                  Student
+                </Badge>
               </div>
-            </CardHeader>
-          </Card>
+            </Card>
 
-          {/* Edit Profile Form */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Edit Profil
-              </CardTitle>
-              <CardDescription>Perbarui informasi profil Anda</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleUpdateProfile} className="space-y-4">
-                {profileError && (
-                  <Alert variant="destructive">
-                    <AlertDescription>{profileError}</AlertDescription>
-                  </Alert>
-                )}
+            {/* ℹ️ Informative Card: Account Status */}
+            <Card className="border border-blue-100 bg-blue-50/50 shadow-none">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-bold text-blue-900 flex items-center gap-2">
+                  <GraduationCap className="w-4 h-4" /> Status Akun: Aktif
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-xs text-blue-700 leading-relaxed">
+                  Anda memiliki akses penuh ke semua materi gratis dan kursus
+                  yang telah Anda beli. Pastikan untuk menyelesaikan verifikasi
+                  email untuk keamanan ekstra.
+                </p>
+              </CardContent>
+            </Card>
 
-                <div className="space-y-2">
-                  <Label htmlFor="name">Nama Lengkap *</Label>
-                  <Input
-                    id="name"
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder={user?.name || "Masukkan nama lengkap"}
-                    disabled={updateProfile.isPending}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={user?.email || ""}
-                    disabled
-                    className="bg-gray-100"
-                  />
-                  <p className="text-sm text-gray-500">
-                    Email tidak dapat diubah
+            {/* ℹ️ Informative Card: Security Tips */}
+            <Card className="border border-slate-200 shadow-sm bg-white">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <Lock className="w-4 h-4 text-orange-500" /> Tips Keamanan
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex gap-3 items-start">
+                  <div className="w-1.5 h-1.5 rounded-full bg-orange-500 mt-1.5 shrink-0" />
+                  <p className="text-xs text-slate-600">
+                    Gunakan password unik yang tidak digunakan di website lain.
                   </p>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="bio">Bio</Label>
-                  <Textarea
-                    id="bio"
-                    value={bio}
-                    onChange={(e) => setBio(e.target.value)}
-                    placeholder={
-                      user?.bio || "Ceritakan sedikit tentang diri Anda..."
-                    }
-                    rows={4}
-                    disabled={updateProfile.isPending}
-                  />
+                <div className="flex gap-3 items-start">
+                  <div className="w-1.5 h-1.5 rounded-full bg-orange-500 mt-1.5 shrink-0" />
+                  <p className="text-xs text-slate-600">
+                    Perbarui password Anda secara berkala (tiap 3-6 bulan).
+                  </p>
                 </div>
+                <div className="flex gap-3 items-start">
+                  <div className="w-1.5 h-1.5 rounded-full bg-orange-500 mt-1.5 shrink-0" />
+                  <p className="text-xs text-slate-600">
+                    Jangan bagikan kredensial akun Anda kepada siapapun.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-                <Button
-                  type="submit"
-                  className="w-full bg-orange-600 hover:bg-orange-700"
-                  disabled={updateProfile.isPending}
+          {/* 🌟 3. RIGHT CONTENT: FORMS */}
+          <div className="lg:col-span-8">
+            <Tabs defaultValue="profile" className="w-full">
+              <TabsList className="w-full justify-start bg-transparent border-b border-slate-200 p-0 mb-6 h-auto rounded-none gap-6">
+                <TabsTrigger
+                  value="profile"
+                  className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-orange-600 rounded-none px-0 pb-3 text-slate-500 data-[state=active]:text-orange-600 font-medium transition-all"
                 >
-                  {updateProfile.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Menyimpan...
-                    </>
-                  ) : (
-                    "Simpan Perubahan"
-                  )}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-
-          <Separator />
-
-          {/* Change Password Form */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Lock className="h-5 w-5" />
-                Ubah Kata Sandi
-              </CardTitle>
-              <CardDescription>Perbarui kata sandi akun Anda</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleChangePassword} className="space-y-4">
-                {passwordError && (
-                  <Alert variant="destructive">
-                    <AlertDescription>{passwordError}</AlertDescription>
-                  </Alert>
-                )}
-
-                <div className="space-y-2">
-                  <Label htmlFor="currentPassword">Kata Sandi Saat Ini *</Label>
-                  <Input
-                    id="currentPassword"
-                    type="password"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    placeholder="Masukkan kata sandi saat ini"
-                    disabled={changePassword.isPending}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="newPassword">Kata Sandi Baru *</Label>
-                  <Input
-                    id="newPassword"
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Masukkan kata sandi baru (min. 6 karakter)"
-                    disabled={changePassword.isPending}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">
-                    Konfirmasi Kata Sandi Baru *
-                  </Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Masukkan ulang kata sandi baru"
-                    disabled={changePassword.isPending}
-                    required
-                  />
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full bg-orange-600 hover:bg-orange-700"
-                  disabled={changePassword.isPending}
+                  Edit Profil
+                </TabsTrigger>
+                <TabsTrigger
+                  value="security"
+                  className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-orange-600 rounded-none px-0 pb-3 text-slate-500 data-[state=active]:text-orange-600 font-medium transition-all"
                 >
-                  {changePassword.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Mengubah...
-                    </>
-                  ) : (
-                    "Ubah Kata Sandi"
-                  )}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+                  Kata Sandi
+                </TabsTrigger>
+              </TabsList>
+
+              {/* PROFILE FORM */}
+              <TabsContent value="profile" className="mt-0">
+                <Card className="border border-slate-200 shadow-sm bg-white">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Informasi Dasar</CardTitle>
+                    <CardDescription>
+                      Perbarui informasi publik di profil Anda.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleUpdateProfile} className="space-y-6">
+                      <div className="grid gap-2">
+                        <Label htmlFor="name">Nama Lengkap</Label>
+                        <div className="relative">
+                          <User className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                          <Input
+                            id="name"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className="pl-10 h-11 focus-visible:ring-orange-500"
+                            placeholder="Masukkan nama lengkap"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid gap-2">
+                        <Label htmlFor="email">Email</Label>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                          <Input
+                            id="email"
+                            value={user?.email}
+                            disabled
+                            className="pl-10 h-11 bg-slate-50 text-slate-500 border-slate-200 cursor-not-allowed"
+                          />
+                        </div>
+                        {/* ℹ️ Informative Help Text */}
+                        <div className="flex items-center gap-2 text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-100 mt-1">
+                          <Info className="w-3 h-3 shrink-0" />
+                          Email terdaftar tidak dapat diubah untuk menjaga
+                          keamanan akun. Hubungi admin jika perlu bantuan.
+                        </div>
+                      </div>
+
+                      <div className="grid gap-2">
+                        <Label htmlFor="bio">Bio</Label>
+                        <Textarea
+                          id="bio"
+                          value={bio}
+                          onChange={(e) => setBio(e.target.value)}
+                          placeholder="Ceritakan sedikit tentang Anda, minat belajar, atau pekerjaan saat ini..."
+                          className="min-h-[120px] focus-visible:ring-orange-500 resize-none p-3 leading-relaxed"
+                        />
+                      </div>
+
+                      <div className="flex justify-end pt-4 border-t border-slate-100">
+                        <Button
+                          type="submit"
+                          disabled={updateProfile.isPending}
+                          className="bg-orange-600 hover:bg-orange-700 text-white min-w-[140px] h-11 font-medium shadow-sm shadow-orange-200"
+                        >
+                          {updateProfile.isPending ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                              Menyimpan...
+                            </>
+                          ) : (
+                            <>
+                              <Save className="w-4 h-4 mr-2" />
+                              Simpan Profil
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </form>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* SECURITY FORM */}
+              <TabsContent value="security" className="mt-0">
+                <Card className="border border-slate-200 shadow-sm bg-white">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Ubah Kata Sandi</CardTitle>
+                    <CardDescription>
+                      Pastikan akun Anda aman dengan kata sandi yang kuat.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Alert
+                      variant="default"
+                      className="bg-blue-50 border-blue-100 mb-6"
+                    >
+                      <Info className="h-4 w-4 text-blue-600" />
+                      <AlertTitle className="text-blue-800">
+                        Persyaratan Password
+                      </AlertTitle>
+                      <AlertDescription className="text-blue-700 text-xs mt-1">
+                        Minimal {PASSWORD_MIN_LENGTH} karakter. Gunakan
+                        kombinasi huruf besar, huruf kecil, dan angka untuk
+                        keamanan maksimal.
+                      </AlertDescription>
+                    </Alert>
+
+                    <form onSubmit={handleChangePassword} className="space-y-6">
+                      <div className="grid gap-2">
+                        <Label htmlFor="current_password">
+                          Kata Sandi Lama
+                        </Label>
+                        <div className="relative">
+                          <KeyRound className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                          <Input
+                            type="password"
+                            id="current_password"
+                            value={currentPassword}
+                            onChange={(e) => setCurrentPassword(e.target.value)}
+                            className="pl-10 h-11 focus-visible:ring-orange-500"
+                            placeholder="••••••••"
+                          />
+                        </div>
+                      </div>
+
+                      <Separator className="my-2" />
+
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div className="grid gap-2">
+                          <Label htmlFor="new_password">Kata Sandi Baru</Label>
+                          <div className="relative">
+                            <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                            <Input
+                              type="password"
+                              id="new_password"
+                              value={newPassword}
+                              onChange={(e) => setNewPassword(e.target.value)}
+                              className="pl-10 h-11 focus-visible:ring-orange-500"
+                              placeholder="••••••••"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid gap-2">
+                          <Label htmlFor="confirm_password">
+                            Konfirmasi Kata Sandi
+                          </Label>
+                          <div className="relative">
+                            <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                            <Input
+                              type="password"
+                              id="confirm_password"
+                              value={confirmPassword}
+                              onChange={(e) =>
+                                setConfirmPassword(e.target.value)
+                              }
+                              className="pl-10 h-11 focus-visible:ring-orange-500"
+                              placeholder="••••••••"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end pt-4 border-t border-slate-100">
+                        <Button
+                          type="submit"
+                          disabled={changePassword.isPending}
+                          // ✅ CONSISTENT BUTTON STYLE
+                          className="bg-orange-600 hover:bg-orange-700 text-white min-w-[140px] h-11 font-medium shadow-sm shadow-orange-200"
+                        >
+                          {changePassword.isPending ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                              Memproses...
+                            </>
+                          ) : (
+                            "Update Password"
+                          )}
+                        </Button>
+                      </div>
+                    </form>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
 "use client";
 
-import { EmptyState, LoadingScreen, PageHeader } from "@/components/common";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { EmptyState, LoadingScreen } from "@/components/common";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,10 +10,13 @@ import { ROUTES } from "@/lib/constants";
 import { formatCurrency } from "@/lib/utils";
 import {
   AlertCircle,
-  CheckCircle,
+  ArrowRight,
+  CheckCircle2,
+  ChevronLeft,
   Clock,
   CreditCard,
   ExternalLink,
+  History,
   Receipt,
   XCircle,
 } from "lucide-react";
@@ -36,27 +39,32 @@ function getPaymentTimeInfo(createdAt: string) {
 const STATUS_CONFIG = {
   pending: {
     label: "Menunggu Pembayaran",
-    color: "bg-yellow-100 text-yellow-800",
+    color: "bg-amber-50 text-amber-700 border-amber-200",
     icon: Clock,
   },
   paid: {
     label: "Berhasil",
-    color: "bg-green-100 text-green-800",
-    icon: CheckCircle,
+    color: "bg-green-50 text-green-700 border-green-200",
+    icon: CheckCircle2,
+  },
+  settlement: {
+    label: "Berhasil",
+    color: "bg-green-50 text-green-700 border-green-200",
+    icon: CheckCircle2,
   },
   failed: {
     label: "Gagal",
-    color: "bg-red-100 text-red-800",
+    color: "bg-red-50 text-red-700 border-red-200",
     icon: XCircle,
   },
   cancelled: {
     label: "Dibatalkan",
-    color: "bg-gray-100 text-gray-800",
-    icon: AlertCircle,
+    color: "bg-slate-50 text-slate-700 border-slate-200",
+    icon: XCircle,
   },
   expired: {
     label: "Kadaluarsa",
-    color: "bg-orange-100 text-orange-800",
+    color: "bg-orange-50 text-orange-700 border-orange-200",
     icon: AlertCircle,
   },
 } as const;
@@ -79,127 +87,141 @@ export default function PaymentsPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <PageHeader
-        title="Riwayat Pembayaran"
-        description="Lihat semua transaksi dan status pembayaran Anda"
-        backHref={ROUTES.DASHBOARD}
-      />
+    <div className="min-h-screen bg-slate-50 font-sans pb-20">
+      {/* 🌟 1. CLEAN HEADER */}
+      <div className="bg-white border-b border-slate-200 sticky top-0 z-30">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link
+              href={ROUTES.DASHBOARD}
+              className="p-2 -ml-2 rounded-full hover:bg-slate-100 text-slate-500 transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </Link>
+            <h1 className="text-lg font-bold text-slate-900">
+              Riwayat Pembayaran
+            </h1>
+          </div>
+        </div>
+      </div>
 
       <div className="container mx-auto px-4 py-8">
         {!payments || payments.length === 0 ? (
-          <EmptyState
-            icon={Receipt}
-            title="Belum ada pembayaran"
-            description="Anda belum melakukan pembayaran untuk kursus manapun."
-            action={{
-              label: "Jelajahi Kursus",
-              onClick: () => router.push(ROUTES.COURSES),
-            }}
-          />
+          <div className="py-12">
+            <EmptyState
+              icon={Receipt}
+              title="Belum ada transaksi"
+              description="Anda belum melakukan pembayaran untuk kursus manapun."
+              action={{
+                label: "Jelajahi Kursus",
+                onClick: () => router.push(ROUTES.COURSES),
+              }}
+            />
+          </div>
         ) : (
-          <div className="space-y-6">
-            {/* Summary Cards */}
+          <div className="space-y-8 max-w-5xl mx-auto">
+            {/* 🌟 2. SUMMARY CARDS */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card>
+              <Card className="border border-slate-200 shadow-sm">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Total Pembayaran
+                  <CardTitle className="text-sm font-medium text-slate-500">
+                    Total Transaksi
                   </CardTitle>
-                  <CreditCard className="h-4 w-4 text-muted-foreground" />
+                  <History className="h-4 w-4 text-slate-400" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{payments.length}</div>
-                  <p className="text-xs text-muted-foreground">transaksi</p>
+                  <div className="text-2xl font-bold text-slate-900">
+                    {payments.length}
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1">
+                    riwayat pembayaran
+                  </p>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border border-slate-200 shadow-sm">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
+                  <CardTitle className="text-sm font-medium text-slate-500">
                     Pembayaran Berhasil
                   </CardTitle>
-                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-green-600">
                     {
-                      payments.filter(
-                        (p) => p.transaction_status === "settlement"
+                      payments.filter((p) =>
+                        ["settlement", "paid"].includes(p.transaction_status)
                       ).length
                     }
                   </div>
-                  <p className="text-xs text-muted-foreground">berhasil</p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    transaksi sukses
+                  </p>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border border-slate-200 shadow-sm bg-gradient-to-br from-orange-50 to-white">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Total Nominal
+                  <CardTitle className="text-sm font-medium text-orange-700">
+                    Total Pengeluaran
                   </CardTitle>
-                  <Receipt className="h-4 w-4 text-muted-foreground" />
+                  <CreditCard className="h-4 w-4 text-orange-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
+                  <div className="text-2xl font-bold text-slate-900">
                     {formatCurrency(
                       payments
-                        .filter((p) => p.transaction_status === "settlement")
+                        .filter((p) =>
+                          ["settlement", "paid"].includes(p.transaction_status)
+                        )
                         .reduce((sum, p) => sum + p.gross_amount, 0)
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    berhasil dibayar
+                  <p className="text-xs text-orange-600/80 mt-1">
+                    investasi untuk ilmu
                   </p>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Payments List */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Daftar Pembayaran</CardTitle>
+            {/* 🌟 3. TRANSACTION LIST */}
+            <Card className="border border-slate-200 shadow-sm overflow-hidden">
+              <CardHeader className="border-b border-slate-100 bg-white px-6 py-4">
+                <CardTitle className="text-base font-bold text-slate-900">
+                  Daftar Transaksi Terakhir
+                </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {payments.map((payment) => {
-                    const statusConfig =
-                      STATUS_CONFIG[
-                        payment.transaction_status as keyof typeof STATUS_CONFIG
-                      ] || STATUS_CONFIG.pending;
-                    const StatusIcon = statusConfig.icon;
+              <div className="divide-y divide-slate-100">
+                {payments.map((payment) => {
+                  const statusConfig =
+                    STATUS_CONFIG[
+                      payment.transaction_status as keyof typeof STATUS_CONFIG
+                    ] || STATUS_CONFIG.pending;
+                  const StatusIcon = statusConfig.icon;
 
-                    // Calculate if payment is still valid (within 24 hours)
-                    const { isExpired, hoursRemaining } = getPaymentTimeInfo(
-                      payment.created_at
-                    );
+                  const { isExpired, hoursRemaining } = getPaymentTimeInfo(
+                    payment.created_at
+                  );
 
-                    // Debug log
-                    console.log("Payment item:", {
-                      order_id: payment.order_id,
-                      status: payment.transaction_status,
-                      payment_url: payment.payment_url,
-                      isExpired,
-                      course_id: payment.course_id,
-                    });
+                  return (
+                    <div
+                      key={payment.order_id}
+                      className="group flex flex-col md:flex-row md:items-center justify-between p-6 hover:bg-slate-50/50 transition-colors gap-4"
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="p-3 bg-orange-50 rounded-xl shrink-0 group-hover:bg-orange-100 transition-colors">
+                          <Receipt className="h-6 w-6 text-orange-600" />
+                        </div>
 
-                    return (
-                      <div
-                        key={payment.order_id}
-                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
-                      >
-                        <div className="flex items-center gap-4 flex-1">
-                          <div className="p-2 bg-orange-100 rounded-lg">
-                            <Receipt className="h-5 w-5 text-orange-600" />
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="font-semibold">
-                              {payment.course_title}
-                            </h3>
-                            <p className="text-sm text-gray-600">
-                              Order ID: {payment.order_id}
-                            </p>
-                            <p className="text-sm text-gray-600">
+                        <div>
+                          <h3 className="font-bold text-slate-900 text-lg leading-tight mb-1">
+                            {payment.course_title}
+                          </h3>
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500 mb-2">
+                            <span className="font-mono text-xs bg-slate-100 px-2 py-0.5 rounded text-slate-600">
+                              #{payment.order_id}
+                            </span>
+                            <span>
                               {new Date(
                                 payment.transaction_time
                               ).toLocaleDateString("id-ID", {
@@ -209,46 +231,54 @@ export default function PaymentsPage() {
                                 hour: "2-digit",
                                 minute: "2-digit",
                               })}
-                            </p>
-                            {payment.transaction_status === "pending" &&
-                              !isExpired && (
-                                <p className="text-xs text-orange-600 mt-1">
-                                  ⏰ Berlaku {hoursRemaining} jam lagi
-                                </p>
-                              )}
-                            {payment.transaction_status === "pending" &&
-                              isExpired && (
-                                <p className="text-xs text-red-600 mt-1">
-                                  ⚠️ Pembayaran kadaluarsa, silakan buat
-                                  transaksi baru
-                                </p>
-                              )}
+                            </span>
                           </div>
+
+                          {/* Status Messages */}
+                          {payment.transaction_status === "pending" &&
+                            !isExpired && (
+                              <div className="flex items-center gap-1.5 text-xs font-medium text-amber-600 bg-amber-50 w-fit px-2 py-1 rounded">
+                                <Clock className="w-3 h-3" />
+                                Menunggu pembayaran (Sisa {hoursRemaining} jam)
+                              </div>
+                            )}
+                          {payment.transaction_status === "pending" &&
+                            isExpired && (
+                              <div className="flex items-center gap-1.5 text-xs font-medium text-red-600 bg-red-50 w-fit px-2 py-1 rounded">
+                                <AlertCircle className="w-3 h-3" />
+                                Pembayaran kadaluarsa
+                              </div>
+                            )}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col md:items-end gap-3 ml-14 md:ml-0">
+                        <div className="flex items-center gap-3">
+                          <span className="font-bold text-lg text-slate-900">
+                            {formatCurrency(payment.gross_amount)}
+                          </span>
+                          <Badge
+                            variant="outline"
+                            className={`${statusConfig.color} border shadow-none`}
+                          >
+                            <StatusIcon className="h-3 w-3 mr-1.5" />
+                            {statusConfig.label}
+                          </Badge>
                         </div>
 
-                        <div className="flex items-center gap-4">
-                          <div className="text-right">
-                            <div className="font-semibold">
-                              {formatCurrency(payment.gross_amount)}
-                            </div>
-                            <Badge className={statusConfig.color}>
-                              <StatusIcon className="h-3 w-3 mr-1" />
-                              {statusConfig.label}
-                            </Badge>
-                          </div>
-
-                          {/* Tombol untuk pending payment yang masih valid */}
+                        {/* Action Buttons */}
+                        <div className="flex gap-2 w-full md:w-auto">
                           {payment.transaction_status === "pending" &&
                             !isExpired &&
                             payment.payment_url && (
                               <Button
-                                variant="default"
                                 size="sm"
-                                className="bg-orange-600 hover:bg-orange-700"
+                                className="bg-orange-600 hover:bg-orange-700 text-white shadow-sm w-full md:w-auto"
                                 onClick={() => {
                                   window.open(payment.payment_url, "_blank");
                                   toast.info("Halaman Pembayaran Dibuka", {
-                                    description: `Silakan selesaikan pembayaran di tab baru. Pembayaran berlaku ${hoursRemaining} jam lagi.`,
+                                    description:
+                                      "Silakan selesaikan pembayaran di tab baru.",
                                   });
                                 }}
                               >
@@ -257,59 +287,72 @@ export default function PaymentsPage() {
                               </Button>
                             )}
 
-                          {/* Tombol untuk pending payment yang kadaluarsa */}
                           {payment.transaction_status === "pending" &&
                             isExpired && (
-                              <Link href={`/courses/${payment.course_id}`}>
-                                <Button variant="outline" size="sm">
-                                  Bayar Ulang
+                              <Link
+                                href={`/courses/${payment.course_id}`}
+                                className="w-full md:w-auto"
+                              >
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="w-full border-orange-200 text-orange-700 hover:bg-orange-50"
+                                >
+                                  <ArrowRight className="h-4 w-4 mr-2" />
+                                  Beli Ulang
                                 </Button>
                               </Link>
                             )}
 
-                          {/* Tombol untuk payment yang berhasil */}
-                          {payment.transaction_status === "settlement" && (
-                            <Link href={ROUTES.COURSES}>
-                              <Button variant="outline" size="sm">
+                          {["settlement", "paid"].includes(
+                            payment.transaction_status
+                          ) && (
+                            <Link
+                              href={ROUTES.COURSES}
+                              className="w-full md:w-auto"
+                            >
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full"
+                              >
                                 Lihat Kursus
                               </Button>
                             </Link>
                           )}
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
+                    </div>
+                  );
+                })}
+              </div>
             </Card>
 
-            {/* Help Section */}
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
+            {/* 🌟 4. HELP SECTION */}
+            <Alert className="bg-blue-50 border-blue-100 text-blue-900">
+              <AlertCircle className="h-4 w-4 text-blue-600" />
+              <AlertTitle className="text-blue-800 font-bold mb-2">
+                Panduan Pembayaran
+              </AlertTitle>
               <AlertDescription>
-                <div className="space-y-2">
-                  <p>
-                    <strong>Informasi Pembayaran:</strong>
-                  </p>
-                  <ul className="list-disc list-inside text-sm space-y-1">
-                    <li>
-                      Pembayaran pending berlaku selama <strong>24 jam</strong>
-                    </li>
-                    <li>
-                      Klik <strong>&quot;Bayar Sekarang&quot;</strong> untuk
-                      melanjutkan pembayaran yang belum selesai
-                    </li>
-                    <li>
-                      Jika pembayaran kadaluarsa, klik{" "}
-                      <strong>&quot;Bayar Ulang&quot;</strong> untuk membuat
-                      transaksi baru
-                    </li>
-                    <li>
-                      Butuh bantuan? Hubungi{" "}
-                      <strong>support@tempaskill.com</strong>
-                    </li>
-                  </ul>
-                </div>
+                <ul className="list-disc list-inside text-sm space-y-1 text-blue-700/90 ml-1">
+                  <li>
+                    Pembayaran pending berlaku selama <strong>24 jam</strong>{" "}
+                    dari waktu pemesanan.
+                  </li>
+                  <li>
+                    Klik tombol <strong>&quot;Bayar Sekarang&quot;</strong>{" "}
+                    untuk melanjutkan ke halaman pembayaran Midtrans.
+                  </li>
+                  <li>
+                    Jika pembayaran kadaluarsa, silakan lakukan pemesanan ulang
+                    pada halaman kursus.
+                  </li>
+                  <li>
+                    Butuh bantuan? Hubungi tim support kami di{" "}
+                    <strong>support@tempaskill.com</strong>.
+                  </li>
+                </ul>
               </AlertDescription>
             </Alert>
           </div>
