@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterRoutes(router *gin.Engine, handler *PaymentHandler, authMiddleware, adminMiddleware gin.HandlerFunc) {
+func RegisterRoutes(router *gin.Engine, handler *PaymentHandler, authMiddleware, adminMiddleware, adminOrInstructorMiddleware gin.HandlerFunc) {
 	// Payment routes
 	paymentGroup := router.Group("/api/v1/payment")
 	{
@@ -20,6 +20,12 @@ func RegisterRoutes(router *gin.Engine, handler *PaymentHandler, authMiddleware,
 
 			// Get user's payment history
 			protected.GET("/user", handler.GetUserPayments)
+			
+			// Get payments with role-based filtering (all roles)
+			protected.GET("/list", handler.GetPayments)
+			
+			// Get payment statistics (all roles)
+			protected.GET("/stats", handler.GetPaymentStats)
 		}
 
 		// Admin routes (require admin role)
@@ -27,7 +33,7 @@ func RegisterRoutes(router *gin.Engine, handler *PaymentHandler, authMiddleware,
 		admin.Use(authMiddleware)
 		admin.Use(adminMiddleware)
 		{
-			// Get all payments (admin only)
+			// Get all payments (admin only) - DEPRECATED, use /list instead
 			admin.GET("/all", handler.GetAllPayments)
 		}
 

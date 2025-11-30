@@ -1,7 +1,6 @@
 "use client";
 
-import { LoadingScreen } from "@/components/common";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ColumnDef, DataTable } from "@/components/common";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,370 +11,424 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import {
-  useIsAuthenticated,
-  usePaymentHistory,
-  type PaymentTransaction,
-} from "@/hooks";
-import { ROUTES } from "@/lib/constants";
-import { formatCurrency } from "@/lib/utils";
-import {
-  AlertCircle,
-  CheckCircle,
-  Clock,
-  CreditCard,
-  DollarSign,
-  ExternalLink,
-  XCircle,
-} from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useServerTable } from "@/hooks";
+import { usePaymentStats } from "@/hooks/use-payments";
+import { API_ENDPOINTS } from "@/lib/constants";
+import { formatCurrency, formatDate } from "@/lib/utils";
+import type { PaymentWithDetails } from "@/types/api";
+import { CreditCard, DollarSign, FileText, Search } from "lucide-react";
+import { useMemo, useState } from "react";
 
-const STATUS_CONFIG = {
-  pending: {
-    label: "Menunggu Pembayaran",
-    color: "bg-yellow-100 text-yellow-800",
-    icon: Clock,
-  },
-  paid: {
-    label: "Berhasil",
-    color: "bg-green-100 text-green-800",
-    icon: CheckCircle,
-  },
-  failed: {
-    label: "Gagal",
-    color: "bg-red-100 text-red-800",
-    icon: XCircle,
-  },
-  cancelled: {
-    label: "Dibatalkan",
-    color: "bg-gray-100 text-gray-800",
-    icon: AlertCircle,
-  },
-  expired: {
-    label: "Kadaluarsa",
-    color: "bg-orange-100 text-orange-800",
-    icon: AlertCircle,
-  },
-} as const;
-
+/**
+ * Admin Payments Page
+ *
+ * Features:
+ * - View all payment transactions from entire platform
+ * - Filter by status, course, search user
+ * - View detailed payment information
+ * - Stats: Total Revenue, Pending Amount, Total Transactions
+ */
 export default function AdminPaymentsPage() {
-  const router = useRouter();
-  const { isAuthenticated, isLoading, user } = useIsAuthenticated();
-  const { data: payments, isLoading: paymentsLoading } = usePaymentHistory();
+  const [viewDetailsOpen, setViewDetailsOpen] = useState(false);
+  const [selectedPayment, setSelectedPayment] =
+    useState<PaymentWithDetails | null>(null);
 
-  useEffect(() => {
-    if (!isLoading && (!isAuthenticated || user?.role !== "admin")) {
-      router.push("/login");
-    }
-  }, [isAuthenticated, isLoading, user, router]);
+  // Server-side table with filters
+  const table = useServerTable<PaymentWithDetails>({
+    queryKey: ["admin-payments"],
+    endpoint: API_ENDPOINTS.PAYMENT.LIST,
+    initialLimit: 10,
+    initialFilters: {},
+  });
 
-  if (isLoading || paymentsLoading) {
-    return <LoadingScreen message="Memuat data pembayaran..." />;
-  }
+  // Payment statistics
+  const { data: statsData, isLoading: statsLoading } = usePaymentStats();
+  const stats = statsData?.data;
 
-  if (!user || user.role !== "admin") return null;
+  // Table columns
+  const columns = useMemo<ColumnDef<PaymentWithDetails>[]>(
+    () => [
+      {
+        accessorKey: "order_id",
+        header: "Order ID",
+        cell: ({ row }) => (
+          <div className="font-mono text-sm">{row.original.order_id}</div>
+        ),
+      },
+      {
+        accessorKey: "user_name",
+        header: "Siswa",
+        cell: ({ row }) => (
+          <div>
+            <div className="font-medium">{row.original.user_name}</div>
+            <div className="text-xs text-gray-500">
+              {row.original.user_email}
+            </div>
+          </div>
+        ),
+      },
+      {
+        accessorKey: "course_title",
+        header: "Kursus",
+        cell: ({ row }) => (
+          <div className="max-w-xs">
+            <div className="font-medium truncate">
+              {row.original.course_title}
+            </div>
+            <div className="text-xs text-gray-500">
+              oleh {row.original.instructor_name}
+            </div>
+          </div>
+        ),
+      },
+      {
+        accessorKey: "gross_amount",
+        header: "Jumlah",
+        cell: ({ row }) => (
+          <div className="font-semibold">
+            {formatCurrency(row.original.gross_amount)}
+          </div>
+        ),
+      },
+      {
+        accessorKey: "transaction_status",
+        header: "Status",
+        cell: ({ row }) => {
+          const status = row.original.transaction_status;
+          const statusConfig = {
+            settlement: {
+              label: "Berhasil",
+              className: "bg-green-100 text-green-800",
+            },
+            pending: {
+              label: "Pending",
+              className: "bg-yellow-100 text-yellow-800",
+            },
+            expired: {
+              label: "Kadaluarsa",
+              className: "bg-gray-100 text-gray-800",
+            },
+            failed: {
+              label: "Gagal",
+              className: "bg-red-100 text-red-800",
+            },
+          };
 
-  // Calculate analytics
-  const totalPayments = payments?.length || 0;
-  const successfulPayments =
-    payments?.filter((p) => p.transaction_status === "settlement") || [];
-  const totalRevenue = successfulPayments.reduce(
-    (sum, p) => sum + p.gross_amount,
-    0
+          const config = statusConfig[status] || {
+            label: status,
+            className: "bg-gray-100 text-gray-800",
+          };
+
+          return (
+            <Badge className={config.className} variant="secondary">
+              {config.label}
+            </Badge>
+          );
+        },
+      },
+      {
+        accessorKey: "payment_type",
+        header: "Metode",
+        cell: ({ row }) => (
+          <div className="text-sm capitalize">
+            {row.original.payment_type.replace("_", " ")}
+          </div>
+        ),
+      },
+      {
+        accessorKey: "transaction_time",
+        header: "Tanggal",
+        cell: ({ row }) => (
+          <div className="text-sm">
+            {formatDate(row.original.transaction_time)}
+          </div>
+        ),
+      },
+      {
+        id: "actions",
+        header: "Aksi",
+        cell: ({ row }) => (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setSelectedPayment(row.original);
+              setViewDetailsOpen(true);
+            }}
+          >
+            Detail
+          </Button>
+        ),
+      },
+    ],
+    []
   );
-  const pendingPayments =
-    payments?.filter((p) => p.transaction_status === "pending") || [];
-
-  // Group payments by status for charts
-  const statusCounts =
-    payments?.reduce((acc, payment) => {
-      acc[payment.transaction_status] =
-        (acc[payment.transaction_status] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>) || {};
 
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Manajemen Pembayaran
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Pantau transaksi dan analisis pendapatan platform
-          </p>
-        </div>
-        <Link href={ROUTES.ADMIN.DASHBOARD}>
-          <Button variant="outline">Kembali ke Dashboard</Button>
-        </Link>
+      <div>
+        <h1 className="text-3xl font-bold">Pembayaran</h1>
+        <p className="text-gray-600 mt-1">
+          Kelola dan pantau semua transaksi pembayaran
+        </p>
       </div>
 
-      {/* Analytics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Transaksi
-            </CardTitle>
-            <CreditCard className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalPayments}</div>
-            <p className="text-xs text-muted-foreground">semua transaksi</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Transaksi Berhasil
-            </CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {successfulPayments.length}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {totalPayments > 0
-                ? Math.round((successfulPayments.length / totalPayments) * 100)
-                : 0}
-              % sukses rate
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">
               Total Pendapatan
             </CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <DollarSign className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(totalRevenue)}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              dari pembayaran berhasil
+            {statsLoading ? (
+              <Skeleton className="h-8 w-32" />
+            ) : (
+              <div className="text-2xl font-bold">
+                {formatCurrency(stats?.total_revenue ?? 0)}
+              </div>
+            )}
+            <p className="text-xs text-gray-500 mt-1">
+              Dari transaksi berhasil
             </p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Menunggu Pembayaran
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Pembayaran Pending
             </CardTitle>
-            <Clock className="h-4 w-4 text-yellow-600" />
+            <CreditCard className="h-4 w-4 text-yellow-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">
-              {pendingPayments.length}
-            </div>
-            <p className="text-xs text-muted-foreground">perlu perhatian</p>
+            {statsLoading ? (
+              <Skeleton className="h-8 w-32" />
+            ) : (
+              <div className="text-2xl font-bold">
+                {formatCurrency(stats?.pending_amount ?? 0)}
+              </div>
+            )}
+            <p className="text-xs text-gray-500 mt-1">Menunggu pembayaran</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Total Transaksi
+            </CardTitle>
+            <FileText className="h-4 w-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            {statsLoading ? (
+              <Skeleton className="h-8 w-24" />
+            ) : (
+              <div className="text-2xl font-bold">
+                {stats?.total_transactions ?? 0}
+              </div>
+            )}
+            <p className="text-xs text-gray-500 mt-1">Semua status</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Status Overview */}
+      {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle>Status Pembayaran</CardTitle>
-          <CardDescription>Distribusi status semua transaksi</CardDescription>
+          <CardTitle>Filter & Pencarian</CardTitle>
+          <CardDescription>
+            Gunakan filter untuk menemukan transaksi tertentu
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            {Object.entries(STATUS_CONFIG).map(([status, config]) => {
-              const count = statusCounts[status] || 0;
-              const Icon = config.icon;
-              return (
-                <div key={status} className="text-center">
-                  <div
-                    className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg ${config.color}`}
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span className="font-medium">{count}</span>
-                  </div>
-                  <p className="text-sm text-gray-600 mt-1">{config.label}</p>
-                </div>
-              );
-            })}
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Search */}
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Cari nama atau email siswa..."
+                value={table.filters.search}
+                onChange={(e) => table.filters.setSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+
+            {/* Status Filter */}
+            <Select
+              value={(table.filters.filters.status as string) || ""}
+              onValueChange={(value) =>
+                table.filters.setFilter("status", value || undefined)
+              }
+            >
+              <SelectTrigger className="w-full md:w-[180px]">
+                <SelectValue placeholder="Semua Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Semua Status</SelectItem>
+                <SelectItem value="settlement">Berhasil</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="expired">Kadaluarsa</SelectItem>
+                <SelectItem value="failed">Gagal</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
 
-      {/* Transactions Table */}
+      {/* Payments Table */}
       <Card>
         <CardHeader>
           <CardTitle>Daftar Transaksi</CardTitle>
-          <CardDescription>
-            Semua transaksi pembayaran di platform
-          </CardDescription>
+          <CardDescription>Menampilkan {table.total} transaksi</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="all" className="w-full">
-            <TabsList>
-              <TabsTrigger value="all">Semua ({totalPayments})</TabsTrigger>
-              <TabsTrigger value="pending">
-                Menunggu ({pendingPayments.length})
-              </TabsTrigger>
-              <TabsTrigger value="paid">
-                Berhasil ({successfulPayments.length})
-              </TabsTrigger>
-              <TabsTrigger value="failed">
-                Gagal ({statusCounts.failed || 0})
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="all" className="mt-6">
-              <PaymentTable payments={payments || []} />
-            </TabsContent>
-
-            <TabsContent value="pending" className="mt-6">
-              <PaymentTable payments={pendingPayments} />
-            </TabsContent>
-
-            <TabsContent value="paid" className="mt-6">
-              <PaymentTable payments={successfulPayments} />
-            </TabsContent>
-
-            <TabsContent value="failed" className="mt-6">
-              <PaymentTable
-                payments={
-                  payments?.filter((p) => p.transaction_status === "failure") ||
-                  []
-                }
-              />
-            </TabsContent>
-          </Tabs>
+          <DataTable<PaymentWithDetails>
+            columns={columns}
+            data={table.data ?? []}
+            page={table.filters.page}
+            limit={table.filters.limit}
+            total={table.total}
+            totalPages={table.totalPages}
+            isLoading={table.isLoading}
+            isError={table.isError}
+            onPageChange={table.filters.setPage}
+            onPageSizeChange={table.filters.setLimit}
+            pageSizeOptions={[10, 20, 50]}
+            showPagination={true}
+            showPageSizeSelector={true}
+            emptyMessage="Tidak ada transaksi"
+          />
         </CardContent>
       </Card>
 
-      {/* Recent Activity Alert */}
-      {pendingPayments.length > 0 && (
-        <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            <strong>
-              {pendingPayments.length} transaksi menunggu pembayaran.
-            </strong>{" "}
-            Monitor transaksi ini secara berkala untuk memastikan kelancaran
-            proses pembayaran.
-          </AlertDescription>
-        </Alert>
-      )}
+      {/* View Details Dialog */}
+      <Dialog open={viewDetailsOpen} onOpenChange={setViewDetailsOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Detail Pembayaran</DialogTitle>
+            <DialogDescription>
+              Informasi lengkap transaksi pembayaran
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedPayment && (
+            <div className="space-y-4">
+              {/* Order Information */}
+              <div className="space-y-2">
+                <h3 className="font-semibold text-sm text-gray-500">
+                  Informasi Order
+                </h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-600">Order ID:</span>
+                    <p className="font-mono font-medium">
+                      {selectedPayment.order_id}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Status:</span>
+                    <p className="font-medium capitalize">
+                      {selectedPayment.transaction_status}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Jumlah:</span>
+                    <p className="font-semibold text-lg">
+                      {formatCurrency(selectedPayment.gross_amount)}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Metode Pembayaran:</span>
+                    <p className="font-medium capitalize">
+                      {selectedPayment.payment_type.replace("_", " ")}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* User Information */}
+              <div className="space-y-2">
+                <h3 className="font-semibold text-sm text-gray-500">
+                  Informasi Siswa
+                </h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-600">Nama:</span>
+                    <p className="font-medium">{selectedPayment.user_name}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Email:</span>
+                    <p className="font-medium">{selectedPayment.user_email}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Course Information */}
+              <div className="space-y-2">
+                <h3 className="font-semibold text-sm text-gray-500">
+                  Informasi Kursus
+                </h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-600">Judul Kursus:</span>
+                    <p className="font-medium">
+                      {selectedPayment.course_title}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Instruktur:</span>
+                    <p className="font-medium">
+                      {selectedPayment.instructor_name}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Transaction Dates */}
+              <div className="space-y-2">
+                <h3 className="font-semibold text-sm text-gray-500">
+                  Waktu Transaksi
+                </h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-600">Dibuat:</span>
+                    <p className="font-medium">
+                      {formatDate(selectedPayment.transaction_time)}
+                    </p>
+                  </div>
+                  {selectedPayment.settlement_time && (
+                    <div>
+                      <span className="text-gray-600">Selesai:</span>
+                      <p className="font-medium">
+                        {formatDate(selectedPayment.settlement_time)}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
-  );
-}
-
-function PaymentTable({ payments }: { payments: PaymentTransaction[] }) {
-  if (payments.length === 0) {
-    return (
-      <div className="text-center py-8 text-gray-500">
-        Tidak ada transaksi dalam kategori ini
-      </div>
-    );
-  }
-
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Order ID</TableHead>
-          <TableHead>Pengguna</TableHead>
-          <TableHead>Kursus</TableHead>
-          <TableHead>Jumlah</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Tanggal</TableHead>
-          <TableHead>Aksi</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {payments.map((payment) => {
-          const statusConfig =
-            STATUS_CONFIG[
-              payment.transaction_status as keyof typeof STATUS_CONFIG
-            ] || STATUS_CONFIG.pending;
-          const StatusIcon = statusConfig.icon;
-
-          return (
-            <TableRow key={payment.order_id}>
-              <TableCell className="font-mono text-sm">
-                {payment.order_id}
-              </TableCell>
-              <TableCell>
-                <div>
-                  <div className="font-medium">{payment.user_name}</div>
-                  <div className="text-sm text-gray-500">
-                    User ID: {payment.user_id}
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell>
-                <div>
-                  <div className="font-medium">{payment.course_title}</div>
-                  <div className="text-sm text-gray-500">
-                    {formatCurrency(payment.gross_amount)}
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell className="font-semibold">
-                {formatCurrency(payment.gross_amount)}
-              </TableCell>
-              <TableCell>
-                <Badge className={statusConfig.color}>
-                  <StatusIcon className="h-3 w-3 mr-1" />
-                  {statusConfig.label}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                {new Date(payment.transaction_time).toLocaleDateString(
-                  "id-ID",
-                  {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  }
-                )}
-              </TableCell>
-              <TableCell>
-                <div className="flex gap-2">
-                  {payment.payment_url &&
-                    payment.transaction_status === "pending" && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          window.open(payment.payment_url, "_blank")
-                        }
-                      >
-                        <ExternalLink className="h-4 w-4 mr-1" />
-                        Link
-                      </Button>
-                    )}
-                  <Button variant="outline" size="sm">
-                    Kursus
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          );
-        })}
-      </TableBody>
-    </Table>
   );
 }

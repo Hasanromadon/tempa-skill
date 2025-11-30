@@ -12,6 +12,7 @@ type PaymentRepository interface {
 	FindByID(id uint) (*PaymentTransaction, error)
 	FindByUserID(userID uint, page, limit int) ([]PaymentTransaction, int, error)
 	FindAll(page, limit int) ([]PaymentTransaction, int, error)
+	FindWithFilters(query PaymentListQuery) ([]PaymentTransaction, int, error)
 	Update(transaction *PaymentTransaction) error
 	UpdateStatus(orderID, status string, settlementTime *time.Time) error
 }
@@ -110,6 +111,77 @@ func (r *paymentRepository) UpdateStatus(orderID, status string, settlementTime 
 	return r.db.Model(&PaymentTransaction{}).
 		Where("order_id = ?", orderID).
 		Updates(updateData).Error
+}
+
+// FindWithFilters retrieves payments with advanced filtering, pagination, and sorting
+func (r *paymentRepository) FindWithFilters(query PaymentListQuery) ([]PaymentTransaction, int, error) {
+	var transactions []PaymentTransaction
+	var total int64
+
+	// Base query with joins
+	db := r.db.Model(&PaymentTransaction{}).
+		Joins("LEFT JOIN users ON users.id = payment_transactions.user_id").
+		Joins("LEFT JOIN courses ON courses.id = payment_transactions.course_id")
+
+	// Apply filters
+	if query.Status != "" {
+		db = db.Where("payment_transactions.transaction_status = ?", query.Status)
+	}
+
+	if query.CourseID > 0 {
+		db = db.Where("payment_transactions.course_id = ?", query.CourseID)
+	}
+
+	if query.InstructorID > 0 {
+		db = db.Where("courses.instructor_id = ?", query.InstructorID)
+	}
+
+	// Search by user name or email
+	if query.Search != "" {
+		searchPattern := "%" + query.Search + "%"
+		db = db.Where("users.name LIKE ? OR users.email LIKE ?", searchPattern, searchPattern)
+	}
+
+	// Count total before pagination
+	db.Count(&total)
+
+	// Sorting
+	sortBy := "payment_transactions.created_at"
+	sortOrder := "DESC"
+	
+	if query.SortBy != "" {
+		switch query.SortBy {
+		case "amount":
+			sortBy = "payment_transactions.gross_amount"
+		case "date":
+			sortBy = "payment_transactions.created_at"
+		case "status":
+			sortBy = "payment_transactions.transaction_status"
+		}
+	}
+	
+	if query.SortOrder != "" && (query.SortOrder == "ASC" || query.SortOrder == "DESC") {
+		sortOrder = query.SortOrder
+	}
+
+	// Pagination
+	offset := (query.Page - 1) * query.Limit
+	
+	// Execute query with preloads
+	err := r.db.Preload("User").Preload("Course").Preload("Course.Instructor").
+		Joins("LEFT JOIN users ON users.id = payment_transactions.user_id").
+		Joins("LEFT JOIN courses ON courses.id = payment_transactions.course_id").
+		Where(db.Statement.Clauses["WHERE"]).
+		Order(sortBy + " " + sortOrder).
+		Offset(offset).
+		Limit(query.Limit).
+		Find(&transactions).Error
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return transactions, int(total), nil
 }
 
 // NewRepository creates a new payment repository

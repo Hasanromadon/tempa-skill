@@ -15,6 +15,103 @@ func NewPaymentHandler(service PaymentService) *PaymentHandler {
 	return &PaymentHandler{service: service}
 }
 
+// GetPayments handles GET /api/v1/payments with role-based filtering
+func (h *PaymentHandler) GetPayments(c *gin.Context) {
+	// Get user context
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Unauthorized",
+		})
+		return
+	}
+
+	userRole, exists := c.Get("userRole")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "User role not found",
+		})
+		return
+	}
+
+	// Parse query parameters
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 100 {
+		limit = 10
+	}
+
+	courseID, _ := strconv.ParseUint(c.Query("course_id"), 10, 32)
+	
+	query := PaymentListQuery{
+		Page:     page,
+		Limit:    limit,
+		Search:   c.Query("search"),
+		Status:   c.Query("status"),
+		CourseID: uint(courseID),
+		SortBy:   c.DefaultQuery("sort_by", "date"),
+		SortOrder: c.DefaultQuery("sort_order", "DESC"),
+	}
+
+	// Get payments with role-based filtering
+	payments, total, err := h.service.GetPayments(userID.(uint), userRole.(string), query)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	// Calculate pagination
+	totalPages := (total + limit - 1) / limit
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": payments,
+		"pagination": gin.H{
+			"page":        page,
+			"limit":       limit,
+			"total":       total,
+			"total_pages": totalPages,
+		},
+	})
+}
+
+// GetPaymentStats handles GET /api/v1/payments/stats with role-based filtering
+func (h *PaymentHandler) GetPaymentStats(c *gin.Context) {
+	// Get user context
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Unauthorized",
+		})
+		return
+	}
+
+	userRole, exists := c.Get("userRole")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "User role not found",
+		})
+		return
+	}
+
+	stats, err := h.service.GetPaymentStats(userID.(uint), userRole.(string))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": stats,
+	})
+}
+
 // CreatePayment handles POST /api/v1/payment/create-transaction
 func (h *PaymentHandler) CreatePayment(c *gin.Context) {
 	// Get user ID from context (set by auth middleware)

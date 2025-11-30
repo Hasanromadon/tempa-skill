@@ -81,6 +81,8 @@ export const API_ENDPOINTS = {
     CREATE_TRANSACTION: "/payment/create-transaction",
     CHECK_STATUS: (orderId: string) => `/payment/status/${orderId}`,
     WEBHOOK: "/payment/webhook",
+    LIST: "/payment/list",
+    STATS: "/payment/stats",
   },
   REVIEWS: {
     LIST: "/reviews",

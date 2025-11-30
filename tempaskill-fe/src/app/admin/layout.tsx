@@ -18,6 +18,7 @@ import { removeAuthToken } from "@/lib/auth-token";
 import { ROUTES } from "@/lib/constants";
 import {
   BookOpen,
+  CreditCard,
   GraduationCap,
   LayoutDashboard,
   LogOut,
@@ -70,6 +71,11 @@ export default function AdminLayout({
           icon: GraduationCap,
         },
         {
+          label: "Pembayaran",
+          href: "/instructor/payments",
+          icon: CreditCard,
+        },
+        {
           label: "Pengaturan",
           href: "/admin/settings",
           icon: Settings,
@@ -84,6 +90,11 @@ export default function AdminLayout({
         label: "Pengguna",
         href: "/admin/users",
         icon: Users,
+      },
+      {
+        label: "Pembayaran",
+        href: "/admin/payments",
+        icon: CreditCard,
       },
       {
         label: "Pengaturan",

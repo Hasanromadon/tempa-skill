@@ -6,6 +6,18 @@ import (
 	"gorm.io/gorm"
 )
 
+// User represents a simplified user for instructor relation
+type User struct {
+	ID    uint   `gorm:"primaryKey" json:"id"`
+	Name  string `gorm:"type:varchar(100)" json:"name"`
+	Email string `gorm:"type:varchar(100)" json:"email"`
+}
+
+// TableName for User
+func (User) TableName() string {
+	return "users"
+}
+
 // Course represents a course in the system
 type Course struct {
 	ID            uint           `gorm:"primaryKey" json:"id"`
@@ -24,6 +36,7 @@ type Course struct {
 	DeletedAt     gorm.DeletedAt `gorm:"index" json:"-"`
 
 	// Relations
+	Instructor  *User        `gorm:"foreignKey:InstructorID" json:"instructor,omitempty"`
 	Lessons     []Lesson     `gorm:"foreignKey:CourseID;constraint:OnDelete:CASCADE" json:"lessons,omitempty"`
 	Enrollments []Enrollment `gorm:"foreignKey:CourseID;constraint:OnDelete:CASCADE" json:"-"`
 }

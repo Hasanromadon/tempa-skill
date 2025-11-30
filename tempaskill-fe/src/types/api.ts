@@ -358,3 +358,74 @@ export interface AdminDashboardStats {
   total_sessions: number;
   upcoming_sessions: number;
 }
+
+// Payment Types
+export interface Payment {
+  id: number;
+  user_id: number;
+  course_id: number;
+  course_title: string;
+  user_name: string;
+  order_id: string;
+  gross_amount: number;
+  payment_type: string;
+  transaction_status: "settlement" | "pending" | "expired" | "failed";
+  transaction_time: string;
+  settlement_time?: string;
+  payment_url?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PaymentWithDetails {
+  id: number;
+  order_id: string;
+  gross_amount: number;
+  payment_type: string;
+  transaction_status: "settlement" | "pending" | "expired" | "failed";
+  transaction_time: string;
+  settlement_time?: string;
+
+  // User details
+  user_id: number;
+  user_name: string;
+  user_email: string;
+
+  // Course details
+  course_id: number;
+  course_title: string;
+  course_slug: string;
+  instructor_id: number;
+  instructor_name: string;
+
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PaymentListResponse {
+  data: PaymentWithDetails[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
+  };
+}
+
+export interface PaymentStatsResponse {
+  data: {
+    total_revenue: number;
+    pending_amount: number;
+    total_transactions: number;
+  };
+}
+
+export interface PaymentListQuery {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: "settlement" | "pending" | "expired" | "failed" | "";
+  course_id?: number;
+  sort_by?: "date" | "amount" | "status";
+  sort_order?: "ASC" | "DESC";
+}

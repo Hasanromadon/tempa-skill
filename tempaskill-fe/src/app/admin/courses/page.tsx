@@ -80,7 +80,7 @@ export default function AdminCoursesPage() {
       } catch (error: unknown) {
         // Extract error message from API response
         let errorMessage = "Silakan coba lagi.";
-        
+
         if (error && typeof error === "object" && "response" in error) {
           const axiosError = error as {
             response?: { data?: { error?: string } };

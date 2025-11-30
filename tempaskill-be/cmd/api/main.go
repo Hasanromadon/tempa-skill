@@ -181,6 +181,24 @@ func main() {
 		// Register upload routes
 		upload.RegisterRoutes(v1, uploadHandler, authMiddleware)
 
+		// Admin or Instructor middleware (for shared resources)
+		// This allows both admin and instructor to access certain endpoints
+		// Actual data filtering is done in service layer based on user role
+		adminOrInstructorMiddleware := func(c *gin.Context) {
+			userRole, exists := c.Get("userRole")
+			if !exists {
+				c.JSON(http.StatusForbidden, gin.H{"error": "Authentication required"})
+				c.Abort()
+				return
+			}
+			if userRole != "admin" && userRole != "instructor" {
+				c.JSON(http.StatusForbidden, gin.H{"error": "Admin or Instructor access required"})
+				c.Abort()
+				return
+			}
+			c.Next()
+		}
+
 		// Initialize payment module
 		paymentRepo := payment.NewRepository(db)
 		paymentConfig := payment.MidtransConfig{
@@ -194,7 +212,7 @@ func main() {
 
 		// Register payment routes
 		payment.RegisterRoutes(router, paymentHandler, authMiddleware.RequireAuth(), func(c *gin.Context) {
-			// Simple admin middleware - check if user role is admin
+			// Admin-only middleware
 			userRole, exists := c.Get("userRole")
 			if !exists || userRole != "admin" {
 				c.JSON(http.StatusForbidden, gin.H{"error": "Admin access required"})
@@ -202,7 +220,7 @@ func main() {
 				return
 			}
 			c.Next()
-		})
+		}, adminOrInstructorMiddleware)
 
 		// Initialize review module
 		reviewRepo := review.NewRepository(db)
@@ -216,31 +234,14 @@ func main() {
 		adminService := admin.NewService(db)
 		adminHandler := admin.NewHandler(adminService)
 
-		// Admin or Instructor middleware (for shared admin resources like dashboard stats)
-		// This allows both admin and instructor to access /admin/stats
-		// The actual data filtering is done in the service layer based on user role
-		adminOrInstructorMiddleware := func(c *gin.Context) {
-			userRole, exists := c.Get("userRole")
-			if !exists {
-				c.JSON(http.StatusForbidden, gin.H{"error": "Authentication required"})
-				c.Abort()
-				return
-			}
-			if userRole != "admin" && userRole != "instructor" {
-				c.JSON(http.StatusForbidden, gin.H{"error": "Admin or instructor access required"})
-				c.Abort()
-				return
-			}
-			c.Next()
-		}
-
 		// Register admin routes (with admin OR instructor access for stats)
 		admin.RegisterRoutes(v1, adminHandler, authMiddleware, adminOrInstructorMiddleware)
+		
         instructorRepo := instructor.NewRepository(db)
         instructorService := instructor.NewService(instructorRepo)
         instructorHandler := instructor.NewHandler(instructorService)
 
-		// Register activity routes
+		// Register instructor routes
      	instructor.RegisterRoutes(v1, instructorHandler, authMiddleware)
 	}
 
