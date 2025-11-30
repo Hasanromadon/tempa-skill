@@ -14,10 +14,9 @@ export const useInstructorStudents = (params?: UseInstructorStudentsParams) => {
   return useQuery({
     queryKey: ["instructor-students", params],
     queryFn: async () => {
-      const response = await apiClient.get<ApiResponse<InstructorStudentsResponse>>(
-        API_ENDPOINTS.INSTRUCTOR.STUDENTS,
-        { params }
-      );
+      const response = await apiClient.get<
+        ApiResponse<InstructorStudentsResponse>
+      >(API_ENDPOINTS.INSTRUCTOR.STUDENTS, { params });
       return response.data.data;
     },
   });

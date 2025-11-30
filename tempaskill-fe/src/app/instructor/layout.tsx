@@ -13,7 +13,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { useIsAdmin, useIsAuthenticated } from "@/hooks/use-auth";
+import { useCurrentUser, useIsAuthenticated } from "@/hooks/use-auth";
 import { removeAuthToken } from "@/lib/auth-token";
 import { ROUTES } from "@/lib/constants";
 import {
@@ -23,15 +23,14 @@ import {
   LogOut,
   Menu,
   Settings,
-  Users,
   X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-export default function AdminLayout({
+export default function InstructorLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -39,59 +38,35 @@ export default function AdminLayout({
   const pathname = usePathname();
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading } = useIsAuthenticated();
-  const { isAdmin, isLoading: roleLoading, user } = useIsAdmin();
+  const { data: user, isLoading: userLoading } = useCurrentUser();
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  const isLoading = authLoading || roleLoading;
+  const isLoading = authLoading || userLoading;
   const isInstructor = user?.role === "instructor";
 
-  // Dynamic navigation based on role
-  const navItems = useMemo(() => {
-    const baseItems = [
-      {
-        label: "Dashboard",
-        href: "/admin/dashboard",
-        icon: LayoutDashboard,
-      },
-      {
-        label: "Kursus",
-        href: "/admin/courses",
-        icon: BookOpen,
-      },
-    ];
-
-    // Instructor-specific menu
-    if (user?.role === "instructor") {
-      return [
-        ...baseItems,
-        {
-          label: "Siswa Saya",
-          href: "/instructor/students",
-          icon: GraduationCap,
-        },
-        {
-          label: "Pengaturan",
-          href: "/admin/settings",
-          icon: Settings,
-        },
-      ];
-    }
-
-    // Admin menu (full access)
-    return [
-      ...baseItems,
-      {
-        label: "Pengguna",
-        href: "/admin/users",
-        icon: Users,
-      },
-      {
-        label: "Pengaturan",
-        href: "/admin/settings",
-        icon: Settings,
-      },
-    ];
-  }, [user?.role]);
+  // Instructor navigation items
+  const navItems = [
+    {
+      label: "Dashboard",
+      href: "/admin/dashboard",
+      icon: LayoutDashboard,
+    },
+    {
+      label: "Kursus",
+      href: "/admin/courses",
+      icon: BookOpen,
+    },
+    {
+      label: "Siswa Saya",
+      href: "/instructor/students",
+      icon: GraduationCap,
+    },
+    {
+      label: "Pengaturan",
+      href: "/admin/settings",
+      icon: Settings,
+    },
+  ];
 
   useEffect(() => {
     if (!isLoading) {
@@ -101,41 +76,31 @@ export default function AdminLayout({
         return;
       }
 
-      // Allow both admin and instructor to access admin routes
-      const hasAccess = isAdmin || isInstructor;
-
-      // Redirect to dashboard if authenticated but not admin/instructor
-      if (!hasAccess) {
+      // Redirect to dashboard if not instructor
+      if (!isInstructor) {
         toast.error("Akses Ditolak", {
-          description: "Anda tidak memiliki akses ke panel admin.",
+          description: "Anda tidak memiliki akses sebagai instruktur.",
         });
         router.push(ROUTES.DASHBOARD);
-        return;
-      }
-
-      // Redirect instructor to their specific pages if accessing admin-only routes
-      if (isInstructor && pathname.startsWith("/admin/users")) {
-        toast.error("Akses Ditolak", {
-          description: "Halaman ini hanya untuk admin.",
-        });
-        router.push("/admin/dashboard");
       }
     }
-  }, [isAuthenticated, isAdmin, isInstructor, isLoading, router, pathname]);
+  }, [isAuthenticated, isInstructor, isLoading, router]);
 
   const handleLogout = () => {
     removeAuthToken();
     toast.success("Berhasil keluar", {
-      description: "Anda telah keluar dari panel admin.",
+      description: "Anda telah keluar dari panel instruktur.",
     });
     router.push(ROUTES.HOME);
   };
 
   if (isLoading) {
-    return <LoadingScreen message="Memuat panel admin..." />;
+    return <LoadingScreen message="Memuat panel instruktur..." />;
   }
 
-  if (!user) return null;
+  if (!isInstructor || !user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -210,7 +175,7 @@ export default function AdminLayout({
                 <Button
                   variant="outline"
                   className="w-full"
-                  aria-label="Keluar dari panel admin"
+                  aria-label="Keluar dari panel instruktur"
                 >
                   <LogOut className="h-4 w-4 mr-2" aria-hidden="true" />
                   Keluar
@@ -218,10 +183,12 @@ export default function AdminLayout({
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Keluar dari Panel Admin?</AlertDialogTitle>
+                  <AlertDialogTitle>
+                    Keluar dari Panel Instruktur?
+                  </AlertDialogTitle>
                   <AlertDialogDescription>
-                    Anda yakin ingin keluar dari panel admin? Anda harus login
-                    kembali untuk mengakses panel ini.
+                    Anda yakin ingin keluar dari panel instruktur? Anda harus
+                    login kembali untuk mengakses panel ini.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -252,7 +219,7 @@ export default function AdminLayout({
             >
               <Menu className="h-6 w-6" />
             </Button>
-            <span className="text-lg font-semibold">Panel Admin</span>
+            <span className="text-lg font-semibold">Panel Instruktur</span>
             <div className="w-10" /> {/* Spacer for alignment */}
           </div>
         </div>
