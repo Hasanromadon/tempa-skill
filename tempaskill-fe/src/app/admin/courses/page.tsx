@@ -77,9 +77,21 @@ export default function AdminCoursesPage() {
 
         // Refetch courses
         table.refetch();
-      } catch {
+      } catch (error: unknown) {
+        // Extract error message from API response
+        let errorMessage = "Silakan coba lagi.";
+        
+        if (error && typeof error === "object" && "response" in error) {
+          const axiosError = error as {
+            response?: { data?: { error?: string } };
+          };
+          if (axiosError.response?.data?.error) {
+            errorMessage = axiosError.response.data.error;
+          }
+        }
+
         toast.error("Gagal mengubah status kursus", {
-          description: "Silakan coba lagi.",
+          description: errorMessage,
         });
       }
     },

@@ -17,6 +17,7 @@ var (
 	ErrNotEnrolled         = errors.New("not enrolled in this course")
 	ErrCourseNotPublished  = errors.New("course is not published")
 	ErrInvalidSlug         = errors.New("invalid slug format")
+	ErrNoLessonsToPublish  = errors.New("course must have at least one lesson to be published")
 )
 
 type Service interface {
@@ -197,6 +198,16 @@ func (s *service) UpdateCourse(ctx context.Context, userID uint, userRole string
 		course.Price = *req.Price
 	}
 	if req.IsPublished != nil {
+		// Validate: Course must have at least 1 lesson to be published
+		if *req.IsPublished {
+			lessonCount, err := s.repo.CountLessonsByCourseID(ctx, courseID)
+			if err != nil {
+				return nil, err
+			}
+			if lessonCount == 0 {
+				return nil, ErrNoLessonsToPublish
+			}
+		}
 		course.IsPublished = *req.IsPublished
 	}
 
