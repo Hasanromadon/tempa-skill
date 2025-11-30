@@ -2,10 +2,13 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 // Protected routes that require authentication
-const protectedRoutes = ["/dashboard", "/profile", "/instructor"];
+const protectedRoutes = ["/dashboard", "/profile"];
 
-// Admin routes that require admin or instructor role
+// Admin routes (admin only)
 const adminRoutes = ["/admin"];
+
+// Instructor routes (instructor only)
+const instructorRoutes = ["/instructor"];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -18,13 +21,18 @@ export function middleware(request: NextRequest) {
   // Check if the route is admin route
   const isAdminRoute = adminRoutes.some((route) => pathname.startsWith(route));
 
+  // Check if the route is instructor route
+  const isInstructorRoute = instructorRoutes.some((route) =>
+    pathname.startsWith(route)
+  );
+
   // Get token from cookie
   const token =
     request.cookies.get("auth_token")?.value ||
     request.headers.get("authorization")?.replace("Bearer ", "");
 
   // Redirect to login if accessing protected route without token
-  if ((isProtectedRoute || isAdminRoute) && !token) {
+  if ((isProtectedRoute || isAdminRoute || isInstructorRoute) && !token) {
     const loginUrl = new URL("/login", request.url);
     // Store the original URL to redirect back after login
     loginUrl.searchParams.set("redirect", pathname);

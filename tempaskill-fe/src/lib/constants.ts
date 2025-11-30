@@ -33,6 +33,23 @@ export const ROUTES = {
     USERS: "/admin/users",
     SETTINGS: "/admin/settings",
   },
+  INSTRUCTOR: {
+    DASHBOARD: "/instructor/dashboard",
+    COURSES: "/instructor/courses",
+    PAYMENTS: "/instructor/payments",
+    STUDENTS: "/instructor/students",
+    SESSIONS: "/instructor/sessions",
+    SESSIONS_NEW: "/instructor/sessions/new",
+    COURSE_NEW: "/instructor/courses/new",
+    COURSE_EDIT: (id: number) => `/instructor/courses/${id}/edit`,
+    COURSE_LESSONS: (courseId: number) =>
+      `/instructor/courses/${courseId}/lessons`,
+    LESSON_NEW: (courseId: number) =>
+      `/instructor/courses/${courseId}/lessons/new`,
+    LESSON_EDIT: (courseId: number, lessonId: number) =>
+      `/instructor/courses/${courseId}/lessons/${lessonId}/edit`,
+    SETTINGS: "/instructor/settings",
+  },
 } as const;
 
 // API Endpoints

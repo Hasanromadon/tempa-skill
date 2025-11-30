@@ -38,13 +38,15 @@ interface Lesson {
 interface DraggableLessonListProps {
   lessons: Lesson[];
   onReorder?: (lessons: Lesson[]) => void;
-  courseId: number; // Add courseId prop
+  courseId: number;
+  basePath?: string; // Add basePath prop (default: "/admin")
 }
 
 interface SortableItemProps {
   lesson: Lesson;
   index: number;
   courseId: number;
+  basePath: string;
   onTogglePublish: (lessonId: number, isPublished: boolean) => void;
   onDelete: (lessonId: number) => void;
 }
@@ -53,6 +55,7 @@ function SortableItem({
   lesson,
   index,
   courseId,
+  basePath,
   onTogglePublish,
   onDelete,
 }: SortableItemProps) {
@@ -128,7 +131,7 @@ function SortableItem({
             </Button>
             <Button variant="outline" size="sm" asChild>
               <Link
-                href={`/admin/courses/${courseId}/lessons/${lesson.id}/edit`}
+                href={`${basePath}/courses/${courseId}/lessons/${lesson.id}/edit`}
               >
                 <Edit className="h-4 w-4" />
               </Link>
@@ -152,6 +155,7 @@ export function DraggableLessonList({
   lessons: initialLessons,
   onReorder,
   courseId,
+  basePath = "/admin",
 }: DraggableLessonListProps) {
   const [lessons, setLessons] = useState(initialLessons);
   const [isSaving, setIsSaving] = useState(false);
@@ -284,6 +288,7 @@ export function DraggableLessonList({
               lesson={lesson}
               index={index}
               courseId={courseId}
+              basePath={basePath}
               onTogglePublish={handleTogglePublish}
               onDelete={handleDelete}
             />

@@ -48,12 +48,12 @@ export default function InstructorLayout({
   const navItems = [
     {
       label: "Dashboard",
-      href: "/admin/dashboard",
+      href: "/instructor/dashboard",
       icon: LayoutDashboard,
     },
     {
-      label: "Kursus",
-      href: "/admin/courses",
+      label: "Kursus Saya",
+      href: "/instructor/courses",
       icon: BookOpen,
     },
     {
@@ -63,7 +63,7 @@ export default function InstructorLayout({
     },
     {
       label: "Pengaturan",
-      href: "/admin/settings",
+      href: "/instructor/settings",
       icon: Settings,
     },
   ];
@@ -113,7 +113,10 @@ export default function InstructorLayout({
         <div className="flex flex-col h-full">
           {/* Logo & Close Button */}
           <div className="flex items-center justify-between p-4 border-b">
-            <Link href="/admin/dashboard" className="flex items-center gap-2">
+            <Link
+              href="/instructor/dashboard"
+              className="flex items-center gap-2"
+            >
               <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
                 <BookOpen className="h-5 w-5 text-white" />
               </div>

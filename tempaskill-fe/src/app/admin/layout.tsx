@@ -19,7 +19,6 @@ import { ROUTES } from "@/lib/constants";
 import {
   BookOpen,
   CreditCard,
-  GraduationCap,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -29,7 +28,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function AdminLayout({
@@ -46,93 +45,58 @@ export default function AdminLayout({
   const isLoading = authLoading || roleLoading;
   const isInstructor = user?.role === "instructor";
 
-  // Dynamic navigation based on role
-  const navItems = useMemo(() => {
-    const baseItems = [
-      {
-        label: "Dashboard",
-        href: "/admin/dashboard",
-        icon: LayoutDashboard,
-      },
-      {
-        label: "Kursus",
-        href: "/admin/courses",
-        icon: BookOpen,
-      },
-    ];
-
-    // Instructor-specific menu
-    if (user?.role === "instructor") {
-      return [
-        ...baseItems,
-        {
-          label: "Siswa Saya",
-          href: "/instructor/students",
-          icon: GraduationCap,
-        },
-        {
-          label: "Pembayaran",
-          href: "/instructor/payments",
-          icon: CreditCard,
-        },
-        {
-          label: "Pengaturan",
-          href: "/admin/settings",
-          icon: Settings,
-        },
-      ];
-    }
-
-    // Admin menu (full access)
-    return [
-      ...baseItems,
-      {
-        label: "Pengguna",
-        href: "/admin/users",
-        icon: Users,
-      },
-      {
-        label: "Pembayaran",
-        href: "/admin/payments",
-        icon: CreditCard,
-      },
-      {
-        label: "Pengaturan",
-        href: "/admin/settings",
-        icon: Settings,
-      },
-    ];
-  }, [user?.role]);
+  // Admin navigation (only for admin role)
+  const navItems = [
+    {
+      label: "Dashboard",
+      href: "/admin/dashboard",
+      icon: LayoutDashboard,
+    },
+    {
+      label: "Kursus",
+      href: "/admin/courses",
+      icon: BookOpen,
+    },
+    {
+      label: "Pengguna",
+      href: "/admin/users",
+      icon: Users,
+    },
+    {
+      label: "Pembayaran",
+      href: "/admin/payments",
+      icon: CreditCard,
+    },
+    {
+      label: "Pengaturan",
+      href: "/admin/settings",
+      icon: Settings,
+    },
+  ];
 
   useEffect(() => {
     if (!isLoading) {
       // Redirect to login if not authenticated
       if (!isAuthenticated) {
-        router.push(ROUTES.LOGIN);
+        router.replace(ROUTES.LOGIN);
         return;
       }
 
-      // Allow both admin and instructor to access admin routes
-      const hasAccess = isAdmin || isInstructor;
-
-      // Redirect to dashboard if authenticated but not admin/instructor
-      if (!hasAccess) {
-        toast.error("Akses Ditolak", {
-          description: "Anda tidak memiliki akses ke panel admin.",
-        });
-        router.push(ROUTES.DASHBOARD);
-        return;
-      }
-
-      // Redirect instructor to their specific pages if accessing admin-only routes
-      if (isInstructor && pathname.startsWith("/admin/users")) {
+      // Only admin can access /admin routes
+      if (!isAdmin) {
         toast.error("Akses Ditolak", {
           description: "Halaman ini hanya untuk admin.",
         });
-        router.push("/admin/dashboard");
+        // Redirect instructor to their dashboard
+        if (isInstructor) {
+          router.replace("/instructor/dashboard");
+        } else {
+          router.replace(ROUTES.DASHBOARD);
+        }
+        return;
       }
     }
-  }, [isAuthenticated, isAdmin, isInstructor, isLoading, router, pathname]);
+  }, [isAuthenticated, isAdmin, isInstructor, isLoading, router]);
 
   const handleLogout = () => {
     removeAuthToken();
@@ -146,7 +110,10 @@ export default function AdminLayout({
     return <LoadingScreen message="Memuat panel admin..." />;
   }
 
-  if (!user) return null;
+  // Block non-admin users - don't render anything
+  if (!isAuthenticated || !isAdmin || !user) {
+    return <LoadingScreen message="Mengalihkan..." />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

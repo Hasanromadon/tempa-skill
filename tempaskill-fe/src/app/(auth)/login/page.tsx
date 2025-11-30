@@ -31,7 +31,7 @@ function LoginForm() {
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = async (data: LoginInput) => {
+  const handleFormSubmit = async (data: LoginInput) => {
     setApiError("");
     try {
       const result = await login.mutateAsync(data);
@@ -44,25 +44,27 @@ function LoginForm() {
 
         await new Promise((resolve) => setTimeout(resolve, 100));
 
-        // Redirect based on user role
+        // Role-based redirect logic
         const userRole = result.data.user.role;
 
-        // If redirect parameter exists, use it (unless user is admin, always go to admin dashboard)
-        if (userRole === "admin" || userRole === "instructor") {
+        if (userRole === "admin") {
+          // Admin goes to admin dashboard
           router.push("/admin/dashboard");
-        } else if (redirectTo && redirectTo !== ROUTES.DASHBOARD) {
-          // Use redirect parameter if it exists
-          router.push(redirectTo);
+        } else if (userRole === "instructor") {
+          // Instructor goes to instructor dashboard
+          router.push("/instructor/dashboard");
         } else {
-          // Default redirect for students
-          router.push(ROUTES.DASHBOARD);
+          // Student: use redirect param if provided, otherwise go to dashboard
+          router.push(redirectTo);
         }
       }
     } catch (err) {
+      // Catch and display error without throwing
       const errorMessage =
         (err as { response?: { data?: { error?: { message?: string } } } })
           .response?.data?.error?.message || "Email atau kata sandi salah";
       setApiError(errorMessage);
+      console.error("Login error:", err);
     }
   };
 
@@ -79,7 +81,9 @@ function LoginForm() {
         </CardHeader>
         <FormWrapper
           methods={methods}
-          onSubmit={methods.handleSubmit(onSubmit)}
+          onSubmit={methods.handleSubmit(handleFormSubmit, (errors) => {
+            console.error("Form validation errors:", errors);
+          })}
           error={apiError}
         >
           <CardContent className="space-y-4">

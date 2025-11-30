@@ -16,6 +16,7 @@ interface CourseActionsProps {
   onTogglePublish: (id: number, currentStatus: boolean, title: string) => void;
   onDelete: (id: number, title: string) => void;
   isToggling?: boolean;
+  basePath?: string; // "/admin" or "/instructor"
 }
 
 export function CourseActions({
@@ -23,6 +24,7 @@ export function CourseActions({
   onTogglePublish,
   onDelete,
   isToggling = false,
+  basePath = "/admin",
 }: CourseActionsProps) {
   const { canEdit, canDelete, isOwner, isAdmin } = useCoursePermissions(
     course.instructor_id
@@ -42,7 +44,7 @@ export function CourseActions({
       <DropdownMenuContent align="end">
         {/* Edit - Only if can edit */}
         <DropdownMenuItem asChild disabled={!canEdit}>
-          <Link href={`/admin/courses/${course.id}/edit`}>
+          <Link href={`${basePath}/courses/${course.id}/edit`}>
             <Edit className="h-4 w-4 mr-2" />
             Edit
             {!canEdit && (
@@ -53,7 +55,7 @@ export function CourseActions({
 
         {/* Manage Lessons - Only if can edit */}
         <DropdownMenuItem asChild disabled={!canEdit}>
-          <Link href={`/admin/courses/${course.id}/lessons`}>
+          <Link href={`${basePath}/courses/${course.id}/lessons`}>
             <Eye className="h-4 w-4 mr-2" />
             Kelola Pelajaran
             {!canEdit && (

@@ -97,6 +97,7 @@ export default function CourseLessonsPage({ params }: PageProps) {
           <DraggableLessonList
             lessons={lessons.sort((a, b) => a.order_index - b.order_index)}
             courseId={courseId}
+            basePath="/admin"
           />
         )}
       </div>

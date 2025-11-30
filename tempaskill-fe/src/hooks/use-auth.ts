@@ -92,11 +92,11 @@ export const useIsAuthenticated = () => {
   };
 };
 
-// Check if user has admin or instructor role
+// Check if user has admin role (admin only)
 export const useIsAdmin = () => {
   const { data: user, isLoading } = useCurrentUser();
   return {
-    isAdmin: user?.role === "admin" || user?.role === "instructor",
+    isAdmin: user?.role === "admin",
     isLoading,
     user,
   };
