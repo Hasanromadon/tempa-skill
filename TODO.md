@@ -406,11 +406,16 @@ tempaskill-fe/src/hooks/
 **Environment Variables**:
 
 ```
-MIDTRANS_SERVER_KEY=SB-Mid-server-c2zpenmQQVNAYOVHtxrx0I-S ✅
-MIDTRANS_CLIENT_KEY=SB-Mid-client-ZBuTiayOZocEGgLJ ✅
-MIDTRANS_IS_PRODUCTION=false ✅
-MIDTRANS_BASE_URL=https://api.sandbox.midtrans.com ✅
+MIDTRANS_SERVER_KEY=your-midtrans-server-key
+MIDTRANS_CLIENT_KEY=your-midtrans-client-key
+MIDTRANS_IS_PRODUCTION=false
+MIDTRANS_BASE_URL=https://api.sandbox.midtrans.com
 ```
+
+**⚠️ IMPORTANT**: 
+- Get your Midtrans keys from [Midtrans Dashboard](https://dashboard.midtrans.com/)
+- Use Sandbox keys for development
+- NEVER commit actual API keys to git!
 
 **Dependencies**: None
 **Blocks**: Transaction History
