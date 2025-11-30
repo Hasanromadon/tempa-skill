@@ -45,9 +45,11 @@ type PaymentWithDetails struct {
 	OrderID           string     `json:"order_id"`
 	GrossAmount       float64    `json:"gross_amount"`
 	PaymentType       string     `json:"payment_type"`
+	SnapToken         string     `json:"snap_token,omitempty"` // For Snap.js integration
 	TransactionStatus string     `json:"transaction_status"`
 	TransactionTime   time.Time  `json:"transaction_time"`
 	SettlementTime    *time.Time `json:"settlement_time,omitempty"`
+	PaymentURL        string     `json:"payment_url,omitempty"` // For repayment
 	
 	// User details
 	UserID    uint   `json:"user_id"`

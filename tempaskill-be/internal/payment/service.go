@@ -62,6 +62,42 @@ func (s *paymentService) CreatePayment(userID uint, req CreatePaymentRequest) (*
 		return nil, fmt.Errorf("course already purchased")
 	}
 
+	// Check for existing pending payment (duplicate prevention)
+	pendingPayment, err := s.repo.FindPendingPaymentByUserAndCourse(userID, req.CourseID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check existing payment: %w", err)
+	}
+	
+	if pendingPayment != nil {
+		// Check if payment is still valid (<24 hours old)
+		if time.Since(pendingPayment.CreatedAt) < 24*time.Hour {
+			// Return existing payment instead of creating new one
+			return &PaymentResponse{
+				ID:                pendingPayment.ID,
+				UserID:            pendingPayment.UserID,
+				CourseID:          pendingPayment.CourseID,
+				CourseTitle:       course.Title,
+				OrderID:           pendingPayment.OrderID,
+				GrossAmount:       pendingPayment.GrossAmount,
+				TransactionStatus: pendingPayment.TransactionStatus,
+				PaymentType:       pendingPayment.PaymentType,
+				TransactionTime:   pendingPayment.TransactionTime,
+				SettlementTime:    pendingPayment.SettlementTime,
+				PaymentURL:        pendingPayment.PaymentURL,
+				SnapToken:         pendingPayment.SnapToken,
+				CreatedAt:         pendingPayment.CreatedAt,
+				UpdatedAt:         pendingPayment.UpdatedAt,
+			}, nil
+		}
+		
+		// Payment is older than 24 hours, expire it
+		pendingPayment.TransactionStatus = "expired"
+		if err := s.repo.Update(pendingPayment); err != nil {
+			// Log error but continue creating new payment
+			fmt.Printf("Warning: Failed to expire old payment %s: %v\n", pendingPayment.OrderID, err)
+		}
+	}
+
 	// Get user details
 	user, err := s.getUserByID(userID)
 	if err != nil {
@@ -81,16 +117,8 @@ func (s *paymentService) CreatePayment(userID uint, req CreatePaymentRequest) (*
 		TransactionTime:   time.Now(),
 	}
 
-	// Determine enabled payment methods for Snap
-	enabledPayments := []string{}
-	if req.PaymentMethod != "" {
-		enabledPayments = []string{req.PaymentMethod}
-	} else {
-		// Default: enable all e-wallets and QRIS
-		enabledPayments = []string{"gopay", "qris", "shopeepay", "other_qris"}
-	}
-
 	// Create Midtrans Snap request
+	// Note: Not specifying enabled_payments will show all available payment methods for this merchant
 	snapReq := MidtransSnapRequest{
 		TransactionDetails: MidtransTransactionDetail{
 			OrderID:     orderID,
@@ -108,7 +136,8 @@ func (s *paymentService) CreatePayment(userID uint, req CreatePaymentRequest) (*
 				Name:     course.Title,
 			},
 		},
-		EnabledPayments: enabledPayments,
+		// DON'T send EnabledPayments - let Midtrans show what's available for this merchant
+		// EnabledPayments: enabledPayments,
 	}
 
 	// Add GoPay callback configuration if GoPay is selected
@@ -175,6 +204,7 @@ func (s *paymentService) GetPaymentStatus(orderID string) (*PaymentResponse, err
 		OrderID:           transaction.OrderID,
 		GrossAmount:       transaction.GrossAmount,
 		PaymentType:       transaction.PaymentType,
+		SnapToken:         transaction.SnapToken, // FIXED: Include snap_token for Snap.js
 		TransactionStatus: transaction.TransactionStatus,
 		TransactionTime:   transaction.TransactionTime,
 		SettlementTime:    transaction.SettlementTime,
@@ -203,6 +233,7 @@ func (s *paymentService) GetUserPayments(userID uint, page, limit int) ([]Paymen
 			OrderID:           transaction.OrderID,
 			GrossAmount:       transaction.GrossAmount,
 			PaymentType:       transaction.PaymentType,
+			SnapToken:         transaction.SnapToken, // FIXED: Include snap_token
 			TransactionStatus: transaction.TransactionStatus,
 			TransactionTime:   transaction.TransactionTime,
 			SettlementTime:    transaction.SettlementTime,
@@ -232,6 +263,7 @@ func (s *paymentService) GetAllPayments(page, limit int) ([]PaymentResponse, int
 			OrderID:           transaction.OrderID,
 			GrossAmount:       transaction.GrossAmount,
 			PaymentType:       transaction.PaymentType,
+			SnapToken:         transaction.SnapToken, // FIXED: Include snap_token
 			TransactionStatus: transaction.TransactionStatus,
 			TransactionTime:   transaction.TransactionTime,
 			SettlementTime:    transaction.SettlementTime,
@@ -276,9 +308,11 @@ func (s *paymentService) GetPayments(userID uint, userRole string, query Payment
 			OrderID:           transaction.OrderID,
 			GrossAmount:       transaction.GrossAmount,
 			PaymentType:       transaction.PaymentType,
+			SnapToken:         transaction.SnapToken,
 			TransactionStatus: transaction.TransactionStatus,
 			TransactionTime:   transaction.TransactionTime,
 			SettlementTime:    transaction.SettlementTime,
+			PaymentURL:        transaction.PaymentURL,
 			UserID:            transaction.UserID,
 			CourseID:          transaction.CourseID,
 			CreatedAt:         transaction.CreatedAt,
@@ -432,6 +466,14 @@ func (s *paymentService) callMidtransSnapAPI(req MidtransSnapRequest) (*Midtrans
 	encodedAuth := base64.StdEncoding.EncodeToString([]byte(authString))
 	httpReq.Header.Set("Authorization", "Basic "+encodedAuth)
 
+	// Debug logging
+	fmt.Printf("🔑 Midtrans Request Debug:\n")
+	fmt.Printf("  Server Key (first 20 chars): %s...\n", s.midtransConfig.ServerKey[:20])
+	fmt.Printf("  Auth String (first 25 chars): %s...\n", authString[:25])
+	fmt.Printf("  Encoded Auth (first 30 chars): %s...\n", encodedAuth[:30])
+	fmt.Printf("  URL: %s\n", url)
+	fmt.Printf("  Request Body: %s\n", string(jsonData))
+
 	client := &http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(httpReq)
 	if err != nil {
@@ -443,6 +485,10 @@ func (s *paymentService) callMidtransSnapAPI(req MidtransSnapRequest) (*Midtrans
 	if err != nil {
 		return nil, err
 	}
+
+	fmt.Printf("📥 Midtrans Response:\n")
+	fmt.Printf("  Status Code: %d\n", resp.StatusCode)
+	fmt.Printf("  Body: %s\n", string(body))
 
 	var snapResp MidtransSnapResponse
 	if err := json.Unmarshal(body, &snapResp); err != nil {

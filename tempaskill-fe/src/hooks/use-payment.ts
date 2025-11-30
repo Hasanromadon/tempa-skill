@@ -4,6 +4,7 @@ import type { ApiResponse } from "@/types/api";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 export interface PaymentTransaction {
+  id: number;
   order_id: string;
   gross_amount: number;
   payment_type: string;
@@ -21,6 +22,8 @@ export interface PaymentTransaction {
   course_title: string;
   user_id: number;
   user_name: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface CreatePaymentRequest {
@@ -74,10 +77,19 @@ export const usePaymentHistory = () => {
   return useQuery({
     queryKey: ["paymentHistory"],
     queryFn: async () => {
-      const response = await apiClient.get<ApiResponse<PaymentTransaction[]>>(
-        "/payment/history"
-      );
-      return response.data.data || [];
+      const response = await apiClient.get<{
+        message: string;
+        data: {
+          payments: PaymentTransaction[];
+          pagination: {
+            page: number;
+            limit: number;
+            total: number;
+            total_pages: number;
+          };
+        };
+      }>(API_ENDPOINTS.PAYMENT.LIST);
+      return response.data.data.payments || [];
     },
   });
 };

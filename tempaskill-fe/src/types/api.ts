@@ -382,9 +382,11 @@ export interface PaymentWithDetails {
   order_id: string;
   gross_amount: number;
   payment_type: string;
+  snap_token?: string; // For Snap.js integration
   transaction_status: "settlement" | "pending" | "expired" | "failed";
   transaction_time: string;
   settlement_time?: string;
+  payment_url?: string; // For repayment
 
   // User details
   user_id: number;
@@ -398,6 +400,25 @@ export interface PaymentWithDetails {
   instructor_id: number;
   instructor_name: string;
 
+  created_at: string;
+  updated_at: string;
+}
+
+// Response from CreatePayment API
+export interface PaymentResponse {
+  id: number;
+  user_id: number;
+  course_id: number;
+  course_title: string;
+  user_name: string;
+  order_id: string;
+  gross_amount: number;
+  payment_type: string;
+  snap_token?: string; // For Snap.js integration
+  transaction_status: "settlement" | "pending" | "expired" | "failed";
+  transaction_time: string;
+  settlement_time?: string;
+  payment_url?: string;
   created_at: string;
   updated_at: string;
 }

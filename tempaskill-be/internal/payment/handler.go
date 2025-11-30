@@ -69,13 +69,17 @@ func (h *PaymentHandler) GetPayments(c *gin.Context) {
 	// Calculate pagination
 	totalPages := (total + limit - 1) / limit
 
+	// Standard API response format (consistent with other endpoints)
 	c.JSON(http.StatusOK, gin.H{
-		"data": payments,
-		"pagination": gin.H{
-			"page":        page,
-			"limit":       limit,
-			"total":       total,
-			"total_pages": totalPages,
+		"message": "Payments retrieved successfully",
+		"data": gin.H{
+			"payments": payments,
+			"pagination": gin.H{
+				"page":        page,
+				"limit":       limit,
+				"total":       total,
+				"total_pages": totalPages,
+			},
 		},
 	})
 }

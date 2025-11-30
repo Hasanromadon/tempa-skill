@@ -137,10 +137,21 @@ export function useServerTable<T>(
   // Tries to find array data in response and pagination metadata
   const defaultParser: ResponseParserOptions<T> = {
     getItems: (res: unknown) => {
+      // Handle standard API response format:
+      // response.data.data = { [key]: [...], pagination: {...} }
+      // OR
+      // response.data.data = [...]
+
+      if (Array.isArray(res)) {
+        // Direct array format (most endpoints)
+        return res as T[];
+      }
+
       const data = res as Record<string, unknown>;
 
-      // Try common keys first (courses, users, lessons, enrollments, etc)
+      // Try common nested array keys
       const commonKeys = [
+        "payments", // Payment list format
         "courses",
         "users",
         "lessons",

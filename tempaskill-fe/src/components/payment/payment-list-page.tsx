@@ -86,6 +86,13 @@ export function PaymentListPage({
     initialFilters: {},
   });
 
+  console.log("🔍 Payment Table State:", {
+    data: table.data,
+    isLoading: table.isLoading,
+    isError: table.isError,
+    total: table.total,
+  });
+
   // Payment statistics
   const { data: statsData, isLoading: statsLoading } = usePaymentStats();
   const stats = statsData?.data;

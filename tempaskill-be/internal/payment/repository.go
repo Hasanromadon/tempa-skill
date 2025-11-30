@@ -1,6 +1,7 @@
 package payment
 
 import (
+	"errors"
 	"time"
 
 	"gorm.io/gorm"
@@ -15,6 +16,7 @@ type PaymentRepository interface {
 	FindWithFilters(query PaymentListQuery) ([]PaymentTransaction, int, error)
 	Update(transaction *PaymentTransaction) error
 	UpdateStatus(orderID, status string, settlementTime *time.Time) error
+	FindPendingPaymentByUserAndCourse(userID uint, courseID uint) (*PaymentTransaction, error)
 }
 
 type paymentRepository struct {
@@ -181,6 +183,23 @@ func (r *paymentRepository) FindWithFilters(query PaymentListQuery) ([]PaymentTr
 	}
 
 	return transactions, int(total), nil
+}
+
+func (r *paymentRepository) FindPendingPaymentByUserAndCourse(userID uint, courseID uint) (*PaymentTransaction, error) {
+	var transaction PaymentTransaction
+	err := r.db.Preload("User").Preload("Course").
+		Where("user_id = ? AND course_id = ? AND transaction_status = ?", userID, courseID, "pending").
+		Order("created_at DESC").
+		First(&transaction).Error
+	
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil // No pending payment found, not an error
+		}
+		return nil, err
+	}
+	
+	return &transaction, nil
 }
 
 // NewRepository creates a new payment repository

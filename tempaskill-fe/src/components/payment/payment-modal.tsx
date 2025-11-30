@@ -44,10 +44,17 @@ declare global {
   }
 }
 
+interface SnapPayResult {
+  order_id: string;
+  status_code: string;
+  transaction_status: string;
+  gross_amount: string;
+}
+
 interface SnapPayOptions {
-  onSuccess?: (result: any) => void;
-  onPending?: (result: any) => void;
-  onError?: (result: any) => void;
+  onSuccess?: (result: SnapPayResult) => void;
+  onPending?: (result: SnapPayResult) => void;
+  onError?: (result: SnapPayResult) => void;
   onClose?: () => void;
 }
 
@@ -103,11 +110,12 @@ export function PaymentModal({
   const [orderId, setOrderId] = useState<string>("");
 
   const createPayment = useCreatePayment();
-  const { data: paymentStatus, isLoading: statusLoading } =
-    usePaymentStatus(orderId);
+  const { data: paymentStatus } = usePaymentStatus(orderId);
+  const [snapLoaded, setSnapLoaded] = useState(false);
 
   // Load Midtrans Snap.js script
   useEffect(() => {
+    console.log("📦 Loading Snap.js script...");
     const snapScript = document.createElement("script");
     snapScript.src = "https://app.sandbox.midtrans.com/snap/snap.js";
     snapScript.setAttribute(
@@ -116,11 +124,22 @@ export function PaymentModal({
     );
     snapScript.async = true;
 
+    snapScript.onload = () => {
+      console.log("✅ Snap.js loaded successfully");
+      setSnapLoaded(true);
+    };
+
+    snapScript.onerror = () => {
+      console.error("❌ Failed to load Snap.js");
+    };
+
     document.body.appendChild(snapScript);
 
     return () => {
       // Cleanup
-      document.body.removeChild(snapScript);
+      if (document.body.contains(snapScript)) {
+        document.body.removeChild(snapScript);
+      }
     };
   }, []);
 
@@ -155,7 +174,11 @@ export function PaymentModal({
     try {
       const result = await createPayment.mutateAsync({
         course_id: courseId,
-        payment_method: selectedMethod as any,
+        payment_method: selectedMethod as
+          | "gopay"
+          | "bank_transfer"
+          | "credit_card"
+          | "qris",
       });
 
       if (!result) {
@@ -164,42 +187,95 @@ export function PaymentModal({
 
       setOrderId(result.order_id);
 
+      console.log("🔍 Payment Result:", {
+        snap_token: result.snap_token,
+        payment_url: result.payment_url,
+        selectedMethod,
+        snapLoaded,
+        windowSnap: !!window.snap,
+      });
+
+      // Check if this is an existing pending payment (created within 24 hours)
+      const createdTime = new Date(result.created_at).getTime();
+      const now = Date.now();
+      const ageInMinutes = (now - createdTime) / (1000 * 60);
+
+      if (result.transaction_status === "pending" && ageInMinutes > 5) {
+        // Existing payment (more than 5 minutes old)
+        toast.info("Pembayaran Sudah Ada", {
+          description:
+            "Anda sudah memiliki pembayaran pending untuk kursus ini. Silakan selesaikan pembayaran sebelumnya.",
+        });
+      } else if (result.transaction_status === "pending" && ageInMinutes <= 5) {
+        // New payment (just created)
+        toast.success("Transaksi dibuat", {
+          description: "Silakan selesaikan pembayaran di tab yang terbuka.",
+        });
+      }
+
+      // TEMPORARY FIX: Always use redirect URL instead of Snap popup
+      // Reason: Merchant account needs proper payment method configuration
+      if (result.payment_url) {
+        console.log("🔄 Opening payment URL in new tab");
+        window.open(result.payment_url, "_blank");
+        return;
+      }
+
+      // Original Snap.js integration (commented out until merchant is configured)
+      /*
       // Use Snap.js for GoPay and QRIS (requires snap_token)
       if (
         result.snap_token &&
         (selectedMethod === "gopay" || selectedMethod === "qris")
       ) {
-        if (!window.snap) {
-          toast.error("Snap.js belum dimuat", {
-            description: "Silakan refresh halaman dan coba lagi.",
+        console.log("✅ Attempting to open Snap popup");
+        
+        if (!window.snap || !snapLoaded) {
+          console.error("❌ Snap not ready:", { windowSnap: !!window.snap, snapLoaded });
+          toast.error("Snap.js belum siap", {
+            description: "Tunggu sebentar dan coba lagi.",
           });
           return;
         }
 
         // Open Snap payment popup
-        window.snap.pay(result.snap_token, {
-          onSuccess: (result) => {
-            toast.success("Pembayaran berhasil!", {
-              description: "Anda sekarang dapat mengakses kursus ini.",
+        console.log("🚀 Opening Snap with token:", result.snap_token);
+        
+        try {
+          window.snap.pay(result.snap_token, {
+            onSuccess: () => {
+              toast.success("Pembayaran berhasil!", {
+                description: "Anda sekarang dapat mengakses kursus ini.",
+              });
+              onSuccess?.();
+              onClose();
+            },
+            onPending: () => {
+              toast.info("Pembayaran pending", {
+                description: "Silakan selesaikan pembayaran Anda.",
+              });
+            },
+            onError: () => {
+              toast.error("Pembayaran gagal", {
+                description:
+                  "Silakan coba lagi atau pilih metode pembayaran lain.",
+              });
+            },
+            onClose: () => {
+              // User closed the popup
+            },
+          });
+        } catch (error) {
+          console.error("❌ Snap.pay error:", error);
+          // Fallback: open redirect URL if Snap popup fails
+          if (result.payment_url) {
+            console.log("🔄 Falling back to redirect URL");
+            window.open(result.payment_url, "_blank");
+            toast.info("Pembayaran dibuka di tab baru", {
+              description: "Silakan selesaikan pembayaran di halaman yang terbuka.",
             });
-            onSuccess?.();
-            onClose();
-          },
-          onPending: (result) => {
-            toast.info("Pembayaran pending", {
-              description: "Silakan selesaikan pembayaran Anda.",
-            });
-          },
-          onError: (result) => {
-            toast.error("Pembayaran gagal", {
-              description:
-                "Silakan coba lagi atau pilih metode pembayaran lain.",
-            });
-          },
-          onClose: () => {
-            // User closed the popup
-          },
-        });
+          }
+        }
       } else if (result.payment_url) {
         // Fallback to redirect for other payment methods
         window.open(result.payment_url, "_blank");
@@ -211,6 +287,7 @@ export function PaymentModal({
           description: "Tidak ada payment URL atau snap token.",
         });
       }
+      */
     } catch (error) {
       console.error("Payment creation error:", error);
       toast.error("Gagal membuat transaksi", {
@@ -354,10 +431,20 @@ export function PaymentModal({
               </Button>
               <Button
                 onClick={handlePayment}
-                disabled={!selectedMethod || createPayment.isPending}
+                disabled={
+                  !selectedMethod ||
+                  createPayment.isPending ||
+                  ((selectedMethod === "gopay" || selectedMethod === "qris") &&
+                    !snapLoaded)
+                }
                 className="bg-orange-600 hover:bg-orange-700"
               >
-                {createPayment.isPending ? "Memproses..." : "Bayar Sekarang"}
+                {createPayment.isPending
+                  ? "Memproses..."
+                  : !snapLoaded &&
+                    (selectedMethod === "gopay" || selectedMethod === "qris")
+                  ? "Loading Snap.js..."
+                  : "Bayar Sekarang"}
               </Button>
             </>
           ) : (

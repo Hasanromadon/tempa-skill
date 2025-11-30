@@ -20,6 +20,18 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { toast } from "sonner";
+
+// Helper function to calculate payment expiry
+function getPaymentTimeInfo(createdAt: string) {
+  const createdTime = new Date(createdAt).getTime();
+  const now = Date.now();
+  const hoursOld = (now - createdTime) / (1000 * 60 * 60);
+  const isExpired = hoursOld >= 24;
+  const hoursRemaining = Math.max(0, 24 - Math.floor(hoursOld));
+
+  return { isExpired, hoursRemaining };
+}
 
 const STATUS_CONFIG = {
   pending: {
@@ -157,16 +169,30 @@ export default function PaymentsPage() {
                       ] || STATUS_CONFIG.pending;
                     const StatusIcon = statusConfig.icon;
 
+                    // Calculate if payment is still valid (within 24 hours)
+                    const { isExpired, hoursRemaining } = getPaymentTimeInfo(
+                      payment.created_at
+                    );
+
+                    // Debug log
+                    console.log("Payment item:", {
+                      order_id: payment.order_id,
+                      status: payment.transaction_status,
+                      payment_url: payment.payment_url,
+                      isExpired,
+                      course_id: payment.course_id,
+                    });
+
                     return (
                       <div
                         key={payment.order_id}
                         className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
                       >
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-4 flex-1">
                           <div className="p-2 bg-orange-100 rounded-lg">
                             <Receipt className="h-5 w-5 text-orange-600" />
                           </div>
-                          <div>
+                          <div className="flex-1">
                             <h3 className="font-semibold">
                               {payment.course_title}
                             </h3>
@@ -184,6 +210,19 @@ export default function PaymentsPage() {
                                 minute: "2-digit",
                               })}
                             </p>
+                            {payment.transaction_status === "pending" &&
+                              !isExpired && (
+                                <p className="text-xs text-orange-600 mt-1">
+                                  ⏰ Berlaku {hoursRemaining} jam lagi
+                                </p>
+                              )}
+                            {payment.transaction_status === "pending" &&
+                              isExpired && (
+                                <p className="text-xs text-red-600 mt-1">
+                                  ⚠️ Pembayaran kadaluarsa, silakan buat
+                                  transaksi baru
+                                </p>
+                              )}
                           </div>
                         </div>
 
@@ -198,20 +237,37 @@ export default function PaymentsPage() {
                             </Badge>
                           </div>
 
-                          {payment.payment_url &&
-                            payment.transaction_status === "pending" && (
+                          {/* Tombol untuk pending payment yang masih valid */}
+                          {payment.transaction_status === "pending" &&
+                            !isExpired &&
+                            payment.payment_url && (
                               <Button
-                                variant="outline"
+                                variant="default"
                                 size="sm"
-                                onClick={() =>
-                                  window.open(payment.payment_url, "_blank")
-                                }
+                                className="bg-orange-600 hover:bg-orange-700"
+                                onClick={() => {
+                                  window.open(payment.payment_url, "_blank");
+                                  toast.info("Halaman Pembayaran Dibuka", {
+                                    description: `Silakan selesaikan pembayaran di tab baru. Pembayaran berlaku ${hoursRemaining} jam lagi.`,
+                                  });
+                                }}
                               >
                                 <ExternalLink className="h-4 w-4 mr-2" />
-                                Bayar
+                                Bayar Sekarang
                               </Button>
                             )}
 
+                          {/* Tombol untuk pending payment yang kadaluarsa */}
+                          {payment.transaction_status === "pending" &&
+                            isExpired && (
+                              <Link href={`/courses/${payment.course_id}`}>
+                                <Button variant="outline" size="sm">
+                                  Bayar Ulang
+                                </Button>
+                              </Link>
+                            )}
+
+                          {/* Tombol untuk payment yang berhasil */}
                           {payment.transaction_status === "settlement" && (
                             <Link href={ROUTES.COURSES}>
                               <Button variant="outline" size="sm">
@@ -231,9 +287,29 @@ export default function PaymentsPage() {
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                <strong>Pertanyaan tentang pembayaran?</strong> Jika Anda
-                mengalami masalah dengan pembayaran, silakan hubungi tim support
-                kami melalui email support@tempaskill.com
+                <div className="space-y-2">
+                  <p>
+                    <strong>Informasi Pembayaran:</strong>
+                  </p>
+                  <ul className="list-disc list-inside text-sm space-y-1">
+                    <li>
+                      Pembayaran pending berlaku selama <strong>24 jam</strong>
+                    </li>
+                    <li>
+                      Klik <strong>&quot;Bayar Sekarang&quot;</strong> untuk
+                      melanjutkan pembayaran yang belum selesai
+                    </li>
+                    <li>
+                      Jika pembayaran kadaluarsa, klik{" "}
+                      <strong>&quot;Bayar Ulang&quot;</strong> untuk membuat
+                      transaksi baru
+                    </li>
+                    <li>
+                      Butuh bantuan? Hubungi{" "}
+                      <strong>support@tempaskill.com</strong>
+                    </li>
+                  </ul>
+                </div>
               </AlertDescription>
             </Alert>
           </div>

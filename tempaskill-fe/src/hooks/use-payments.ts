@@ -7,6 +7,7 @@ import { API_ENDPOINTS } from "@/lib/constants";
 import type {
   PaymentListQuery,
   PaymentListResponse,
+  PaymentResponse,
   PaymentStatsResponse,
 } from "@/types/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -68,12 +69,12 @@ export const useCreatePayment = () => {
     mutationFn: async (data: {
       course_id: number;
       payment_method?: string;
-    }) => {
-      const response = await apiClient.post(
+    }): Promise<PaymentResponse> => {
+      const response = await apiClient.post<{ data: PaymentResponse }>(
         API_ENDPOINTS.PAYMENT.CREATE_TRANSACTION,
         data
       );
-      return response.data;
+      return response.data.data;
     },
     onSuccess: () => {
       // Invalidate payment queries
