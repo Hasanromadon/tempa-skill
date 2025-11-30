@@ -122,7 +122,9 @@ temp/
 *.key
 *.crt
 
-# Firebase
-# DO NOT commit Firebase service account JSON files (contains private keys)
+# Firebase Service Account Keys
+# CRITICAL: These files contain private keys and must NEVER be committed!
+# Format: project-name-firebase-adminsdk-xxxxx-xxxxxxxxxx.json
 *-firebase-adminsdk-*.json
-tempaskill-be/ngecis-4035d-firebase-adminsdk-fbsvc-b062d03ee9.json
+*.firebaserc
+.firebase/

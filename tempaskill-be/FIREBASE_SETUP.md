@@ -10,10 +10,10 @@ TempaSKill backend menggunakan **Firebase Storage** untuk menyimpan file gambar 
 
 ### 1. Firebase Project
 
-Anda sudah memiliki Firebase project:
+You need a Firebase project with Storage enabled.
 
-- **Project ID**: `ngecis-4035d`
-- **Storage Bucket**: `ngecis-4035d.firebasestorage.app`
+- **Project ID**: `your-project-id` (e.g., `tempaskill-prod`)
+- **Storage Bucket**: `your-project-id.firebasestorage.app`
 
 ### 2. Service Account JSON
 
@@ -26,13 +26,13 @@ Anda memerlukan file service account JSON dari Firebase Console.
 ### Step 1: Download Service Account JSON
 
 1. Buka Firebase Console: https://console.firebase.google.com/
-2. Pilih project **ngecis-4035d**
+2. Pilih project Anda
 3. Klik **⚙️ Project Settings** (pojok kiri atas, di samping Project Overview)
 4. Tab **Service Accounts**
 5. Klik tombol **"Generate new private key"**
 6. File JSON akan terdownload dengan nama seperti:
    ```
-   ngecis-4035d-firebase-adminsdk-fbsvc-xxxxxxxxxx.json
+   your-project-id-firebase-adminsdk-xxxxx-xxxxxxxxxx.json
    ```
 
 ### Step 2: Copy ke Backend Directory
@@ -40,20 +40,16 @@ Anda memerlukan file service account JSON dari Firebase Console.
 Copy file JSON ke directory backend:
 
 ```
-tempaskill-be/ngecis-4035d-firebase-adminsdk-fbsvc-b062d03ee9.json
+tempaskill-be/your-project-firebase-adminsdk-xxxxx.json
 ```
 
 **PENTING**: Pastikan nama file PERSIS seperti di `.env`:
 
 ```env
-FIREBASE_SERVICE_ACCOUNT=ngecis-4035d-firebase-adminsdk-fbsvc-b062d03ee9.json
+FIREBASE_SERVICE_ACCOUNT=your-project-firebase-adminsdk-xxxxx.json
 ```
 
-Jika nama file JSON berbeda, update `.env`:
-
-```env
-FIREBASE_SERVICE_ACCOUNT=ngecis-4035d-firebase-adminsdk-fbsvc-NEW_ID.json
-```
+Jika nama file JSON berbeda, update `.env` sesuai nama file yang Anda download.
 
 ### Step 3: Verify Setup
 
@@ -61,7 +57,7 @@ FIREBASE_SERVICE_ACCOUNT=ngecis-4035d-firebase-adminsdk-fbsvc-NEW_ID.json
 
    ```bash
    cd tempaskill-be
-   ls ngecis-4035d-firebase-adminsdk-*.json
+   ls *-firebase-adminsdk-*.json
    ```
 
 2. **Start Backend**:
@@ -211,7 +207,7 @@ Firebase Storage Bucket
 ```bash
 # Check file exists
 cd tempaskill-be
-ls ngecis-4035d-firebase-adminsdk-*.json
+ls *-firebase-adminsdk-*.json
 
 # If not exists, download from Firebase Console
 # Copy to tempaskill-be/ directory
