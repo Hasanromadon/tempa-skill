@@ -9,22 +9,32 @@ import {
 } from "@/components/course";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+// ✅ IMPORT SHADCN COMPONENTS
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { useCourses, useIsAuthenticated } from "@/hooks";
-import { DIFFICULTY_COLORS, DIFFICULTY_LABELS, ROUTES } from "@/lib/constants";
-import { formatCurrency } from "@/lib/utils";
-import { BookOpen, Filter, Users } from "lucide-react";
-import Image from "next/image";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+// ✅ UPDATE HOOK IMPORT
+import { CourseCardPublic } from "@/components/course/course-card-public";
+import { useCourses, useIsAuthenticated, useLogout } from "@/hooks"; // Gunakan useAuth untuk dapat data user
+import { removeAuthToken } from "@/lib/auth-token";
+import { ROUTES } from "@/lib/constants";
+import {
+  BookOpen,
+  Filter,
+  LayoutDashboard,
+  LogOut,
+  User as UserIcon,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 
 export default function CoursesPage() {
   return (
@@ -38,7 +48,11 @@ function CoursesPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Parse URL parameters
+  // ✅ AUTH STATE: Ambil user dan logout dari hook
+  const { user, isAuthenticated } = useIsAuthenticated();
+  const logout = useLogout();
+
+  // ... (State search, page, sortBy, filters TETAP SAMA seperti sebelumnya) ...
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [page, setPage] = useState(parseInt(searchParams.get("page") || "1"));
   const [sortBy, setSortBy] = useState(
@@ -47,6 +61,7 @@ function CoursesPageContent() {
   const [sortOrder, setSortOrder] = useState(
     searchParams.get("sort_order") || "desc"
   );
+
   const [filters, setFilters] = useState<CourseFilters>({
     category: searchParams.get("category") || undefined,
     difficulty:
@@ -64,20 +79,27 @@ function CoursesPageContent() {
       ? parseInt(searchParams.get("instructor_id")!)
       : undefined,
   });
-  const [showFilters, setShowFilters] = useState(false);
 
+  const [showFilters, setShowFilters] = useState(false);
   const limit = 12;
 
-  // Update URL when filters change
+  // ... (useMemo activeFiltersCount, updateURL, dan useCourses TETAP SAMA) ...
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (filters.category) count++;
+    if (filters.difficulty) count++;
+    if (filters.minPrice && filters.minPrice > 0) count++;
+    if (filters.maxPrice) count++;
+    if (filters.instructorId) count++;
+    return count;
+  }, [filters]);
+
   const updateURL = useCallback(() => {
     const params = new URLSearchParams();
-
     if (search) params.set("search", search);
     if (page > 1) params.set("page", page.toString());
     if (sortBy !== "created_at") params.set("sort_by", sortBy);
-
     if (sortOrder !== "desc") params.set("sort_order", sortOrder);
-
     if (filters.category) params.set("category", filters.category);
     if (filters.difficulty) params.set("difficulty", filters.difficulty);
     if (filters.minPrice && filters.minPrice > 0)
@@ -89,16 +111,14 @@ function CoursesPageContent() {
 
     const queryString = params.toString();
     const newURL = queryString ? `/courses?${queryString}` : "/courses";
-
     router.replace(newURL, { scroll: false });
   }, [search, page, sortBy, sortOrder, filters, router]);
 
-  // Update URL when state changes
   useEffect(() => {
     updateURL();
   }, [updateURL]);
 
-  const { data, isLoading, error } = useCourses({
+  const { data, isFetching, error } = useCourses({
     page,
     limit,
     search: search || undefined,
@@ -112,32 +132,46 @@ function CoursesPageContent() {
     published: true,
   });
 
-  const { isAuthenticated } = useIsAuthenticated();
-
   const handleSearchChange = (value: string) => {
     setSearch(value);
-    setPage(1); // Reset to first page
+    setPage(1);
   };
 
   const handleFiltersChange = (newFilters: CourseFilters) => {
     setFilters(newFilters);
-    setPage(1); // Reset to first page
+    setPage(1);
   };
 
   const handleSortChange = (value: string) => {
     const [field, order] = value.split("-");
     setSortBy(field);
     setSortOrder(order);
-    setPage(1); // Reset to first page
+    setPage(1);
   };
 
   const toggleFilters = () => {
     setShowFilters(!showFilters);
   };
 
+  // Helper untuk inisial nama
+  const getInitials = (name: string) => {
+    return name
+      ?.split(" ")
+      .map((n) => n[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase();
+  };
+
+  const handleLogout = () => {
+    logout(); // Memanggil fungsi dari useAuth
+    removeAuthToken();
+    router.push(ROUTES.LOGIN); // Redirect ke login
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
+    <div className="min-h-screen bg-gray-50/50">
+      {/* Header dengan User Profile & Logout */}
       <PageHeader
         title="Jelajahi Kursus"
         description="Temukan kursus berbasis teks dengan sesi langsung"
@@ -158,185 +192,191 @@ function CoursesPageContent() {
                 </Button>
               </Link>
             </div>
-          ) : undefined
+          ) : (
+            <div className="flex items-center gap-4">
+              {/* Tombol Dashboard Cepat */}
+              <Link
+                href={ROUTES.DASHBOARD || "/dashboard"}
+                className="hidden sm:block"
+              >
+                <Button
+                  variant="ghost"
+                  className="text-gray-600 hover:text-orange-600"
+                >
+                  Dashboard
+                </Button>
+              </Link>
+
+              {/* User Dropdown Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="relative h-10 w-10 rounded-full hover:bg-orange-50 focus:ring-2 focus:ring-orange-200"
+                  >
+                    <Avatar className="h-10 w-10 border border-gray-200">
+                      {/* Ganti src dengan user.avatar jika ada */}
+                      <AvatarImage src={user?.avatar_url} alt={user?.name} />
+                      <AvatarFallback className="bg-orange-100 text-orange-700 font-bold">
+                        {getInitials(user?.name || "U")}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none text-gray-900">
+                        {user?.name || "Pengguna"}
+                      </p>
+                      <p className="text-xs leading-none text-gray-500 truncate">
+                        {user?.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+
+                  <Link href={ROUTES.DASHBOARD || "/dashboard"}>
+                    <DropdownMenuItem className="cursor-pointer hover:bg-gray-50">
+                      <LayoutDashboard className="mr-2 h-4 w-4 text-gray-500" />
+                      <span>Dashboard Saya</span>
+                    </DropdownMenuItem>
+                  </Link>
+
+                  <Link href="/profile">
+                    <DropdownMenuItem className="cursor-pointer hover:bg-gray-50">
+                      <UserIcon className="mr-2 h-4 w-4 text-gray-500" />
+                      <span>Profil Akun</span>
+                    </DropdownMenuItem>
+                  </Link>
+
+                  <DropdownMenuSeparator />
+
+                  <DropdownMenuItem
+                    onClick={handleLogout}
+                    className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Keluar</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )
         }
       />
-
-      {/* Search and Controls */}
-      <div className="bg-white border-b">
+      <div className="bg-white sticky top-0 z-30 shadow-sm border-b border-gray-100">
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col lg:flex-row gap-4">
-            {/* Search Bar */}
             <div className="flex-1">
               <SearchBar
                 value={search}
                 onChange={handleSearchChange}
-                placeholder="Cari kursus..."
-                className="max-w-md"
+                placeholder="Cari topik yang ingin Anda pelajari..."
+                className="max-w-md w-full"
               />
             </div>
-
-            {/* Sort and Filter Controls */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <SortDropdown
                 value={`${sortBy}-${sortOrder}`}
                 onValueChange={handleSortChange}
               />
-
               <Button
-                variant="outline"
+                variant={
+                  showFilters || activeFiltersCount > 0
+                    ? "secondary"
+                    : "outline"
+                }
                 size="sm"
                 onClick={toggleFilters}
-                className="lg:hidden"
+                className={`gap-2 h-10 px-4 rounded-lg transition-colors ${
+                  showFilters
+                    ? "bg-orange-100 text-orange-700 hover:bg-orange-200"
+                    : "hover:bg-gray-100"
+                }`}
               >
-                <Filter className="h-4 w-4 mr-2" />
+                {showFilters ? (
+                  <X className="h-4 w-4" />
+                ) : (
+                  <Filter className="h-4 w-4" />
+                )}
                 Filter
+                {activeFiltersCount > 0 && (
+                  <Badge
+                    variant="secondary"
+                    className="ml-1 h-5 min-w-5 px-1.5 flex items-center justify-center bg-orange-600 text-white rounded-full text-xs font-bold"
+                  >
+                    {activeFiltersCount}
+                  </Badge>
+                )}
               </Button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Content */}
+      {/* Content Grid (Sama seperti sebelumnya) */}
       <div className="container mx-auto px-4 py-8">
-        <div className="flex gap-8">
-          {/* Filter Sidebar */}
+        <div className="flex gap-8 items-start">
           <FilterSidebar
             filters={filters}
             onFiltersChange={handleFiltersChange}
             isOpen={showFilters}
             onToggle={toggleFilters}
-            className="hidden lg:block"
+            className={`hidden ${
+              showFilters ? "lg:block" : "lg:hidden"
+            } transition-all duration-300 ease-in-out`}
           />
 
-          {/* Courses Grid */}
-          <div className="flex-1">
-            {isLoading ? (
+          <div className="flex-1 min-w-0">
+            {/* ... Logika Loading/Error/Data Kursus sama seperti kode sebelumnya ... */}
+            {isFetching ? (
               <LoadingScreen message="Memuat kursus..." />
             ) : error ? (
-              <div className="text-center py-12">
-                <p className="text-red-600">
-                  Gagal memuat kursus. Silakan coba lagi.
-                </p>
+              // ... Error state
+              <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-dashed border-gray-200">
+                <p className="text-red-500 font-medium">Gagal memuat kursus.</p>
               </div>
             ) : data && data.courses.length > 0 ? (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {data.courses.map((course) => (
-                    <Link key={course.id} href={`/courses/${course.slug}`}>
-                      <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer overflow-hidden">
-                        {/* Course Thumbnail */}
-                        <div className="relative w-full h-48 bg-gray-200">
-                          {course.thumbnail_url ? (
-                            <Image
-                              src={course.thumbnail_url}
-                              alt={course.title}
-                              fill
-                              className="object-cover"
-                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-400 to-orange-600">
-                              <BookOpen className="h-16 w-16 text-white opacity-50" />
-                            </div>
-                          )}
-                        </div>
-
-                        <CardHeader>
-                          <div className="flex items-start justify-between mb-2">
-                            <Badge
-                              className={
-                                DIFFICULTY_COLORS[
-                                  course.difficulty as keyof typeof DIFFICULTY_COLORS
-                                ] || DIFFICULTY_COLORS.beginner
-                              }
-                            >
-                              {DIFFICULTY_LABELS[
-                                course.difficulty as keyof typeof DIFFICULTY_LABELS
-                              ] || course.difficulty}
-                            </Badge>
-                            {course.is_enrolled && (
-                              <Badge variant="outline">Terdaftar</Badge>
-                            )}
-                          </div>
-                          <CardTitle className="text-xl line-clamp-2">
-                            {course.title}
-                          </CardTitle>
-                          <CardDescription className="line-clamp-2">
-                            {course.description}
-                          </CardDescription>
-                        </CardHeader>
-
-                        <CardContent>
-                          <div className="flex items-center gap-4 text-sm text-gray-600">
-                            <div className="flex items-center gap-1">
-                              <BookOpen className="h-4 w-4" />
-                              <span>{course.lesson_count} pelajaran</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Users className="h-4 w-4" />
-                              <span>{course.enrolled_count} siswa</span>
-                            </div>
-                          </div>
-                          <div className="mt-4 flex items-center justify-between">
-                            <span className="text-sm text-gray-500 capitalize">
-                              {course.category}
-                            </span>
-                            <span className="text-lg font-bold text-orange-600">
-                              {formatCurrency(course.price)}
-                            </span>
-                          </div>
-                        </CardContent>
-
-                        <CardFooter>
-                          <Button
-                            className={
-                              course.is_enrolled
-                                ? "w-full border-orange-600 text-orange-600 hover:bg-orange-50"
-                                : "w-full bg-orange-600 hover:bg-orange-700 text-white"
-                            }
-                            variant={course.is_enrolled ? "outline" : "default"}
-                          >
-                            {course.is_enrolled
-                              ? "Lanjutkan Belajar"
-                              : "Lihat Kursus"}
-                          </Button>
-                        </CardFooter>
-                      </Card>
-                    </Link>
-                  ))}
-                </div>
-
-                {/* Pagination */}
-                {data.total > limit && (
-                  <div className="mt-8 flex items-center justify-center gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      disabled={page === 1}
-                    >
-                      Sebelumnya
-                    </Button>
-                    <span className="text-sm text-gray-600">
-                      Halaman {page} dari {Math.ceil(data.total / limit)}
-                    </span>
-                    <Button
-                      variant="outline"
-                      onClick={() => setPage((p) => p + 1)}
-                      disabled={page >= Math.ceil(data.total / limit)}
-                    >
-                      Selanjutnya
-                    </Button>
-                    *** End Patch
-                  </div>
-                )}
-              </>
+              <div
+                className={`grid gap-6 ${
+                  showFilters
+                    ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-4"
+                    : "grid-cols-1 md:grid-cols-3 xl:grid-cols-5"
+                }`}
+              >
+                {/* Mapping CourseCard */}
+                {data.courses.map((course) => (
+                  <CourseCardPublic key={course.id} course={course} />
+                ))}
+              </div>
             ) : (
               <EmptyState
                 icon={BookOpen}
-                title="Tidak ada kursus ditemukan"
-                description="Coba sesuaikan pencarian atau filter Anda."
+                title="Tidak ada kursus"
+                description="Coba filter lain."
               />
+            )}
+
+            {/* Pagination Logic (Sama seperti sebelumnya) */}
+            {data && data.total > limit && (
+              <div className="mt-12 flex items-center justify-center gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setPage((p) => p - 1)}
+                  disabled={page === 1}
+                >
+                  Sebelumnya
+                </Button>
+                <span className="text-sm font-medium">{page}</span>
+                <Button
+                  variant="outline"
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={page >= Math.ceil(data.total / limit)}
+                >
+                  Selanjutnya
+                </Button>
+              </div>
             )}
           </div>
         </div>

@@ -50,7 +50,7 @@ export const CourseCard = memo(function CourseCard({
 }: CourseCardProps) {
   const content = (
     <Card
-      className={`h-full hover:shadow-lg transition-shadow cursor-pointer overflow-hidden ${className}`}
+      className={`h-full hover:shadow-lg transition-shadow cursor-pointer overflow-hidden ${className} pt-0`}
       role="article"
       aria-label={`Kursus: ${course.title}`}
     >

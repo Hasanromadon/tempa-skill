@@ -6,7 +6,12 @@ import type {
   CourseListQuery,
   CourseListResponse,
 } from "@/types/api";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 // List courses with filters
 export const useCourses = (params?: CourseListQuery) => {
@@ -19,6 +24,7 @@ export const useCourses = (params?: CourseListQuery) => {
       );
       return response.data.data;
     },
+    placeholderData: keepPreviousData,
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
 };
