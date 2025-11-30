@@ -30,6 +30,7 @@ type PaymentResponse struct {
 	OrderID           string     `json:"order_id"`
 	GrossAmount       float64    `json:"gross_amount"`
 	PaymentType       string     `json:"payment_type"`
+	SnapToken         string     `json:"snap_token,omitempty"` // For frontend Snap.js integration
 	TransactionStatus string     `json:"transaction_status"`
 	TransactionTime   time.Time  `json:"transaction_time"`
 	SettlementTime    *time.Time `json:"settlement_time,omitempty"`
@@ -81,12 +82,19 @@ type PaymentStatsResponse struct {
 	TotalTransactions int     `json:"total_transactions"`
 }
 
-// Midtrans DTOs
-type MidtransChargeRequest struct {
-	PaymentType        string                    `json:"payment_type"`
+// Midtrans DTOs for Snap API
+type MidtransSnapRequest struct {
 	TransactionDetails MidtransTransactionDetail `json:"transaction_details"`
 	CustomerDetails    MidtransCustomerDetail    `json:"customer_details,omitempty"`
 	ItemDetails        []MidtransItemDetail      `json:"item_details,omitempty"`
+	EnabledPayments    []string                  `json:"enabled_payments,omitempty"`
+	GoPay              *MidtransGoPayConfig      `json:"gopay,omitempty"`
+}
+
+// GoPay specific configuration
+type MidtransGoPayConfig struct {
+	EnableCallback bool   `json:"enable_callback"`
+	CallbackURL    string `json:"callback_url,omitempty"`
 }
 
 type MidtransTransactionDetail struct {
@@ -108,18 +116,11 @@ type MidtransItemDetail struct {
 	Name     string  `json:"name"`
 }
 
-type MidtransChargeResponse struct {
-	Token              string `json:"token,omitempty"`
-	RedirectURL        string `json:"redirect_url,omitempty"`
-	StatusCode         string `json:"status_code"`
-	StatusMessage      string `json:"status_message"`
-	TransactionID      string `json:"transaction_id"`
-	OrderID            string `json:"order_id"`
-	GrossAmount        string `json:"gross_amount"`
-	PaymentType        string `json:"payment_type"`
-	TransactionTime    string `json:"transaction_time"`
-	TransactionStatus  string `json:"transaction_status"`
-	FraudStatus        string `json:"fraud_status,omitempty"`
+type MidtransSnapResponse struct {
+	Token         string `json:"token"`
+	RedirectURL   string `json:"redirect_url"`
+	StatusCode    string `json:"status_code,omitempty"`
+	StatusMessage string `json:"status_message,omitempty"`
 }
 
 // Midtrans notification webhook

@@ -7,6 +7,7 @@ export interface PaymentTransaction {
   order_id: string;
   gross_amount: number;
   payment_type: string;
+  snap_token?: string; // Midtrans Snap token
   transaction_status:
     | "pending"
     | "settlement"

@@ -3,6 +3,7 @@ package payment
 import (
 	"bytes"
 	"crypto/sha512"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -80,27 +81,20 @@ func (s *paymentService) CreatePayment(userID uint, req CreatePaymentRequest) (*
 		TransactionTime:   time.Now(),
 	}
 
-	// Determine payment type
-	paymentType := "bank_transfer" // default
+	// Determine enabled payment methods for Snap
+	enabledPayments := []string{}
 	if req.PaymentMethod != "" {
-		switch req.PaymentMethod {
-		case "gopay":
-			paymentType = "gopay"
-		case "credit_card":
-			paymentType = "credit_card"
-		case "qris":
-			paymentType = "qris"
-		default:
-			paymentType = "bank_transfer"
-		}
+		enabledPayments = []string{req.PaymentMethod}
+	} else {
+		// Default: enable all e-wallets and QRIS
+		enabledPayments = []string{"gopay", "qris", "shopeepay", "other_qris"}
 	}
 
-	// Create Midtrans charge request
-	chargeReq := MidtransChargeRequest{
-		PaymentType: paymentType,
+	// Create Midtrans Snap request
+	snapReq := MidtransSnapRequest{
 		TransactionDetails: MidtransTransactionDetail{
 			OrderID:     orderID,
-			GrossAmount: int64(course.Price * 100), // Convert to cents
+			GrossAmount: int64(course.Price), // Midtrans uses full Rupiah amount
 		},
 		CustomerDetails: MidtransCustomerDetail{
 			FirstName: user.Name,
@@ -109,23 +103,36 @@ func (s *paymentService) CreatePayment(userID uint, req CreatePaymentRequest) (*
 		ItemDetails: []MidtransItemDetail{
 			{
 				ID:       fmt.Sprintf("course_%d", req.CourseID),
-				Price:    int64(course.Price * 100),
+				Price:    int64(course.Price),
 				Quantity: 1,
 				Name:     course.Title,
 			},
 		},
+		EnabledPayments: enabledPayments,
 	}
 
-	// Call Midtrans API
-	chargeResp, err := s.callMidtransAPI(chargeReq)
+	// Add GoPay callback configuration if GoPay is selected
+	if req.PaymentMethod == "gopay" {
+		snapReq.GoPay = &MidtransGoPayConfig{
+			EnableCallback: true,
+			CallbackURL:    "https://your-frontend-domain.com/payment/success",
+		}
+	}
+
+	// Call Midtrans Snap API
+	snapResp, err := s.callMidtransSnapAPI(snapReq)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create payment: %w", err)
 	}
 
 	// Update transaction with Midtrans response
-	transaction.PaymentType = chargeResp.PaymentType
-	transaction.PaymentURL = chargeResp.RedirectURL
-	transaction.MidtransResponse = fmt.Sprintf("%+v", chargeResp)
+	transaction.PaymentType = req.PaymentMethod
+	if transaction.PaymentType == "" {
+		transaction.PaymentType = "snap" // Default to snap
+	}
+	transaction.PaymentURL = snapResp.RedirectURL
+	transaction.SnapToken = snapResp.Token
+	transaction.MidtransResponse = fmt.Sprintf("%+v", snapResp)
 
 	// Save transaction
 	if err := s.repo.Create(transaction); err != nil {
@@ -142,6 +149,7 @@ func (s *paymentService) CreatePayment(userID uint, req CreatePaymentRequest) (*
 		OrderID:           transaction.OrderID,
 		GrossAmount:       transaction.GrossAmount,
 		PaymentType:       transaction.PaymentType,
+		SnapToken:         transaction.SnapToken, // Include Snap token for frontend
 		TransactionStatus: transaction.TransactionStatus,
 		TransactionTime:   transaction.TransactionTime,
 		PaymentURL:        transaction.PaymentURL,
@@ -398,13 +406,18 @@ func (s *paymentService) HandleMidtransNotification(notification MidtransNotific
 	return nil
 }
 
-func (s *paymentService) callMidtransAPI(req MidtransChargeRequest) (*MidtransChargeResponse, error) {
+func (s *paymentService) callMidtransSnapAPI(req MidtransSnapRequest) (*MidtransSnapResponse, error) {
 	jsonData, err := json.Marshal(req)
 	if err != nil {
 		return nil, err
 	}
 
-	url := s.midtransConfig.BaseURL + "/v2/charge"
+	// Snap API endpoint (different from Core API)
+	url := "https://app.sandbox.midtrans.com/snap/v1/transactions"
+	if s.midtransConfig.IsProduction {
+		url = "https://app.midtrans.com/snap/v1/transactions"
+	}
+
 	httpReq, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, err
@@ -412,7 +425,12 @@ func (s *paymentService) callMidtransAPI(req MidtransChargeRequest) (*MidtransCh
 
 	httpReq.Header.Set("Content-Type", "application/json")
 	httpReq.Header.Set("Accept", "application/json")
-	httpReq.Header.Set("Authorization", "Basic "+s.encodeBase64(s.midtransConfig.ServerKey+":"))
+	
+	// Midtrans Authorization: Basic Base64(ServerKey:)
+	// Format: {ServerKey}: (colon at the end, no password)
+	authString := s.midtransConfig.ServerKey + ":"
+	encodedAuth := base64.StdEncoding.EncodeToString([]byte(authString))
+	httpReq.Header.Set("Authorization", "Basic "+encodedAuth)
 
 	client := &http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(httpReq)
@@ -426,26 +444,24 @@ func (s *paymentService) callMidtransAPI(req MidtransChargeRequest) (*MidtransCh
 		return nil, err
 	}
 
-	var chargeResp MidtransChargeResponse
-	if err := json.Unmarshal(body, &chargeResp); err != nil {
+	var snapResp MidtransSnapResponse
+	if err := json.Unmarshal(body, &snapResp); err != nil {
 		return nil, err
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("midtrans API error: %s", chargeResp.StatusMessage)
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+		if snapResp.StatusMessage != "" {
+			return nil, fmt.Errorf("midtrans API error: %s", snapResp.StatusMessage)
+		}
+		return nil, fmt.Errorf("midtrans API error: status code %d", resp.StatusCode)
 	}
 
-	return &chargeResp, nil
+	return &snapResp, nil
 }
 
 func (s *paymentService) generateSignature(orderID, statusCode, grossAmount, serverKey string) string {
 	hash := sha512.Sum512([]byte(orderID + statusCode + grossAmount + serverKey))
 	return fmt.Sprintf("%x", hash)
-}
-
-func (s *paymentService) encodeBase64(str string) string {
-	// Simple base64 encoding (in real implementation, use proper base64 package)
-	return "base64_encoded_string"
 }
 
 // Helper methods (these will need to be implemented with proper repositories)

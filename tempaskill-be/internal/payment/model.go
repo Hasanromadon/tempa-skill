@@ -14,6 +14,7 @@ type PaymentTransaction struct {
 	OrderID           string    `gorm:"uniqueIndex;size:100;not null" json:"order_id"`
 	GrossAmount       float64   `gorm:"type:decimal(15,2);not null" json:"gross_amount"`
 	PaymentType       string    `gorm:"size:50" json:"payment_type"`
+	SnapToken         string    `gorm:"size:200" json:"snap_token,omitempty"` // Snap token for frontend
 	TransactionStatus string    `gorm:"size:20;not null;default:'pending'" json:"transaction_status"`
 	TransactionTime   time.Time `json:"transaction_time"`
 	SettlementTime    *time.Time `json:"settlement_time,omitempty"`

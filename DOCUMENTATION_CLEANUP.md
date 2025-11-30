@@ -12,26 +12,31 @@
 These files were temporary analysis/planning documents that served their purpose and are no longer needed:
 
 1. **COURSE_AUTHORIZATION_ANALYSIS.md** (10.7 KB)
+
    - Purpose: Analyzed course authorization logic
    - Status: Implementation complete, analysis obsolete
    - Reason: Functionality now documented in API_SPEC.md
 
 2. **FILTER_TABLE_SUMMARY.md** (6.4 KB)
+
    - Purpose: Summary of filter table implementation
    - Status: Feature complete and documented
    - Reason: Replaced by docs/FILTER_TABLE_GUIDE.md
 
 3. **INSTRUCTOR_ENHANCEMENT_PLAN.md** (13.0 KB)
+
    - Purpose: Planning document for instructor features
    - Status: All planned features implemented
    - Reason: Tasks completed, tracked in ROADMAP.md
 
 4. **SEARCH_FOCUS_ANALYSIS.md** (8.0 KB)
+
    - Purpose: Analysis of search/focus functionality
    - Status: Implementation complete
    - Reason: No longer relevant after implementation
 
 5. **TABLE_PERFORMANCE_ANALYSIS.md** (11.0 KB)
+
    - Purpose: Performance optimization analysis
    - Status: Optimizations implemented
    - Reason: Results now part of codebase
@@ -46,10 +51,12 @@ These files were temporary analysis/planning documents that served their purpose
 Screenshot files used during debugging, no longer needed:
 
 7. **debug-invalid-login.png**
+
    - Purpose: Screenshot of login issue
    - Reason: Issue fixed, screenshot obsolete
 
 8. **debug-login-page.png**
+
    - Purpose: Screenshot of login page state
    - Reason: Debug session complete
 
@@ -60,6 +67,7 @@ Screenshot files used during debugging, no longer needed:
 ### Redundant AI Guidelines (Consolidated)
 
 10. **CONTEXT.md** (515 lines)
+
     - Purpose: AI context and workspace rules
     - Status: Fully integrated into .github/copilot-instructions.md
     - Reason: Duplicate content, single source of truth preferred
@@ -75,55 +83,55 @@ Screenshot files used during debugging, no longer needed:
 
 ### Essential Documentation
 
-| File | Size | Purpose | Keep Reason |
-|------|------|---------|-------------|
-| README.md | - | Project overview | Primary entry point |
-| QUICKSTART.md | - | Setup guide | Essential for new devs |
-| DEVELOPMENT.md | - | Coding standards | Active reference |
-| STRUCTURE.md | - | Folder structure | Active reference |
-| CHEATSHEET.md | - | Quick commands | Daily use |
+| File           | Size | Purpose          | Keep Reason            |
+| -------------- | ---- | ---------------- | ---------------------- |
+| README.md      | -    | Project overview | Primary entry point    |
+| QUICKSTART.md  | -    | Setup guide      | Essential for new devs |
+| DEVELOPMENT.md | -    | Coding standards | Active reference       |
+| STRUCTURE.md   | -    | Folder structure | Active reference       |
+| CHEATSHEET.md  | -    | Quick commands   | Daily use              |
 
 ### Technical Specifications
 
-| File | Purpose | Keep Reason |
-|------|---------|-------------|
-| API_SPEC.md | Complete API documentation | Active reference for integration |
-| API_QUICK_REFERENCE.md | Quick API lookup | Convenience for developers |
-| DATABASE.md | Schema documentation | Database work reference |
-| ROADMAP.md | Development timeline | Progress tracking |
+| File                   | Purpose                    | Keep Reason                      |
+| ---------------------- | -------------------------- | -------------------------------- |
+| API_SPEC.md            | Complete API documentation | Active reference for integration |
+| API_QUICK_REFERENCE.md | Quick API lookup           | Convenience for developers       |
+| DATABASE.md            | Schema documentation       | Database work reference          |
+| ROADMAP.md             | Development timeline       | Progress tracking                |
 
 ### Frontend Guides
 
-| File | Purpose | Keep Reason |
-|------|---------|-------------|
-| FRONTEND_API_GUIDE.md | Frontend API patterns | Active development guide |
-| PRIVATE_ROUTES.md | Route protection guide | Security implementation |
+| File                  | Purpose                | Keep Reason              |
+| --------------------- | ---------------------- | ------------------------ |
+| FRONTEND_API_GUIDE.md | Frontend API patterns  | Active development guide |
+| PRIVATE_ROUTES.md     | Route protection guide | Security implementation  |
 
 ### Security Documentation
 
-| File | Purpose | Keep Reason |
-|------|---------|-------------|
-| SECURITY_INCIDENT.md | Incident report (Midtrans keys) | Historical record & actions required |
-| SECURITY_AUDIT.md | Security analysis | Pre-production checklist |
-| SECURITY_CHECKLIST.md | Security tasks | Development checklist |
+| File                  | Purpose                         | Keep Reason                          |
+| --------------------- | ------------------------------- | ------------------------------------ |
+| SECURITY_INCIDENT.md  | Incident report (Midtrans keys) | Historical record & actions required |
+| SECURITY_AUDIT.md     | Security analysis               | Pre-production checklist             |
+| SECURITY_CHECKLIST.md | Security tasks                  | Development checklist                |
 
 ### Contributing & Scripts
 
-| File | Purpose | Keep Reason |
-|------|---------|-------------|
-| CONTRIBUTING.md | Contribution guide | Open source guidelines |
-| SCRIPTS.md | Automation scripts | Development workflow |
-| DOCS.md | Documentation index | Navigation hub |
+| File            | Purpose             | Keep Reason            |
+| --------------- | ------------------- | ---------------------- |
+| CONTRIBUTING.md | Contribution guide  | Open source guidelines |
+| SCRIPTS.md      | Automation scripts  | Development workflow   |
+| DOCS.md         | Documentation index | Navigation hub         |
 
 ### Specialized Guides (in /docs)
 
-| File | Purpose | Keep Reason |
-|------|---------|-------------|
-| FRONTEND_ARCHITECTURE.md | Frontend patterns | Architecture reference |
-| FILTER_TABLE_GUIDE.md | Filter table usage | Component guide |
-| SERVER_TABLE_USAGE.md | Server-side table | Component guide |
-| FORM_COMPONENTS.md | Form patterns | Component guide |
-| MDX_GUIDE.md | MDX editor usage | Feature guide |
+| File                     | Purpose            | Keep Reason            |
+| ------------------------ | ------------------ | ---------------------- |
+| FRONTEND_ARCHITECTURE.md | Frontend patterns  | Architecture reference |
+| FILTER_TABLE_GUIDE.md    | Filter table usage | Component guide        |
+| SERVER_TABLE_USAGE.md    | Server-side table  | Component guide        |
+| FORM_COMPONENTS.md       | Form patterns      | Component guide        |
+| MDX_GUIDE.md             | MDX editor usage   | Feature guide          |
 
 ---
 
@@ -132,6 +140,7 @@ Screenshot files used during debugging, no longer needed:
 ### DOCS.md
 
 **Changes**:
+
 - Removed references to deleted files (CONTEXT.md, AI_DEVELOPMENT_GUIDE.md)
 - Updated AI guidelines to point to .github/copilot-instructions.md
 - Added SECURITY_INCIDENT.md to security section
@@ -139,6 +148,7 @@ Screenshot files used during debugging, no longer needed:
 - Bumped version to 2.0.0
 
 **Diff Summary**:
+
 ```diff
 - CONTEXT.md references → .github/copilot-instructions.md
 + Added SECURITY_INCIDENT.md to table
@@ -171,16 +181,19 @@ Estimated Size Reduction: ~100 KB
 ### Benefits
 
 1. **Reduced Clutter** ✅
+
    - Removed 11 obsolete files
    - Cleaner root directory
    - Easier navigation
 
 2. **Single Source of Truth** ✅
+
    - AI guidelines now only in .github/copilot-instructions.md
    - No duplicate content
    - Easier to maintain
 
 3. **Focused Documentation** ✅
+
    - Only active, useful docs remain
    - Clear purpose for each file
    - Better organized
@@ -255,16 +268,19 @@ AI Guidelines/
 ### When to Clean Up Documentation:
 
 1. **After Feature Complete**
+
    - Remove planning/analysis docs
    - Keep implementation guides
    - Update ROADMAP.md
 
 2. **After Bug Fix**
+
    - Remove debug screenshots
    - Remove temporary fix docs
    - Document solution in code/comments
 
 3. **Monthly Review**
+
    - Check for outdated content
    - Consolidate duplicate information
    - Update version numbers
@@ -277,6 +293,7 @@ AI Guidelines/
 ### Documentation Rules:
 
 **KEEP**:
+
 - ✅ Actively referenced guides
 - ✅ Essential setup documentation
 - ✅ API specifications
@@ -284,6 +301,7 @@ AI Guidelines/
 - ✅ Historical incident reports
 
 **REMOVE**:
+
 - ❌ Temporary analysis files
 - ❌ Debug artifacts (screenshots, logs)
 - ❌ Outdated planning documents
@@ -295,6 +313,7 @@ AI Guidelines/
 ## 📞 Questions?
 
 If you need information from deleted files:
+
 1. Check git history: `git log --all --full-history -- FILENAME.md`
 2. Restore if needed: `git show COMMIT:FILENAME.md`
 3. Most info is now in:

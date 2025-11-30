@@ -25,6 +25,32 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+// Declare Midtrans Snap type
+declare global {
+  interface Window {
+    snap?: {
+      pay: (token: string, options?: SnapPayOptions) => void;
+      embed: (
+        token: string,
+        options: {
+          embedId: string;
+          onSuccess?: () => void;
+          onPending?: () => void;
+          onError?: () => void;
+          onClose?: () => void;
+        }
+      ) => void;
+    };
+  }
+}
+
+interface SnapPayOptions {
+  onSuccess?: (result: any) => void;
+  onPending?: (result: any) => void;
+  onError?: (result: any) => void;
+  onClose?: () => void;
+}
+
 interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -80,6 +106,24 @@ export function PaymentModal({
   const { data: paymentStatus, isLoading: statusLoading } =
     usePaymentStatus(orderId);
 
+  // Load Midtrans Snap.js script
+  useEffect(() => {
+    const snapScript = document.createElement("script");
+    snapScript.src = "https://app.sandbox.midtrans.com/snap/snap.js";
+    snapScript.setAttribute(
+      "data-client-key",
+      "SB-Mid-client-ZBuTiayOZocEGgLJ"
+    );
+    snapScript.async = true;
+
+    document.body.appendChild(snapScript);
+
+    return () => {
+      // Cleanup
+      document.body.removeChild(snapScript);
+    };
+  }, []);
+
   // Reset state when modal opens
   useEffect(() => {
     if (isOpen) {
@@ -120,14 +164,53 @@ export function PaymentModal({
 
       setOrderId(result.order_id);
 
-      // Open payment URL if available
-      if (result.payment_url) {
-        window.open(result.payment_url, "_blank");
-      }
+      // Use Snap.js for GoPay and QRIS (requires snap_token)
+      if (
+        result.snap_token &&
+        (selectedMethod === "gopay" || selectedMethod === "qris")
+      ) {
+        if (!window.snap) {
+          toast.error("Snap.js belum dimuat", {
+            description: "Silakan refresh halaman dan coba lagi.",
+          });
+          return;
+        }
 
-      toast.success("Transaksi dibuat", {
-        description: "Silakan selesaikan pembayaran di tab baru.",
-      });
+        // Open Snap payment popup
+        window.snap.pay(result.snap_token, {
+          onSuccess: (result) => {
+            toast.success("Pembayaran berhasil!", {
+              description: "Anda sekarang dapat mengakses kursus ini.",
+            });
+            onSuccess?.();
+            onClose();
+          },
+          onPending: (result) => {
+            toast.info("Pembayaran pending", {
+              description: "Silakan selesaikan pembayaran Anda.",
+            });
+          },
+          onError: (result) => {
+            toast.error("Pembayaran gagal", {
+              description:
+                "Silakan coba lagi atau pilih metode pembayaran lain.",
+            });
+          },
+          onClose: () => {
+            // User closed the popup
+          },
+        });
+      } else if (result.payment_url) {
+        // Fallback to redirect for other payment methods
+        window.open(result.payment_url, "_blank");
+        toast.success("Transaksi dibuat", {
+          description: "Silakan selesaikan pembayaran di tab baru.",
+        });
+      } else {
+        toast.error("Gagal membuat transaksi", {
+          description: "Tidak ada payment URL atau snap token.",
+        });
+      }
     } catch (error) {
       console.error("Payment creation error:", error);
       toast.error("Gagal membuat transaksi", {
