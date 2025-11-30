@@ -14,8 +14,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useServerTable } from "@/hooks";
-import type { InstructorStudent } from "@/types/api";
 import { ExportColumn, exportToCSV } from "@/lib/export-csv";
+import type { InstructorStudent } from "@/types/api";
 import {
   BookOpen,
   Download,
@@ -211,12 +211,7 @@ export default function InstructorStudentsPage() {
           const student = ctx.row.original;
           return (
             <div className="flex items-center justify-end gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                asChild
-                title="Lihat Detail"
-              >
+              <Button variant="ghost" size="sm" asChild title="Lihat Detail">
                 <Link href={`/users/${student.id}`}>
                   <Eye className="h-4 w-4" />
                 </Link>

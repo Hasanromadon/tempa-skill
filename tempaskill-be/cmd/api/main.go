@@ -216,19 +216,26 @@ func main() {
 		adminService := admin.NewService(db)
 		adminHandler := admin.NewHandler(adminService)
 
-		// Admin middleware - check if user role is admin
-		adminMiddleware := func(c *gin.Context) {
+		// Admin or Instructor middleware (for shared admin resources like dashboard stats)
+		// This allows both admin and instructor to access /admin/stats
+		// The actual data filtering is done in the service layer based on user role
+		adminOrInstructorMiddleware := func(c *gin.Context) {
 			userRole, exists := c.Get("userRole")
-			if !exists || userRole != "admin" {
-				c.JSON(http.StatusForbidden, gin.H{"error": "Admin access required"})
+			if !exists {
+				c.JSON(http.StatusForbidden, gin.H{"error": "Authentication required"})
+				c.Abort()
+				return
+			}
+			if userRole != "admin" && userRole != "instructor" {
+				c.JSON(http.StatusForbidden, gin.H{"error": "Admin or instructor access required"})
 				c.Abort()
 				return
 			}
 			c.Next()
 		}
 
-		// Register admin routes
-		admin.RegisterRoutes(v1, adminHandler, authMiddleware, adminMiddleware)
+		// Register admin routes (with admin OR instructor access for stats)
+		admin.RegisterRoutes(v1, adminHandler, authMiddleware, adminOrInstructorMiddleware)
         instructorRepo := instructor.NewRepository(db)
         instructorService := instructor.NewService(instructorRepo)
         instructorHandler := instructor.NewHandler(instructorService)

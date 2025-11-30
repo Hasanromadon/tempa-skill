@@ -19,7 +19,8 @@ func NewHandler(service Service) *Handler {
 // Data is filtered based on user role
 func (h *Handler) GetDashboardStats(c *gin.Context) {
 	// Get user info from context (set by auth middleware)
-	userID, exists := c.Get("user_id")
+	// Note: middleware uses camelCase (userID, userRole)
+	userID, exists := c.Get("userID")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"error": "User not authenticated",
@@ -27,7 +28,7 @@ func (h *Handler) GetDashboardStats(c *gin.Context) {
 		return
 	}
 
-	userRole, exists := c.Get("user_role")
+	userRole, exists := c.Get("userRole")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"error": "User role not found",

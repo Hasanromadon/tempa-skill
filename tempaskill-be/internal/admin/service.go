@@ -27,7 +27,7 @@ func (s *service) GetDashboardStats(ctx context.Context, userID uint, userRole s
 	stats := &DashboardStats{}
 
 	// 1. Count total courses (filtered by instructor if not admin)
-	coursesQuery := s.db.Table("courses")
+	coursesQuery := s.db.Table("courses").Where("deleted_at IS NULL")
 	if userRole == "instructor" {
 		coursesQuery = coursesQuery.Where("instructor_id = ?", userID)
 	}
@@ -36,7 +36,7 @@ func (s *service) GetDashboardStats(ctx context.Context, userID uint, userRole s
 	}
 
 	// 2. Count published courses
-	publishedQuery := s.db.Table("courses").Where("is_published = ?", true)
+	publishedQuery := s.db.Table("courses").Where("is_published = ? AND deleted_at IS NULL", true)
 	if userRole == "instructor" {
 		publishedQuery = publishedQuery.Where("instructor_id = ?", userID)
 	}
@@ -57,6 +57,7 @@ func (s *service) GetDashboardStats(ctx context.Context, userID uint, userRole s
 			Joins("INNER JOIN enrollments ON enrollments.user_id = users.id").
 			Joins("INNER JOIN courses ON courses.id = enrollments.course_id").
 			Where("courses.instructor_id = ?", userID).
+			Where("courses.deleted_at IS NULL").
 			Where("users.role = ?", "student").
 			Scan(&stats.TotalStudents).Error; err != nil {
 			return nil, err
@@ -83,7 +84,8 @@ func (s *service) GetDashboardStats(ctx context.Context, userID uint, userRole s
 	if userRole == "instructor" {
 		enrollmentsQuery = enrollmentsQuery.
 			Joins("INNER JOIN courses ON courses.id = enrollments.course_id").
-			Where("courses.instructor_id = ?", userID)
+			Where("courses.instructor_id = ?", userID).
+			Where("courses.deleted_at IS NULL")
 	}
 	if err := enrollmentsQuery.Count(&stats.TotalEnrollments).Error; err != nil {
 		return nil, err
@@ -98,7 +100,8 @@ func (s *service) GetDashboardStats(ctx context.Context, userID uint, userRole s
 		// Revenue from instructor's courses only
 		revenueQuery = revenueQuery.
 			Joins("INNER JOIN courses ON courses.id = payment_transactions.course_id").
-			Where("courses.instructor_id = ?", userID)
+			Where("courses.instructor_id = ?", userID).
+			Where("courses.deleted_at IS NULL")
 	}
 
 	if err := revenueQuery.Select("COALESCE(SUM(gross_amount), 0)").
@@ -113,7 +116,8 @@ func (s *service) GetDashboardStats(ctx context.Context, userID uint, userRole s
 	if userRole == "instructor" {
 		pendingQuery = pendingQuery.
 			Joins("INNER JOIN courses ON courses.id = payment_transactions.course_id").
-			Where("courses.instructor_id = ?", userID)
+			Where("courses.instructor_id = ?", userID).
+			Where("courses.deleted_at IS NULL")
 	}
 	if err := pendingQuery.Count(&stats.PendingPayments).Error; err != nil {
 		return nil, err
@@ -125,7 +129,8 @@ func (s *service) GetDashboardStats(ctx context.Context, userID uint, userRole s
 	if userRole == "instructor" {
 		completedQuery = completedQuery.
 			Joins("INNER JOIN courses ON courses.id = payment_transactions.course_id").
-			Where("courses.instructor_id = ?", userID)
+			Where("courses.instructor_id = ?", userID).
+			Where("courses.deleted_at IS NULL")
 	}
 	if err := completedQuery.Count(&stats.CompletedPayments).Error; err != nil {
 		return nil, err
@@ -136,7 +141,8 @@ func (s *service) GetDashboardStats(ctx context.Context, userID uint, userRole s
 	if userRole == "instructor" {
 		lessonsQuery = lessonsQuery.
 			Joins("INNER JOIN courses ON courses.id = lessons.course_id").
-			Where("courses.instructor_id = ?", userID)
+			Where("courses.instructor_id = ?", userID).
+			Where("courses.deleted_at IS NULL")
 	}
 	if err := lessonsQuery.Count(&stats.TotalLessons).Error; err != nil {
 		return nil, err
@@ -147,7 +153,8 @@ func (s *service) GetDashboardStats(ctx context.Context, userID uint, userRole s
 	if userRole == "instructor" {
 		sessionsQuery = sessionsQuery.
 			Joins("INNER JOIN courses ON courses.id = sessions.course_id").
-			Where("courses.instructor_id = ?", userID)
+			Where("courses.instructor_id = ?", userID).
+			Where("courses.deleted_at IS NULL")
 	}
 	if err := sessionsQuery.Count(&stats.TotalSessions).Error; err != nil {
 		return nil, err
@@ -159,7 +166,8 @@ func (s *service) GetDashboardStats(ctx context.Context, userID uint, userRole s
 	if userRole == "instructor" {
 		upcomingQuery = upcomingQuery.
 			Joins("INNER JOIN courses ON courses.id = sessions.course_id").
-			Where("courses.instructor_id = ?", userID)
+			Where("courses.instructor_id = ?", userID).
+			Where("courses.deleted_at IS NULL")
 	}
 	if err := upcomingQuery.Count(&stats.UpcomingSessions).Error; err != nil {
 		return nil, err

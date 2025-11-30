@@ -3,8 +3,8 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useCurrentUser } from "@/hooks/use-auth";
 import { useDashboardStats } from "@/hooks";
+import { useCurrentUser } from "@/hooks/use-auth";
 import {
   BookOpen,
   Calendar,
@@ -69,7 +69,7 @@ export default function AdminDashboardPage() {
     cards.push(
       {
         label: "Total Pendapatan",
-        value: formatCurrency(stats?.total_revenue ?? 0),
+        value: +formatCurrency(stats?.total_revenue ?? 0),
         subtitle: `${stats?.completed_payments ?? 0} transaksi berhasil`,
         icon: DollarSign,
         color: "text-green-600",
