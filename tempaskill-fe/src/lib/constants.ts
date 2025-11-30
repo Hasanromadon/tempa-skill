@@ -71,6 +71,9 @@ export const API_ENDPOINTS = {
     UPDATE_PROFILE: "/users/me",
     CHANGE_PASSWORD: "/users/me/password",
   },
+  INSTRUCTOR: {
+    STUDENTS: "/instructor/students",
+  },
   UPLOAD: {
     IMAGE: "/upload/image",
   },

@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 // Protected routes that require authentication
-const protectedRoutes = ["/dashboard", "/profile"];
+const protectedRoutes = ["/dashboard", "/profile", "/instructor"];
 
 // Admin routes that require admin or instructor role
 const adminRoutes = ["/admin"];

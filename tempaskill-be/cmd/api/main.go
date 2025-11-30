@@ -19,6 +19,7 @@ import (
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/session"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/upload"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/user"
+	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/instructor"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/database"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/firebase"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/logger"
@@ -228,14 +229,12 @@ func main() {
 
 		// Register admin routes
 		admin.RegisterRoutes(v1, adminHandler, authMiddleware, adminMiddleware)
-
-		// Initialize activity log module
-		activityRepo := activity.NewRepository(db)
-		activityService := activity.NewService(activityRepo)
-		activityHandler := activity.NewHandler(activityService)
+        instructorRepo := instructor.NewRepository(db)
+        instructorService := instructor.NewService(instructorRepo)
+        instructorHandler := instructor.NewHandler(instructorService)
 
 		// Register activity routes
-		activity.RegisterRoutes(router, activityHandler, authMiddleware.RequireAuth(), adminMiddleware)
+     	instructor.RegisterRoutes(v1, instructorHandler, authMiddleware)
 	}
 
 	// Start server
@@ -281,3 +280,4 @@ func getEnv(key, fallback string) string {
 	}
 	return fallback
 }
+

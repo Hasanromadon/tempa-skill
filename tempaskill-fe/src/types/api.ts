@@ -64,6 +64,28 @@ export interface ChangePasswordRequest {
   new_password_confirmation: string;
 }
 
+// Instructor Student Types
+export interface InstructorStudent {
+  id: number;
+  name: string;
+  email: string;
+  avatar_url?: string;
+  enrolled_courses: string[]; // Course titles
+  total_enrollments: number;
+  completed_courses: number;
+  overall_progress: number; // Percentage 0-100
+  joined_at: string; // ISO date string
+  last_active?: string; // ISO date string
+}
+
+export interface InstructorStudentsResponse {
+  students: InstructorStudent[];
+  total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
+}
+
 // Course Types
 export interface Course {
   id: number;

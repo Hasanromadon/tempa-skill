@@ -22,23 +22,8 @@ func RegisterRoutes(rg *gin.RouterGroup, handler *Handler, authMiddleware *middl
 			protected.PATCH("/me/password", handler.ChangePassword)
 		}
 
-		// Admin and Instructor routes (read-only for instructor)
-		adminOrInstructor := users.Group("")
-		adminOrInstructor.Use(authMiddleware.RequireAuth())
-		adminOrInstructor.Use(func(c *gin.Context) {
-			userRole, exists := c.Get("userRole")
-			if !exists || (userRole != "admin" && userRole != "instructor") {
-				c.JSON(403, gin.H{"error": "Admin or Instructor access required"})
-				c.Abort()
-				return
-			}
-			c.Next()
-		})
-		{
-			adminOrInstructor.GET("", handler.ListUsers) // GET /users (admin + instructor can list students)
-		}
-
-		// Admin-only routes (write operations)
+		// Admin-only routes (full access to user management)
+		// CHANGE: Instructor no longer has access to /users
 		admin := users.Group("")
 		admin.Use(authMiddleware.RequireAuth())
 		admin.Use(func(c *gin.Context) {
@@ -51,6 +36,7 @@ func RegisterRoutes(rg *gin.RouterGroup, handler *Handler, authMiddleware *middl
 			c.Next()
 		})
 		{
+			admin.GET("", handler.ListUsers)                     // GET /users (admin only - all users)
 			admin.PATCH("/:id/role", handler.ChangeUserRole)     // PATCH /users/:id/role (admin only)
 			admin.PATCH("/:id/status", handler.ToggleUserStatus) // PATCH /users/:id/status (admin only)
 			admin.DELETE("/:id", handler.DeleteUser)             // DELETE /users/:id (admin only)

@@ -18,6 +18,7 @@ import { removeAuthToken } from "@/lib/auth-token";
 import { ROUTES } from "@/lib/constants";
 import {
   BookOpen,
+  GraduationCap,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -27,31 +28,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { toast } from "sonner";
-
-const navItems = [
-  {
-    label: "Dashboard",
-    href: "/admin/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    label: "Kursus",
-    href: "/admin/courses",
-    icon: BookOpen,
-  },
-  {
-    label: "Pengguna",
-    href: "/admin/users",
-    icon: Users,
-  },
-  {
-    label: "Pengaturan",
-    href: "/admin/settings",
-    icon: Settings,
-  },
-];
 
 export default function AdminLayout({
   children,
@@ -65,6 +43,54 @@ export default function AdminLayout({
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const isLoading = authLoading || roleLoading;
+
+  // Dynamic navigation based on role
+  const navItems = useMemo(() => {
+    const baseItems = [
+      {
+        label: "Dashboard",
+        href: "/admin/dashboard",
+        icon: LayoutDashboard,
+      },
+      {
+        label: "Kursus",
+        href: "/admin/courses",
+        icon: BookOpen,
+      },
+    ];
+
+    // Instructor-specific menu
+    if (user?.role === "instructor") {
+      return [
+        ...baseItems,
+        {
+          label: "Siswa Saya",
+          href: "/instructor/students",
+          icon: GraduationCap,
+        },
+        {
+          label: "Pengaturan",
+          href: "/admin/settings",
+          icon: Settings,
+        },
+      ];
+    }
+
+    // Admin menu (full access)
+    return [
+      ...baseItems,
+      {
+        label: "Pengguna",
+        href: "/admin/users",
+        icon: Users,
+      },
+      {
+        label: "Pengaturan",
+        href: "/admin/settings",
+        icon: Settings,
+      },
+    ];
+  }, [user?.role]);
 
   useEffect(() => {
     if (!isLoading) {

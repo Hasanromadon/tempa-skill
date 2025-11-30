@@ -26,7 +26,6 @@ import { ChangeRoleDialog } from "@/components/user/change-role-dialog";
 import { DeleteUserDialog } from "@/components/user/delete-user-dialog";
 import {
   useChangeUserRole,
-  useCurrentUser,
   useDeleteUser,
   useServerTable,
   useToggleUserStatus,
@@ -86,10 +85,6 @@ export default function AdminUsersPage() {
     currentRole: string;
   } | null>(null);
 
-  // Get current user role for cache isolation
-  const { data: user } = useCurrentUser();
-  const userRole = user?.role || "admin";
-
   // Bulk action dialog states
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
   const [bulkSuspendDialogOpen, setBulkSuspendDialogOpen] = useState(false);
@@ -97,9 +92,8 @@ export default function AdminUsersPage() {
 
   // Server-side table with filters
   // Custom response parser for users endpoint
-  // IMPORTANT: Include userRole in queryKey to prevent cache collision between admin and instructor
   const table = useServerTable<User>({
-    queryKey: ["admin-users", userRole],
+    queryKey: ["admin-users"],
     endpoint: "users",
     initialLimit: 10,
     initialFilters: {},

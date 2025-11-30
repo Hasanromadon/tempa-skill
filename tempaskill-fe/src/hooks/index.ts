@@ -8,6 +8,7 @@ export * from "./use-dashboard-stats";
 export * from "./use-data-table";
 export * from "./use-debug";
 export * from "./use-delete-user";
+export * from "./use-instructor";
 export * from "./use-lessons";
 export * from "./use-payment";
 export * from "./use-permissions";
