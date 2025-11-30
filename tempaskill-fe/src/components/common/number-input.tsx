@@ -62,8 +62,9 @@ export function NumberInput({
   const { control } = useFormContext();
   const [displayValue, setDisplayValue] = useState<string>("");
 
-  const formatNumberDisplay = (value: number | string): string => {
-    if (!value) return "";
+  const formatNumberDisplay = (value: number | string | null | undefined): string => {
+    // Handle null, undefined, atau empty string
+    if (value === null || value === undefined || value === "") return "";
 
     const numValue =
       typeof value === "string"
@@ -98,55 +99,65 @@ export function NumberInput({
     <Controller
       name={name}
       control={control}
-      render={({ field, fieldState: { error } }) => (
-        <div className={cn("space-y-2", className)}>
-          <Label htmlFor={name} className="text-sm font-medium text-gray-700">
-            {label}
-            {required && <span className="text-red-500 ml-1">*</span>}
-          </Label>
+      render={({ field, fieldState: { error } }) => {
+        // Sync displayValue with field value on mount or when field.value changes
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        React.useEffect(() => {
+          if (field.value !== undefined && field.value !== null) {
+            setDisplayValue(formatNumberDisplay(field.value));
+          }
+        }, [field.value]);
 
-          <div className="relative">
-            <Input
-              id={name}
-              type="text"
-              inputMode="numeric"
-              placeholder={placeholder}
-              disabled={disabled}
-              value={displayValue}
-              onChange={(e) => {
-                const inputValue = e.target.value;
-                const cleanNumber = extractCleanNumber(inputValue);
+        return (
+          <div className={cn("space-y-2", className)}>
+            <Label htmlFor={name} className="text-sm font-medium text-gray-700">
+              {label}
+              {required && <span className="text-red-500 ml-1">*</span>}
+            </Label>
 
-                // Format display value real-time saat mengetik
-                const formattedValue = formatNumberDisplay(cleanNumber);
-                setDisplayValue(formattedValue);
+            <div className="relative">
+              <Input
+                id={name}
+                type="text"
+                inputMode="numeric"
+                placeholder={placeholder}
+                disabled={disabled}
+                value={displayValue}
+                onChange={(e) => {
+                  const inputValue = e.target.value;
+                  const cleanNumber = extractCleanNumber(inputValue);
 
-                // Update form value dengan clean number
-                field.onChange(cleanNumber);
+                  // Format display value real-time saat mengetik
+                  const formattedValue = formatNumberDisplay(cleanNumber);
+                  setDisplayValue(formattedValue);
 
-                // Call callback if provided
-                if (onValueChange) {
-                  onValueChange(cleanNumber);
-                }
-              }}
-              onBlur={() => {
-                field.onBlur();
-              }}
-              {...props}
-              className={cn(
-                "w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed",
-                error ? "border-red-500" : "border-gray-300"
-              )}
-            />
+                  // Update form value dengan clean number
+                  field.onChange(cleanNumber);
+
+                  // Call callback if provided
+                  if (onValueChange) {
+                    onValueChange(cleanNumber);
+                  }
+                }}
+                onBlur={() => {
+                  field.onBlur();
+                }}
+                {...props}
+                className={cn(
+                  "w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed",
+                  error ? "border-red-500" : "border-gray-300"
+                )}
+              />
+            </div>
+
+            {description && (
+              <p className="text-xs text-gray-500">{description}</p>
+            )}
+
+            {error && <p className="text-xs text-red-500">{error.message}</p>}
           </div>
-
-          {description && (
-            <p className="text-xs text-gray-500">{description}</p>
-          )}
-
-          {error && <p className="text-xs text-red-500">{error.message}</p>}
-        </div>
-      )}
+        );
+      }}
     />
   );
 }
