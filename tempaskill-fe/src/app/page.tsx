@@ -509,7 +509,7 @@ function FeatureCard({
   title,
   desc,
 }: {
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   title: string;
   desc: string;
 }) {
