@@ -1,9 +1,3 @@
-# Run all migration files in order
-.PHONY: db-migrate-up
-db-migrate-up: ## Run all migration files in migrations/
-	@echo "$(YELLOW)Running all migrations...$(NC)"
-	@for %f in (..\migrations\*.sql) do "$(MYSQL_BIN)" -u root $(DB_NAME) < "%f"
-	@echo "$(GREEN)✓ All migrations completed$(NC)"
 # TempaSKill Backend Makefile
 # Commands untuk development workflow
 
@@ -35,6 +29,7 @@ help: ## Show this help message
 	@echo   make db-reset       - Reset database
 	@echo   make db-status      - Show database status
 	@echo   make db-migrate     - Run specific migration file (FILE=xxx)
+	@echo   make db-migrate-up  - Run all migration files
 	@echo   make db-migrate-mdx - Run MDX migration (007)
 	@echo   make db-seed-admin  - Seed admin user for E2E testing
 	@echo.
@@ -94,6 +89,12 @@ db-migrate: ## Run specific migration file (use: make db-migrate FILE=007_update
 	@if not defined FILE (echo Error: Please specify FILE parameter && echo Example: make db-migrate FILE=007_update_lesson_to_mdx.sql && exit /b 1)
 	@"$(MYSQL_BIN)" -u root $(DB_NAME) < migrations/$(FILE)
 	@echo "$(GREEN)✓ Migration completed: $(FILE)$(NC)"
+
+.PHONY: db-migrate-up
+db-migrate-up: ## Run all migration files in migrations/
+	@echo "$(YELLOW)Running all migrations...$(NC)"
+	@for %%f in (migrations\*.sql) do @"$(MYSQL_BIN)" -u root $(DB_NAME) < "%%f"
+	@echo "$(GREEN)✓ All migrations completed$(NC)"
 
 .PHONY: db-migrate-mdx
 db-migrate-mdx: ## Run MDX content migration (007_update_lesson_to_mdx.sql)

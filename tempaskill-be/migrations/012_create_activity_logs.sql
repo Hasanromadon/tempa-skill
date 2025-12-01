@@ -7,11 +7,11 @@ ADD COLUMN last_login_at TIMESTAMP NULL AFTER status;
 
 -- Create activity_logs table
 CREATE TABLE activity_logs (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    user_id INT UNSIGNED NOT NULL,
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
     action VARCHAR(100) NOT NULL,
     entity_type VARCHAR(50) NULL,
-    entity_id INT UNSIGNED NULL,
+    entity_id BIGINT UNSIGNED NULL,
     description TEXT NULL,
     ip_address VARCHAR(45) NULL,
     user_agent TEXT NULL,

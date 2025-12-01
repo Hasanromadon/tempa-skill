@@ -3,9 +3,9 @@
 -- Date: 2025-01-27
 
 CREATE TABLE payment_transactions (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    user_id INT UNSIGNED NOT NULL,
-    course_id INT UNSIGNED NOT NULL,
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
+    course_id BIGINT UNSIGNED NOT NULL,
     order_id VARCHAR(100) NOT NULL UNIQUE,
     gross_amount DECIMAL(15,2) NOT NULL,
     payment_type VARCHAR(50) DEFAULT 'bank_transfer',
