@@ -3,7 +3,7 @@
 > Complete guide for integrating Next.js frontend with TempaSKill Backend API
 
 **Last Updated**: November 3, 2025  
-**Backend Version**: 1.0.0  
+**Backend Version**: 2.0.0  
 **Base URL**: `http://localhost:8080/api/v1`
 
 ---
@@ -14,6 +14,15 @@
 - [Response Structure](#response-structure)
 - [Authentication Flow](#authentication-flow)
 - [API Endpoints](#api-endpoints)
+  - [Authentication](#authentication)
+  - [User Management](#user-management)
+  - [Course Management](#course-management)
+  - [Lesson Management](#lesson-management)
+  - [Progress Tracking](#progress-tracking)
+  - [Certificate Management](#certificate-management)
+  - [Instructor Earnings & Withdrawals](#instructor-earnings--withdrawals)
+  - [Activity Logs](#activity-logs)
+  - [Instructor Management](#instructor-management)
 - [Data Models](#data-models)
 - [Error Handling](#error-handling)
 - [Rate Limiting](#rate-limiting)
@@ -31,6 +40,10 @@
 - ✅ **Course Management**: CRUD, Enrollment, Slug-based retrieval
 - ✅ **Lesson Management**: CRUD operations within courses
 - ✅ **Progress Tracking**: Mark lessons complete, track course progress
+- ✅ **Certificate Management**: Issue, download, verify course completion certificates
+- ✅ **Instructor Earnings**: Revenue tracking, withdrawal requests, bank account management
+- ✅ **Activity Logs**: Comprehensive audit trail for user actions
+- ✅ **Instructor Management**: List instructors, view stats, student management
 - ✅ **Request ID**: Every request/response includes unique `request_id` for debugging
 - ✅ **Optimized Queries**: N+1 query problem solved (100x faster)
 
@@ -576,6 +589,703 @@ Authorization: Bearer <token>
 
 ---
 
+### Certificate Management Endpoints
+
+| Method | Endpoint                                    | Auth Required | Description               | Rate Limit  |
+| ------ | ------------------------------------------- | ------------- | ------------------------- | ----------- |
+| GET    | `/certificates/courses/:courseId/eligibility` | ✅         | Check certificate eligibility | 100 req/min |
+| POST   | `/certificates/courses/:courseId/issue`     | ✅            | Issue course certificate  | 10 req/min  |
+| GET    | `/certificates/me`                          | ✅            | List my certificates      | 100 req/min |
+| GET    | `/certificates/:certificateId/download`     | ✅            | Download PDF certificate  | 50 req/min  |
+
+#### Check Certificate Eligibility
+
+Check if user can obtain certificate for a course (requires 100% completion).
+
+```http
+GET /api/v1/certificates/courses/1/eligibility
+Authorization: Bearer <token>
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "success": true,
+  "request_id": "...",
+  "data": {
+    "eligible": true,
+    "course_id": 1,
+    "course_title": "Go Programming Masterclass",
+    "progress_percentage": 100,
+    "completed_lessons": 25,
+    "total_lessons": 25,
+    "already_issued": false
+  }
+}
+```
+
+**Not Eligible Response:**
+
+```json
+{
+  "success": true,
+  "request_id": "...",
+  "data": {
+    "eligible": false,
+    "course_id": 1,
+    "course_title": "Go Programming Masterclass",
+    "progress_percentage": 80,
+    "completed_lessons": 20,
+    "total_lessons": 25,
+    "already_issued": false,
+    "message": "You must complete all lessons (25/25) to be eligible for a certificate"
+  }
+}
+```
+
+#### Issue Certificate
+
+Issue certificate for completed course. Only works if progress is 100%.
+
+```http
+POST /api/v1/certificates/courses/1/issue
+Authorization: Bearer <token>
+```
+
+**Response (201 Created):**
+
+```json
+{
+  "success": true,
+  "request_id": "...",
+  "data": {
+    "id": 123,
+    "user_id": 5,
+    "course_id": 1,
+    "certificate_id": "CERT-20251103-ABC123XYZ",
+    "issued_at": "2025-11-03T14:30:00Z"
+  },
+  "message": "Certificate issued successfully"
+}
+```
+
+**Error (Not Eligible):**
+
+```json
+{
+  "success": false,
+  "request_id": "...",
+  "error": {
+    "code": "NOT_ELIGIBLE",
+    "message": "You must complete all lessons to receive a certificate"
+  }
+}
+```
+
+**Error (Already Issued):**
+
+```json
+{
+  "success": false,
+  "request_id": "...",
+  "error": {
+    "code": "ALREADY_ISSUED",
+    "message": "Certificate already issued for this course",
+    "details": {
+      "certificate_id": "CERT-20251103-ABC123XYZ"
+    }
+  }
+}
+```
+
+#### List My Certificates
+
+Get all certificates earned by authenticated user.
+
+```http
+GET /api/v1/certificates/me
+Authorization: Bearer <token>
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "request_id": "...",
+  "data": [
+    {
+      "id": 123,
+      "user_id": 5,
+      "course_id": 1,
+      "certificate_id": "CERT-20251103-ABC123XYZ",
+      "issued_at": "2025-11-03T14:30:00Z",
+      "course": {
+        "id": 1,
+        "title": "Go Programming Masterclass",
+        "slug": "go-programming-masterclass",
+        "category": "Programming"
+      }
+    }
+  ]
+}
+```
+
+#### Download Certificate PDF
+
+Download certificate as PDF file.
+
+```http
+GET /api/v1/certificates/CERT-20251103-ABC123XYZ/download
+Authorization: Bearer <token>
+```
+
+**Response:**
+
+- **Content-Type**: `application/pdf`
+- **Content-Disposition**: `attachment; filename="certificate-CERT-20251103-ABC123XYZ.pdf"`
+- **Body**: PDF file binary data
+
+**Error (Not Found):**
+
+```json
+{
+  "success": false,
+  "request_id": "...",
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Certificate not found"
+  }
+}
+```
+
+**Error (Not Owned):**
+
+```json
+{
+  "success": false,
+  "request_id": "...",
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "You do not own this certificate"
+  }
+}
+```
+
+---
+
+### Instructor Earnings & Withdrawals
+
+| Method | Endpoint                                    | Auth Required | Description               | Rate Limit  |
+| ------ | ------------------------------------------- | ------------- | ------------------------- | ----------- |
+| GET    | `/instructor/earnings/balance`              | ✅ (Instructor)| Get earnings balance     | 100 req/min |
+| GET    | `/instructor/earnings`                      | ✅ (Instructor)| List all earnings        | 100 req/min |
+| POST   | `/instructor/withdrawals`                   | ✅ (Instructor)| Create withdrawal request| 10 req/min  |
+| GET    | `/instructor/withdrawals`                   | ✅ (Instructor)| List withdrawal requests | 100 req/min |
+| GET    | `/instructor/bank-accounts`                 | ✅ (Instructor)| List bank accounts       | 100 req/min |
+| POST   | `/instructor/bank-accounts`                 | ✅ (Instructor)| Add bank account         | 10 req/min  |
+| PUT    | `/instructor/bank-accounts/:id/primary`     | ✅ (Instructor)| Set primary bank account | 10 req/min  |
+| GET    | `/admin/withdrawals`                        | ✅ (Admin)     | List all withdrawals     | 100 req/min |
+| PUT    | `/admin/withdrawals/:id/approve`            | ✅ (Admin)     | Approve withdrawal       | 10 req/min  |
+| PUT    | `/admin/withdrawals/:id/reject`             | ✅ (Admin)     | Reject withdrawal        | 10 req/min  |
+| PUT    | `/admin/bank-accounts/:id/verify`           | ✅ (Admin)     | Verify bank account      | 10 req/min  |
+| PUT    | `/admin/bank-accounts/:id/reject`           | ✅ (Admin)     | Reject bank account      | 10 req/min  |
+
+#### Get Earnings Balance
+
+Get current earnings balance with breakdown.
+
+```http
+GET /api/v1/instructor/earnings/balance
+Authorization: Bearer <token>
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "request_id": "...",
+  "data": {
+    "total_earnings": 15000000,
+    "available_balance": 8000000,
+    "held_balance": 5000000,
+    "withdrawn_total": 2000000,
+    "currency": "IDR"
+  }
+}
+```
+
+**Field Explanations:**
+
+- `total_earnings`: Total revenue earned (70% of course sales)
+- `available_balance`: Amount available for withdrawal (after 14-day hold)
+- `held_balance`: Amount in holding period (waiting 14 days)
+- `withdrawn_total`: Total amount already withdrawn
+
+#### List All Earnings
+
+Get detailed earnings history.
+
+```http
+GET /api/v1/instructor/earnings?status=available&page=1&limit=10
+Authorization: Bearer <token>
+```
+
+**Query Parameters:**
+
+- `status`: Filter by status (`held`, `available`, `withdrawn`, `refunded`)
+- `course_id`: Filter by specific course
+- `page`: Page number (default: 1)
+- `limit`: Items per page (default: 10, max: 100)
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "request_id": "...",
+  "data": {
+    "items": [
+      {
+        "id": 456,
+        "instructor_id": 3,
+        "course_id": 1,
+        "enrollment_id": 789,
+        "payment_id": 101,
+        "amount": 349300,
+        "instructor_share": 244510,
+        "platform_fee": 104790,
+        "status": "available",
+        "held_until": null,
+        "released_at": "2025-10-20T10:00:00Z",
+        "created_at": "2025-10-06T10:00:00Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 10,
+      "total": 25,
+      "total_pages": 3
+    }
+  }
+}
+```
+
+#### Create Withdrawal Request
+
+Request withdrawal of available balance.
+
+```http
+POST /api/v1/instructor/withdrawals
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "amount": 1000000,
+  "bank_account_id": 5
+}
+```
+
+**Validation:**
+
+- `amount`: Required, minimum 100,000 IDR
+- `bank_account_id`: Required, must be verified bank account
+
+**Response (201 Created):**
+
+```json
+{
+  "success": true,
+  "request_id": "...",
+  "data": {
+    "id": 88,
+    "instructor_id": 3,
+    "amount": 1000000,
+    "admin_fee": 5000,
+    "total_amount": 995000,
+    "bank_account_id": 5,
+    "status": "pending",
+    "requested_at": "2025-11-03T15:00:00Z"
+  },
+  "message": "Withdrawal request created successfully"
+}
+```
+
+**Errors:**
+
+```json
+{
+  "success": false,
+  "request_id": "...",
+  "error": {
+    "code": "INSUFFICIENT_BALANCE",
+    "message": "Insufficient available balance. Available: Rp 500,000"
+  }
+}
+```
+
+#### List Withdrawal Requests
+
+Get withdrawal history.
+
+```http
+GET /api/v1/instructor/withdrawals?status=pending
+Authorization: Bearer <token>
+```
+
+**Query Parameters:**
+
+- `status`: Filter by status (`pending`, `processing`, `completed`, `failed`, `cancelled`)
+- `page`, `limit`: Pagination
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "request_id": "...",
+  "data": {
+    "items": [
+      {
+        "id": 88,
+        "instructor_id": 3,
+        "amount": 1000000,
+        "admin_fee": 5000,
+        "total_amount": 995000,
+        "bank_account_id": 5,
+        "status": "pending",
+        "requested_at": "2025-11-03T15:00:00Z",
+        "processed_at": null,
+        "bank_account": {
+          "id": 5,
+          "bank_name": "BCA",
+          "account_number": "1234567890",
+          "account_holder_name": "John Doe"
+        }
+      }
+    ],
+    "pagination": { "page": 1, "limit": 10, "total": 5, "total_pages": 1 }
+  }
+}
+```
+
+#### Add Bank Account
+
+Add bank account for withdrawals.
+
+```http
+POST /api/v1/instructor/bank-accounts
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "bank_name": "BCA",
+  "account_number": "1234567890",
+  "account_holder_name": "John Doe"
+}
+```
+
+**Response (201 Created):**
+
+```json
+{
+  "success": true,
+  "request_id": "...",
+  "data": {
+    "id": 5,
+    "instructor_id": 3,
+    "bank_name": "BCA",
+    "account_number": "1234567890",
+    "account_holder_name": "John Doe",
+    "is_verified": false,
+    "is_primary": false,
+    "verification_status": "pending",
+    "created_at": "2025-11-03T15:30:00Z"
+  },
+  "message": "Bank account added successfully. Waiting for admin verification."
+}
+```
+
+---
+
+### Activity Logs
+
+| Method | Endpoint                                    | Auth Required | Description               | Rate Limit  |
+| ------ | ------------------------------------------- | ------------- | ------------------------- | ----------- |
+| GET    | `/activity/me`                              | ✅            | Get my activity logs      | 100 req/min |
+| GET    | `/admin/activity/recent`                    | ✅ (Admin)    | Get recent platform activities | 100 req/min |
+
+#### Get My Activities
+
+```http
+GET /api/v1/activity/me?type=course_enrollment&page=1&limit=20
+Authorization: Bearer <token>
+```
+
+**Query Parameters:**
+
+- `type`: Filter by activity type
+- `start_date`, `end_date`: Date range filter (YYYY-MM-DD)
+- `page`, `limit`: Pagination
+
+**Activity Types:**
+
+- `user_registered`
+- `user_login`
+- `course_enrolled`
+- `lesson_completed`
+- `course_completed`
+- `certificate_issued`
+- `withdrawal_requested`
+- `withdrawal_completed`
+- `bank_account_added`
+- `course_created`
+- `course_updated`
+- `lesson_created`
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "request_id": "...",
+  "data": {
+    "items": [
+      {
+        "id": 1234,
+        "user_id": 5,
+        "activity_type": "course_enrolled",
+        "description": "Enrolled in course: Go Programming Masterclass",
+        "metadata": {
+          "course_id": 1,
+          "course_title": "Go Programming Masterclass",
+          "enrollment_id": 789
+        },
+        "ip_address": "192.168.1.1",
+        "user_agent": "Mozilla/5.0...",
+        "created_at": "2025-11-03T10:00:00Z"
+      }
+    ],
+    "pagination": { "page": 1, "limit": 20, "total": 156, "total_pages": 8 }
+  }
+}
+```
+
+#### Get Recent Platform Activities (Admin)
+
+Get recent activities across the platform.
+
+```http
+GET /api/v1/admin/activity/recent?limit=50
+Authorization: Bearer <admin-token>
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "request_id": "...",
+  "data": [
+    {
+      "id": 5678,
+      "user_id": 10,
+      "activity_type": "withdrawal_requested",
+      "description": "Instructor requested withdrawal of Rp 1,000,000",
+      "metadata": {
+        "withdrawal_id": 88,
+        "amount": 1000000
+      },
+      "ip_address": "203.0.113.42",
+      "user_agent": "Mozilla/5.0...",
+      "created_at": "2025-11-03T15:00:00Z",
+      "user": {
+        "id": 10,
+        "name": "Jane Instructor",
+        "email": "jane@example.com"
+      }
+    }
+  ]
+}
+```
+
+---
+
+### Instructor Management
+
+| Method | Endpoint                                    | Auth Required | Description               | Rate Limit  |
+| ------ | ------------------------------------------- | ------------- | ------------------------- | ----------- |
+| GET    | `/instructors`                              | ❌            | List all instructors      | 100 req/min |
+| GET    | `/instructors/:id`                          | ❌            | Get instructor details    | 100 req/min |
+| GET    | `/instructors/:id/courses`                  | ❌            | Get instructor's courses  | 100 req/min |
+| GET    | `/instructors/:id/stats`                    | ❌            | Get instructor statistics | 100 req/min |
+| GET    | `/instructor/my-students`                   | ✅ (Instructor)| Get my students list     | 100 req/min |
+
+#### List All Instructors
+
+Get list of platform instructors.
+
+```http
+GET /api/v1/instructors?sort=students_count&order=desc&page=1&limit=12
+```
+
+**Query Parameters:**
+
+- `search`: Search by name or bio
+- `sort`: Sort by (`name`, `students_count`, `courses_count`, `created_at`)
+- `order`: Sort order (`asc`, `desc`)
+- `page`, `limit`: Pagination
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "request_id": "...",
+  "data": {
+    "items": [
+      {
+        "id": 3,
+        "name": "Jane Instructor",
+        "email": "jane@example.com",
+        "bio": "Experienced Go and Web developer",
+        "profile_picture": "https://...",
+        "courses_count": 5,
+        "students_count": 342,
+        "average_rating": 4.7,
+        "created_at": "2025-01-15T10:00:00Z"
+      }
+    ],
+    "pagination": { "page": 1, "limit": 12, "total": 8, "total_pages": 1 }
+  }
+}
+```
+
+#### Get Instructor Details
+
+```http
+GET /api/v1/instructors/3
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "request_id": "...",
+  "data": {
+    "id": 3,
+    "name": "Jane Instructor",
+    "email": "jane@example.com",
+    "bio": "Experienced Go and Web developer with 10+ years...",
+    "profile_picture": "https://...",
+    "courses_count": 5,
+    "students_count": 342,
+    "average_rating": 4.7,
+    "total_reviews": 87,
+    "created_at": "2025-01-15T10:00:00Z"
+  }
+}
+```
+
+#### Get Instructor's Courses
+
+```http
+GET /api/v1/instructors/3/courses
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "request_id": "...",
+  "data": [
+    {
+      "id": 1,
+      "title": "Go Programming Masterclass",
+      "slug": "go-programming-masterclass",
+      "description": "...",
+      "price": 499000,
+      "category": "Programming",
+      "difficulty": "intermediate",
+      "enrolled_count": 156,
+      "average_rating": 4.8,
+      "created_at": "2025-02-01T10:00:00Z"
+    }
+  ]
+}
+```
+
+#### Get Instructor Statistics
+
+```http
+GET /api/v1/instructors/3/stats
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "request_id": "...",
+  "data": {
+    "instructor_id": 3,
+    "total_courses": 5,
+    "total_students": 342,
+    "total_revenue": 25000000,
+    "average_course_rating": 4.7,
+    "completion_rate": 68.5,
+    "active_students_30d": 89
+  }
+}
+```
+
+#### Get My Students (Instructor Only)
+
+Get list of students enrolled in instructor's courses.
+
+```http
+GET /api/v1/instructor/my-students?course_id=1
+Authorization: Bearer <instructor-token>
+```
+
+**Query Parameters:**
+
+- `course_id`: Filter by specific course
+- `search`: Search by student name/email
+- `page`, `limit`: Pagination
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "request_id": "...",
+  "data": {
+    "items": [
+      {
+        "student_id": 25,
+        "student_name": "Alice Student",
+        "student_email": "alice@example.com",
+        "course_id": 1,
+        "course_title": "Go Programming Masterclass",
+        "enrolled_at": "2025-10-15T10:00:00Z",
+        "progress_percentage": 45,
+        "completed_lessons": 11,
+        "total_lessons": 25,
+        "last_activity": "2025-11-02T14:30:00Z"
+      }
+    ],
+    "pagination": { "page": 1, "limit": 10, "total": 156, "total_pages": 16 }
+  }
+}
+```
+
+---
+
 ## 📊 Data Models
 
 ### User
@@ -656,6 +1366,163 @@ interface CourseProgress {
   progress_percentage: number;
   is_completed: boolean;
   completed_lesson_ids: number[];
+  last_activity: string;
+}
+```
+
+### Certificate
+
+```typescript
+interface Certificate {
+  id: number;
+  user_id: number;
+  course_id: number;
+  certificate_id: string; // Unique ID (e.g., CERT-20251103-ABC123XYZ)
+  issued_at: string;
+  course?: {
+    id: number;
+    title: string;
+    slug: string;
+    category: string;
+  };
+}
+
+interface CertificateEligibility {
+  eligible: boolean;
+  course_id: number;
+  course_title: string;
+  progress_percentage: number;
+  completed_lessons: number;
+  total_lessons: number;
+  already_issued: boolean;
+  message?: string;
+}
+```
+
+### Instructor Earnings
+
+```typescript
+interface EarningsBalance {
+  total_earnings: number;
+  available_balance: number;
+  held_balance: number;
+  withdrawn_total: number;
+  currency: 'IDR';
+}
+
+interface Earning {
+  id: number;
+  instructor_id: number;
+  course_id: number;
+  enrollment_id: number;
+  payment_id: number;
+  amount: number;
+  instructor_share: number;
+  platform_fee: number;
+  status: 'held' | 'available' | 'withdrawn' | 'refunded';
+  held_until: string | null;
+  released_at: string | null;
+  created_at: string;
+}
+
+interface WithdrawalRequest {
+  id: number;
+  instructor_id: number;
+  amount: number;
+  admin_fee: number;
+  total_amount: number;
+  bank_account_id: number;
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
+  requested_at: string;
+  processed_at: string | null;
+  admin_notes?: string;
+  bank_account?: BankAccount;
+}
+
+interface BankAccount {
+  id: number;
+  instructor_id: number;
+  bank_name: string;
+  account_number: string;
+  account_holder_name: string;
+  is_verified: boolean;
+  is_primary: boolean;
+  verification_status: 'pending' | 'verified' | 'rejected';
+  admin_notes?: string;
+  created_at: string;
+}
+```
+
+### Activity Log
+
+```typescript
+type ActivityType =
+  | 'user_registered'
+  | 'user_login'
+  | 'course_enrolled'
+  | 'lesson_completed'
+  | 'course_completed'
+  | 'certificate_issued'
+  | 'withdrawal_requested'
+  | 'withdrawal_completed'
+  | 'bank_account_added'
+  | 'course_created'
+  | 'course_updated'
+  | 'lesson_created';
+
+interface ActivityLog {
+  id: number;
+  user_id: number;
+  activity_type: ActivityType;
+  description: string;
+  metadata: Record<string, any>;
+  ip_address: string;
+  user_agent: string;
+  created_at: string;
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+  };
+}
+```
+
+### Instructor
+
+```typescript
+interface Instructor {
+  id: number;
+  name: string;
+  email: string;
+  bio?: string;
+  profile_picture?: string;
+  courses_count: number;
+  students_count: number;
+  average_rating: number;
+  total_reviews?: number;
+  created_at: string;
+}
+
+interface InstructorStats {
+  instructor_id: number;
+  total_courses: number;
+  total_students: number;
+  total_revenue: number;
+  average_course_rating: number;
+  completion_rate: number;
+  active_students_30d: number;
+}
+
+interface StudentProgress {
+  student_id: number;
+  student_name: string;
+  student_email: string;
+  course_id: number;
+  course_title: string;
+  enrolled_at: string;
+  progress_percentage: number;
+  completed_lessons: number;
+  total_lessons: number;
   last_activity: string;
 }
 ```
@@ -1229,6 +2096,440 @@ export default function CourseDetailPage() {
           {enrollMutation.isPending ? 'Enrolling...' : 'Enroll Now'}
         </button>
       )}
+    </div>
+  );
+}
+```
+
+### Certificate Queries
+
+```typescript
+// queries/certificates.ts
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiClient } from '@/lib/api-client';
+import type { Certificate, CertificateEligibility } from '@/types/api';
+
+// Check certificate eligibility
+export const useCertificateEligibility = (courseId: number) => {
+  return useQuery({
+    queryKey: ['certificateEligibility', courseId],
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<CertificateEligibility>>(
+        `/certificates/courses/${courseId}/eligibility`
+      );
+      return response.data.data;
+    },
+    enabled: !!courseId,
+  });
+};
+
+// Issue certificate
+export const useIssueCertificate = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (courseId: number) => {
+      const response = await apiClient.post<ApiResponse<Certificate>>(
+        `/certificates/courses/${courseId}/issue`
+      );
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['certificates'] });
+      queryClient.invalidateQueries({ queryKey: ['certificateEligibility'] });
+    },
+  });
+};
+
+// List my certificates
+export const useMyCertificates = () => {
+  return useQuery({
+    queryKey: ['certificates'],
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<Certificate[]>>('/certificates/me');
+      return response.data.data;
+    },
+  });
+};
+
+// Download certificate PDF
+export const downloadCertificate = async (certificateId: string) => {
+  const response = await apiClient.get(`/certificates/${certificateId}/download`, {
+    responseType: 'blob',
+  });
+  
+  // Create download link
+  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', `certificate-${certificateId}.pdf`);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+};
+```
+
+### Instructor Earnings Queries
+
+```typescript
+// queries/earnings.ts
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiClient } from '@/lib/api-client';
+import type { 
+  EarningsBalance, 
+  Earning, 
+  WithdrawalRequest,
+  BankAccount 
+} from '@/types/api';
+
+// Get earnings balance
+export const useEarningsBalance = () => {
+  return useQuery({
+    queryKey: ['earningsBalance'],
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<EarningsBalance>>(
+        '/instructor/earnings/balance'
+      );
+      return response.data.data;
+    },
+    refetchInterval: 60000, // Refetch every minute
+  });
+};
+
+// List earnings
+export const useEarnings = (params?: { status?: string; page?: number; limit?: number }) => {
+  return useQuery({
+    queryKey: ['earnings', params],
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<{ items: Earning[]; pagination: any }>>(
+        '/instructor/earnings',
+        { params }
+      );
+      return response.data.data;
+    },
+  });
+};
+
+// Create withdrawal request
+export const useCreateWithdrawal = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (data: { amount: number; bank_account_id: number }) => {
+      const response = await apiClient.post<ApiResponse<WithdrawalRequest>>(
+        '/instructor/withdrawals',
+        data
+      );
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['earningsBalance'] });
+      queryClient.invalidateQueries({ queryKey: ['withdrawals'] });
+    },
+  });
+};
+
+// List withdrawals
+export const useWithdrawals = (params?: { status?: string; page?: number }) => {
+  return useQuery({
+    queryKey: ['withdrawals', params],
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<{ items: WithdrawalRequest[]; pagination: any }>>(
+        '/instructor/withdrawals',
+        { params }
+      );
+      return response.data.data;
+    },
+  });
+};
+
+// Add bank account
+export const useAddBankAccount = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (data: { 
+      bank_name: string; 
+      account_number: string; 
+      account_holder_name: string 
+    }) => {
+      const response = await apiClient.post<ApiResponse<BankAccount>>(
+        '/instructor/bank-accounts',
+        data
+      );
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bankAccounts'] });
+    },
+  });
+};
+
+// List bank accounts
+export const useBankAccounts = () => {
+  return useQuery({
+    queryKey: ['bankAccounts'],
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<BankAccount[]>>(
+        '/instructor/bank-accounts'
+      );
+      return response.data.data;
+    },
+  });
+};
+```
+
+### Activity Logs Queries
+
+```typescript
+// queries/activity.ts
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '@/lib/api-client';
+import type { ActivityLog } from '@/types/api';
+
+// Get my activities
+export const useMyActivities = (params?: { 
+  type?: string; 
+  start_date?: string; 
+  end_date?: string;
+  page?: number;
+  limit?: number;
+}) => {
+  return useQuery({
+    queryKey: ['myActivities', params],
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<{ items: ActivityLog[]; pagination: any }>>(
+        '/activity/me',
+        { params }
+      );
+      return response.data.data;
+    },
+  });
+};
+
+// Get recent platform activities (Admin only)
+export const useRecentActivities = (limit: number = 50) => {
+  return useQuery({
+    queryKey: ['recentActivities', limit],
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<ActivityLog[]>>(
+        '/admin/activity/recent',
+        { params: { limit } }
+      );
+      return response.data.data;
+    },
+    refetchInterval: 30000, // Refetch every 30 seconds for admin dashboard
+  });
+};
+```
+
+### Instructor Management Queries
+
+```typescript
+// queries/instructors.ts
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '@/lib/api-client';
+import type { Instructor, InstructorStats, Course, StudentProgress } from '@/types/api';
+
+// List instructors
+export const useInstructors = (params?: {
+  search?: string;
+  sort?: 'name' | 'students_count' | 'courses_count' | 'created_at';
+  order?: 'asc' | 'desc';
+  page?: number;
+  limit?: number;
+}) => {
+  return useQuery({
+    queryKey: ['instructors', params],
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<{ items: Instructor[]; pagination: any }>>(
+        '/instructors',
+        { params }
+      );
+      return response.data.data;
+    },
+  });
+};
+
+// Get instructor details
+export const useInstructor = (instructorId: number) => {
+  return useQuery({
+    queryKey: ['instructor', instructorId],
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<Instructor>>(
+        `/instructors/${instructorId}`
+      );
+      return response.data.data;
+    },
+    enabled: !!instructorId,
+  });
+};
+
+// Get instructor's courses
+export const useInstructorCourses = (instructorId: number) => {
+  return useQuery({
+    queryKey: ['instructorCourses', instructorId],
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<Course[]>>(
+        `/instructors/${instructorId}/courses`
+      );
+      return response.data.data;
+    },
+    enabled: !!instructorId,
+  });
+};
+
+// Get instructor statistics
+export const useInstructorStats = (instructorId: number) => {
+  return useQuery({
+    queryKey: ['instructorStats', instructorId],
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<InstructorStats>>(
+        `/instructors/${instructorId}/stats`
+      );
+      return response.data.data;
+    },
+    enabled: !!instructorId,
+  });
+};
+
+// Get my students (Instructor only)
+export const useMyStudents = (params?: { 
+  course_id?: number; 
+  search?: string;
+  page?: number;
+  limit?: number;
+}) => {
+  return useQuery({
+    queryKey: ['myStudents', params],
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<{ items: StudentProgress[]; pagination: any }>>(
+        '/instructor/my-students',
+        { params }
+      );
+      return response.data.data;
+    },
+  });
+};
+```
+
+### Usage Example: Certificate Feature
+
+```typescript
+// components/CertificateSection.tsx
+import { useIssueCertificate, useCertificateEligibility, downloadCertificate } from '@/queries/certificates';
+
+export function CertificateSection({ courseId }: { courseId: number }) {
+  const { data: eligibility, isLoading } = useCertificateEligibility(courseId);
+  const issueMutation = useIssueCertificate();
+
+  if (isLoading) return <div>Loading...</div>;
+
+  if (!eligibility?.eligible) {
+    return (
+      <div className="border rounded p-4">
+        <p>Complete all lessons to earn your certificate</p>
+        <p className="text-sm text-gray-500">
+          Progress: {eligibility?.completed_lessons}/{eligibility?.total_lessons}
+        </p>
+      </div>
+    );
+  }
+
+  if (eligibility.already_issued) {
+    return (
+      <div className="border rounded p-4">
+        <p className="font-semibold">Certificate Issued ✓</p>
+        <button
+          onClick={() => downloadCertificate(eligibility.certificate_id!)}
+          className="mt-2 bg-orange-600 text-white px-4 py-2 rounded"
+        >
+          Download PDF
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="border rounded p-4">
+      <p className="font-semibold">You're eligible for a certificate!</p>
+      <button
+        onClick={() => issueMutation.mutate(courseId)}
+        disabled={issueMutation.isPending}
+        className="mt-2 bg-orange-600 text-white px-4 py-2 rounded"
+      >
+        {issueMutation.isPending ? 'Issuing...' : 'Get Certificate'}
+      </button>
+    </div>
+  );
+}
+```
+
+### Usage Example: Instructor Earnings Dashboard
+
+```typescript
+// app/instructor/earnings/page.tsx
+import { useEarningsBalance, useWithdrawals, useCreateWithdrawal } from '@/queries/earnings';
+
+export default function EarningsDashboard() {
+  const { data: balance } = useEarningsBalance();
+  const { data: withdrawals } = useWithdrawals({ status: 'pending' });
+  const createWithdrawal = useCreateWithdrawal();
+
+  const handleWithdraw = () => {
+    if (balance && balance.available_balance >= 100000) {
+      createWithdrawal.mutate({
+        amount: balance.available_balance,
+        bank_account_id: 1, // User's primary bank account
+      });
+    }
+  };
+
+  return (
+    <div>
+      <h1>Earnings Dashboard</h1>
+      
+      <div className="grid grid-cols-3 gap-4">
+        <div className="border rounded p-4">
+          <p className="text-sm text-gray-600">Available Balance</p>
+          <p className="text-2xl font-bold">
+            Rp {balance?.available_balance.toLocaleString('id-ID')}
+          </p>
+        </div>
+        
+        <div className="border rounded p-4">
+          <p className="text-sm text-gray-600">Held Balance</p>
+          <p className="text-2xl font-bold">
+            Rp {balance?.held_balance.toLocaleString('id-ID')}
+          </p>
+        </div>
+        
+        <div className="border rounded p-4">
+          <p className="text-sm text-gray-600">Total Withdrawn</p>
+          <p className="text-2xl font-bold">
+            Rp {balance?.withdrawn_total.toLocaleString('id-ID')}
+          </p>
+        </div>
+      </div>
+
+      <button
+        onClick={handleWithdraw}
+        disabled={!balance || balance.available_balance < 100000}
+        className="mt-4 bg-orange-600 text-white px-6 py-3 rounded"
+      >
+        Request Withdrawal
+      </button>
+
+      <div className="mt-8">
+        <h2>Pending Withdrawals</h2>
+        {withdrawals?.items.map((w) => (
+          <div key={w.id} className="border rounded p-4 mt-2">
+            <p>Amount: Rp {w.amount.toLocaleString('id-ID')}</p>
+            <p>Status: {w.status}</p>
+            <p>Requested: {new Date(w.requested_at).toLocaleDateString('id-ID')}</p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
