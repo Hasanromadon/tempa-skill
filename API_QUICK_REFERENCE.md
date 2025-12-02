@@ -357,6 +357,152 @@ interface CourseProgress {
 
 ---
 
+## 📜 Certificates
+
+### Check Eligibility
+```http
+GET /certificates?course_id=1
+Authorization: Bearer <token>
+```
+
+### Issue Certificate
+```http
+POST /certificates/issue
+{ "course_id": 1 }
+```
+
+### Get My Certificates
+```http
+GET /certificates/me
+```
+
+### Download Certificate PDF
+```http
+GET /certificates/:id/download
+```
+
+---
+
+## 💰 Instructor Earnings
+
+### Get Balance
+```http
+GET /instructor/withdrawals/balance
+```
+
+### Create Withdrawal
+```http
+POST /instructor/withdrawals
+{
+  "amount": 1000000,
+  "bank_account_id": 1,
+  "notes": "Withdrawal bulan Nov"
+}
+```
+
+### List Withdrawals
+```http
+GET /instructor/withdrawals?status=pending&page=1&limit=10
+```
+
+### Get/Create Bank Account
+```http
+GET /instructor/withdrawals/bank-account
+POST /instructor/withdrawals/bank-account
+{
+  "bank_name": "BCA",
+  "account_number": "1234567890",
+  "account_holder_name": "John Doe"
+}
+```
+
+---
+
+## 📊 Activity Logs
+
+### Get User Activities
+```http
+GET /users/:id/activities?page=1&limit=20
+```
+
+### Admin: Get Recent Activities
+```http
+GET /admin/activities?action=course_enrollment&page=1&limit=50
+Authorization: Bearer <token> (Admin)
+```
+
+---
+
+## 👨‍🏫 Instructor Management
+
+### List Instructors
+```http
+GET /instructors?search=John&specialty=programming&order_by=students&page=1&limit=10
+```
+
+### Get Instructor Detail
+```http
+GET /instructors/:id
+```
+
+### Get Instructor Courses
+```http
+GET /instructors/:id/courses?page=1&limit=10
+```
+
+### Get Instructor Stats
+```http
+GET /instructors/:id/stats
+```
+
+### Instructor: Get My Students
+```http
+GET /instructor/students?page=1&limit=20
+Authorization: Bearer <token> (Instructor)
+```
+
+---
+
+## 🔐 Admin Endpoints
+
+### Process Withdrawal
+```http
+PUT /admin/withdrawals/:id/process
+{ "status": "completed", "notes": "..." }
+```
+
+### Verify Bank Account
+```http
+PUT /admin/withdrawals/bank-accounts/:id/verify
+{ "status": "verified", "notes": "..." }
+```
+
+### List Bank Accounts
+```http
+GET /admin/withdrawals/bank-accounts?verification_status=pending
+```
+
+---
+
+## 📊 API Statistics
+
+**Total Endpoints**: 100+  
+**Authentication Endpoints**: 3  
+**User Endpoints**: 3  
+**Course Endpoints**: 12  
+**Lesson Endpoints**: 6  
+**Progress Endpoints**: 3  
+**Payment Endpoints**: 8  
+**Review Endpoints**: 4  
+**Session Endpoints**: 8  
+**Certificate Endpoints**: 4  
+**Withdrawal Endpoints**: 12  
+**Activity Endpoints**: 2  
+**Instructor Endpoints**: 5  
+**Admin Endpoints**: 15
+
+---
+
 ## 🚀 Quick Setup Example
 
 ```typescript
@@ -397,7 +543,12 @@ const { data, isLoading } = useCourses();
 
 ## 📚 Full Documentation
 
+- [API_SPEC.md](./API_SPEC.md) - Complete API specification with 100+ endpoints
 - [FRONTEND_API_GUIDE.md](./FRONTEND_API_GUIDE.md) - Complete guide with examples
+- [DATABASE.md](./DATABASE.md) - Database schema with 15 tables
+
+**Last Updated**: December 2, 2025  
+**Version**: 2.0.0
 - [API_SPEC.md](./API_SPEC.md) - Detailed API specification
 - [DATABASE.md](./DATABASE.md) - Database schema
 

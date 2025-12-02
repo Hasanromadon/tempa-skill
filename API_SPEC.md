@@ -19,6 +19,9 @@
 - [Payment Management](#payment-management)
 - [Review Management](#review-management)
 - [Session Management](#session-management)
+- [Instructor Earnings & Withdrawals](#-instructor-earnings--withdrawals)
+- [Activity Logs](#-activity-logs)
+- [Instructor Management](#-instructor-management)
 - [Admin Dashboard](#admin-dashboard)
 - [Error Codes](#error-codes)
 
@@ -2093,6 +2096,720 @@ Authorization: Bearer <admin_token>
 
 **Use Case:**
 Display comprehensive statistics on `/admin/dashboard` page without loading all data.
+
+---
+
+## 📜 Certificate Management
+
+### Check Certificate Eligibility
+
+```http
+GET /certificates?course_id=1
+Authorization: Bearer <token>
+
+Response (200 OK):
+{
+  "data": {
+    "eligible": true,
+    "certificate": {
+      "certificate_id": "CERT-2025-ABC123",
+      "user_name": "John Doe",
+      "course_title": "Pemrograman Web Modern",
+      "issued_at": "2025-12-02T10:30:00Z",
+      "download_url": "/api/v1/certificates/1/download"
+    },
+    "progress": 100.0,
+    "message": "Certificate ready to download"
+  }
+}
+```
+
+**Query Parameters:**
+- `course_id` (required): Course ID to check
+
+**Eligibility Criteria:**
+- User must be enrolled in course
+- Course progress must be 100%
+- All lessons completed
+
+---
+
+### Issue Certificate
+
+```http
+POST /certificates/issue
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "course_id": 1
+}
+
+Response (201 Created):
+{
+  "data": {
+    "certificate_id": "CERT-2025-ABC123",
+    "user_name": "John Doe",
+    "course_title": "Pemrograman Web Modern",
+    "issued_at": "2025-12-02T10:30:00Z",
+    "download_url": "/api/v1/certificates/1/download"
+  },
+  "message": "Certificate issued successfully"
+}
+```
+
+**Validation:**
+- Course must be completed (100% progress)
+- Certificate can only be issued once per user per course
+- Returns existing certificate if already issued
+
+---
+
+### Get All My Certificates
+
+```http
+GET /certificates/me
+Authorization: Bearer <token>
+
+Response (200 OK):
+{
+  "data": [
+    {
+      "certificate_id": "CERT-2025-ABC123",
+      "user_name": "John Doe",
+      "course_title": "Pemrograman Web Modern",
+      "issued_at": "2025-12-02T10:30:00Z",
+      "download_url": "/api/v1/certificates/1/download"
+    },
+    {
+      "certificate_id": "CERT-2025-XYZ456",
+      "user_name": "John Doe",
+      "course_title": "React Advanced Patterns",
+      "issued_at": "2025-11-28T15:20:00Z",
+      "download_url": "/api/v1/certificates/2/download"
+    }
+  ]
+}
+```
+
+---
+
+### Download Certificate (PDF)
+
+```http
+GET /certificates/:id/download
+Authorization: Bearer <token>
+
+Response (200 OK):
+Content-Type: application/pdf
+Content-Disposition: attachment; filename="certificate-CERT-2025-ABC123.pdf"
+
+[PDF Binary Data]
+```
+
+**Features:**
+- Generated dynamically with gofpdf
+- Contains: User name, Course title, Certificate ID, Issue date
+- Professional certificate design
+- Unique certificate ID for verification
+- File size: ~50-100 KB
+
+---
+
+## 💰 Instructor Earnings & Withdrawals
+
+### Get Instructor Balance
+
+```http
+GET /instructor/withdrawals/balance
+Authorization: Bearer <token>
+
+Response (200 OK):
+{
+  "data": {
+    "total_earnings": 35000000,
+    "available_balance": 20000000,
+    "held_balance": 10000000,
+    "withdrawn_amount": 5000000,
+    "pending_amount": 0
+  }
+}
+```
+
+**Balance Types:**
+- `total_earnings`: Total revenue share dari semua sales (70% dari gross amount)
+- `available_balance`: Amount yang bisa di-withdraw (sudah melewati hold period)
+- `held_balance`: Amount yang masih dalam hold period (14 hari)
+- `withdrawn_amount`: Total yang sudah di-withdraw
+- `pending_amount`: Withdrawal yang sedang diproses
+
+**Business Logic:**
+- Platform fee: 30%, Instructor share: 70%
+- Hold period: 14 days setelah payment
+- Minimum withdrawal: Rp 50,000
+- Maximum withdrawal: Rp 10,000,000
+
+---
+
+### Create Withdrawal Request
+
+```http
+POST /instructor/withdrawals
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "amount": 1000000,
+  "bank_account_id": 1,
+  "notes": "Withdrawal untuk bulan November"
+}
+
+Response (201 Created):
+{
+  "data": {
+    "id": 1,
+    "amount": 1000000,
+    "admin_fee": 5000,
+    "net_amount": 995000,
+    "status": "pending",
+    "bank_account_id": 1,
+    "notes": "Withdrawal untuk bulan November",
+    "created_at": "2025-12-02T10:00:00Z"
+  },
+  "message": "Withdrawal request created successfully"
+}
+```
+
+**Validation:**
+- `amount`: Min 50,000, Max 10,000,000
+- Must have sufficient available balance
+- Bank account must be verified
+- Admin fee: Rp 5,000 (fixed)
+
+**Status Flow:**
+1. `pending` - Waiting admin approval
+2. `completed` - Approved and processed
+3. `failed` - Rejected or failed
+
+---
+
+### List My Withdrawals
+
+```http
+GET /instructor/withdrawals?status=pending&page=1&limit=10
+Authorization: Bearer <token>
+
+Response (200 OK):
+{
+  "data": [
+    {
+      "id": 1,
+      "amount": 1000000,
+      "admin_fee": 5000,
+      "net_amount": 995000,
+      "status": "pending",
+      "bank_account_id": 1,
+      "notes": "Withdrawal untuk bulan November",
+      "created_at": "2025-12-02T10:00:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 1,
+    "total_pages": 1
+  }
+}
+```
+
+**Query Parameters:**
+- `status` (optional): pending, completed, failed
+- `page` (optional): Default 1
+- `limit` (optional): Default 10, Max 100
+
+---
+
+### Get Withdrawal Detail
+
+```http
+GET /instructor/withdrawals/:id
+Authorization: Bearer <token>
+
+Response (200 OK):
+{
+  "data": {
+    "id": 1,
+    "amount": 1000000,
+    "admin_fee": 5000,
+    "net_amount": 995000,
+    "status": "pending",
+    "bank_account_id": 1,
+    "bank_account": {
+      "id": 1,
+      "bank_name": "BCA",
+      "account_number": "1234567890",
+      "account_holder_name": "John Doe",
+      "verification_status": "verified"
+    },
+    "notes": "Withdrawal untuk bulan November",
+    "created_at": "2025-12-02T10:00:00Z"
+  }
+}
+```
+
+---
+
+### Get My Bank Account
+
+```http
+GET /instructor/withdrawals/bank-account
+Authorization: Bearer <token>
+
+Response (200 OK):
+{
+  "data": {
+    "id": 1,
+    "bank_name": "BCA",
+    "account_number": "1234567890",
+    "account_holder_name": "John Doe",
+    "verification_status": "verified",
+    "verified_at": "2025-11-30T12:00:00Z",
+    "created_at": "2025-11-29T10:00:00Z"
+  }
+}
+```
+
+---
+
+### Create/Update Bank Account
+
+```http
+POST /instructor/withdrawals/bank-account
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "bank_name": "BCA",
+  "account_number": "1234567890",
+  "account_holder_name": "John Doe"
+}
+
+Response (201 Created):
+{
+  "data": {
+    "id": 1,
+    "bank_name": "BCA",
+    "account_number": "1234567890",
+    "account_holder_name": "John Doe",
+    "verification_status": "pending",
+    "created_at": "2025-12-02T10:00:00Z"
+  },
+  "message": "Bank account created successfully. Waiting for admin verification."
+}
+```
+
+**Verification Status:**
+- `pending`: Waiting admin verification
+- `verified`: Approved by admin
+- `rejected`: Rejected by admin
+
+---
+
+### Admin: List All Withdrawals
+
+```http
+GET /admin/withdrawals?status=pending&page=1&limit=10
+Authorization: Bearer <token> (Admin only)
+
+Response (200 OK):
+{
+  "data": [
+    {
+      "id": 1,
+      "user_id": 5,
+      "user_name": "John Doe",
+      "amount": 1000000,
+      "admin_fee": 5000,
+      "net_amount": 995000,
+      "status": "pending",
+      "bank_account_id": 1,
+      "bank_account": {
+        "bank_name": "BCA",
+        "account_number": "1234567890",
+        "account_holder_name": "John Doe"
+      },
+      "notes": "Withdrawal untuk bulan November",
+      "created_at": "2025-12-02T10:00:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 15,
+    "total_pages": 2
+  }
+}
+```
+
+---
+
+### Admin: Process Withdrawal
+
+```http
+PUT /admin/withdrawals/:id/process
+Authorization: Bearer <token> (Admin only)
+Content-Type: application/json
+
+{
+  "status": "completed",
+  "notes": "Transferred on 2025-12-02 via BCA"
+}
+
+Response (200 OK):
+{
+  "data": {
+    "id": 1,
+    "amount": 1000000,
+    "status": "completed",
+    "processed_at": "2025-12-02T11:00:00Z",
+    "processed_by": 1,
+    "notes": "Transferred on 2025-12-02 via BCA"
+  },
+  "message": "Withdrawal processed successfully"
+}
+```
+
+**Valid Status:**
+- `completed`: Withdrawal approved and money transferred
+- `failed`: Withdrawal rejected
+
+---
+
+### Admin: List Bank Accounts
+
+```http
+GET /admin/withdrawals/bank-accounts?verification_status=pending
+Authorization: Bearer <token> (Admin only)
+
+Response (200 OK):
+{
+  "data": [
+    {
+      "id": 1,
+      "user_id": 5,
+      "user_name": "John Doe",
+      "bank_name": "BCA",
+      "account_number": "1234567890",
+      "account_holder_name": "John Doe",
+      "verification_status": "pending",
+      "created_at": "2025-12-02T10:00:00Z"
+    }
+  ]
+}
+```
+
+---
+
+### Admin: Verify Bank Account
+
+```http
+PUT /admin/withdrawals/bank-accounts/:id/verify
+Authorization: Bearer <token> (Admin only)
+Content-Type: application/json
+
+{
+  "status": "verified",
+  "notes": "Account verified successfully"
+}
+
+Response (200 OK):
+{
+  "data": {
+    "id": 1,
+    "verification_status": "verified",
+    "verified_at": "2025-12-02T11:00:00Z",
+    "verified_by": 1,
+    "verification_notes": "Account verified successfully"
+  },
+  "message": "Bank account verified successfully"
+}
+```
+
+**Valid Status:**
+- `verified`: Account approved
+- `rejected`: Account rejected
+
+---
+
+## 📊 Activity Logs
+
+### Get User Activities
+
+```http
+GET /users/:id/activities?page=1&limit=20
+Authorization: Bearer <token>
+
+Response (200 OK):
+{
+  "data": [
+    {
+      "id": 1,
+      "user_id": 5,
+      "action": "course_enrollment",
+      "entity_type": "course",
+      "entity_id": 1,
+      "details": {
+        "course_title": "Pemrograman Web Modern",
+        "course_id": 1
+      },
+      "ip_address": "192.168.1.100",
+      "user_agent": "Mozilla/5.0...",
+      "created_at": "2025-12-02T10:00:00Z"
+    },
+    {
+      "id": 2,
+      "user_id": 5,
+      "action": "lesson_completed",
+      "entity_type": "lesson",
+      "entity_id": 10,
+      "details": {
+        "lesson_title": "Introduction to React",
+        "course_id": 1
+      },
+      "created_at": "2025-12-02T10:30:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 45,
+    "total_pages": 3
+  }
+}
+```
+
+**Activity Types:**
+- `user_registration`
+- `user_login`
+- `course_enrollment`
+- `lesson_completed`
+- `course_completed`
+- `certificate_issued`
+- `payment_completed`
+- `withdrawal_requested`
+- `course_created`
+- `lesson_created`
+
+---
+
+### Admin: Get Recent Activities
+
+```http
+GET /admin/activities?action=course_enrollment&page=1&limit=50
+Authorization: Bearer <token> (Admin only)
+
+Response (200 OK):
+{
+  "data": [
+    {
+      "id": 1,
+      "user_id": 5,
+      "user_name": "John Doe",
+      "action": "course_enrollment",
+      "entity_type": "course",
+      "entity_id": 1,
+      "details": {
+        "course_title": "Pemrograman Web Modern",
+        "course_id": 1
+      },
+      "ip_address": "192.168.1.100",
+      "created_at": "2025-12-02T10:00:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 50,
+    "total": 250,
+    "total_pages": 5
+  }
+}
+```
+
+**Query Parameters:**
+- `action` (optional): Filter by activity type
+- `user_id` (optional): Filter by specific user
+- `entity_type` (optional): Filter by entity type (course, lesson, payment)
+- `page`, `limit`: Pagination
+
+**Use Case:**
+- Audit trail untuk admin
+- Monitor platform activity
+- Detect suspicious behavior
+- Track user engagement
+
+---
+
+## 👨‍🏫 Instructor Management
+
+### List Instructors
+
+```http
+GET /instructors?search=John&specialty=programming&order_by=students&page=1&limit=10
+
+Response (200 OK):
+{
+  "data": [
+    {
+      "id": 5,
+      "name": "John Doe",
+      "email": "john@example.com",
+      "bio": "Full-stack developer with 10 years experience",
+      "avatar_url": "https://storage.com/avatar.jpg",
+      "specialty": "programming",
+      "course_count": 5,
+      "student_count": 150,
+      "average_rating": 4.8,
+      "total_earnings": 35000000,
+      "created_at": "2025-01-15T10:00:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 8,
+    "total_pages": 1
+  }
+}
+```
+
+**Query Parameters:**
+- `search`: Search by name or email
+- `specialty`: Filter by specialty/category
+- `order_by`: students, courses, rating, earnings (default: students DESC)
+- `page`, `limit`: Pagination
+
+---
+
+### Get Instructor Detail
+
+```http
+GET /instructors/:id
+
+Response (200 OK):
+{
+  "data": {
+    "id": 5,
+    "name": "John Doe",
+    "email": "john@example.com",
+    "bio": "Full-stack developer with 10 years experience",
+    "avatar_url": "https://storage.com/avatar.jpg",
+    "specialty": "programming",
+    "course_count": 5,
+    "student_count": 150,
+    "average_rating": 4.8,
+    "total_earnings": 35000000,
+    "created_at": "2025-01-15T10:00:00Z"
+  }
+}
+```
+
+---
+
+### Get Instructor Courses
+
+```http
+GET /instructors/:id/courses?page=1&limit=10
+
+Response (200 OK):
+{
+  "data": [
+    {
+      "id": 1,
+      "title": "Pemrograman Web Modern",
+      "slug": "pemrograman-web-modern",
+      "description": "Belajar web development...",
+      "thumbnail_url": "https://storage.com/course.jpg",
+      "category": "programming",
+      "difficulty": "intermediate",
+      "price": 499000,
+      "is_published": true,
+      "enrolled_count": 150,
+      "lesson_count": 25,
+      "average_rating": 4.8
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 5,
+    "total_pages": 1
+  }
+}
+```
+
+---
+
+### Get Instructor Statistics
+
+```http
+GET /instructors/:id/stats
+Authorization: Bearer <token>
+
+Response (200 OK):
+{
+  "data": {
+    "total_courses": 5,
+    "published_courses": 4,
+    "total_students": 150,
+    "total_enrollments": 320,
+    "total_revenue": 50000000,
+    "instructor_earnings": 35000000,
+    "average_rating": 4.8,
+    "total_reviews": 85,
+    "completion_rate": 75.5,
+    "top_course": {
+      "id": 1,
+      "title": "Pemrograman Web Modern",
+      "enrolled_count": 150
+    }
+  }
+}
+```
+
+---
+
+### Instructor: Get My Students
+
+```http
+GET /instructor/students?page=1&limit=20
+Authorization: Bearer <token> (Instructor only)
+
+Response (200 OK):
+{
+  "data": [
+    {
+      "user_id": 10,
+      "user_name": "Jane Smith",
+      "user_email": "jane@example.com",
+      "enrolled_courses": 2,
+      "completed_courses": 1,
+      "total_progress": 75.5,
+      "last_activity": "2025-12-02T10:00:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 150,
+    "total_pages": 8
+  }
+}
+```
+
+**Use Case:**
+- Instructor dashboard untuk melihat semua students
+- Track student progress
+- Identify active vs inactive students
 
 ---
 

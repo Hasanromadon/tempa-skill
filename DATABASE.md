@@ -10,27 +10,50 @@
 ┌─────────────┐         ┌──────────────┐         ┌─────────────┐
 │    users    │────┬────│ enrollments  │────┬────│   courses   │
 └─────────────┘    │    └──────────────┘    │    └─────────────┘
-                   │                        │
-                   │    ┌──────────────┐    │    ┌─────────────┐
-                   └────│  progresses  │    └────│   lessons   │
-                        └──────────────┘         └─────────────┘
-                   │                        │
-                   │    ┌──────────────┐    │    ┌─────────────┐
-                   └────│ certificates │    └────│   reviews   │
-                        └──────────────┘         └─────────────┘
-                   │                        │
-                   │    ┌────────────────────┐   │
-                   └────│ payment_transactions │─┘
-                        └────────────────────┘
-                   │
-                   │    ┌─────────────┐
-                   └────│  sessions   │
-                        └─────────────┘
-                              │
-                              │
-                        ┌─────────────┐
-                        │participants│
-                        └─────────────┘
+       │           │                        │            │
+       │           │    ┌──────────────┐    │            │
+       │           └────│  progresses  │────┘            │
+       │                └──────────────┘                 │
+       │                                                 │
+       │           ┌──────────────┐                      │
+       ├───────────│ certificates │──────────────────────┘
+       │           └──────────────┘
+       │                                                 │
+       │           ┌──────────────┐                      │
+       ├───────────│   reviews    │──────────────────────┘
+       │           └──────────────┘
+       │                                                 │
+       │           ┌────────────────────┐                │
+       ├───────────│ payment_transactions│───────────────┘
+       │           └────────────────────┘
+       │                    │
+       │                    │
+       │           ┌────────────────────┐
+       │           │ instructor_earnings│
+       │           └────────────────────┘
+       │                    │
+       │                    │
+       │           ┌────────────────────┐
+       ├───────────│ withdrawal_requests│
+       │           └────────────────────┘
+       │                    │
+       │                    │
+       │           ┌──────────────────────────┐
+       ├───────────│ instructor_bank_accounts │
+       │           └──────────────────────────┘
+       │
+       │           ┌─────────────┐                       │
+       ├───────────│  sessions   │───────────────────────┘
+       │           └─────────────┘
+       │                  │
+       │                  │
+       │           ┌─────────────┐
+       ├───────────│participants │
+       │           └─────────────┘
+       │
+       │           ┌──────────────┐
+       └───────────│ activity_logs│
+                   └──────────────┘
 ```
 
 ---
@@ -431,6 +454,261 @@ CREATE TABLE session_participants (
 
 ---
 
+### 11. certificates
+
+Menyimpan data sertifikat yang diterbitkan untuk user
+
+```sql
+CREATE TABLE certificates (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
+    course_id BIGINT UNSIGNED NOT NULL,
+    issued_at DATETIME NOT NULL,
+    certificate_id VARCHAR(32) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_user_course (user_id, course_id),
+    INDEX idx_certificate_id (certificate_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+**Fields:**
+
+- `id`: Primary key
+- `user_id`: User yang menerima sertifikat
+- `course_id`: Course yang diselesaikan
+- `issued_at`: Tanggal penerbitan sertifikat
+- `certificate_id`: Unique ID untuk verifikasi (format: CERT-YYYY-XXXXXX)
+
+**Business Logic:**
+
+- Sertifikat otomatis diterbitkan saat course 100% complete
+- Setiap user hanya bisa punya 1 sertifikat per course
+- Certificate ID unik untuk verifikasi publik
+
+---
+
+### 12. instructor_earnings
+
+Track instructor revenue dengan holding period untuk risk management
+
+```sql
+CREATE TABLE instructor_earnings (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    instructor_id BIGINT UNSIGNED NOT NULL,
+    payment_transaction_id BIGINT UNSIGNED NOT NULL,
+    course_id BIGINT UNSIGNED NOT NULL,
+    
+    -- Revenue breakdown
+    gross_amount DECIMAL(15,2) NOT NULL COMMENT 'Total payment from student',
+    platform_fee DECIMAL(15,2) NOT NULL COMMENT '30% platform fee',
+    instructor_share DECIMAL(15,2) NOT NULL COMMENT '70% instructor share',
+    
+    -- Holding period management
+    transaction_date TIMESTAMP NOT NULL COMMENT 'Original payment date',
+    available_date TIMESTAMP NOT NULL COMMENT 'Date when earnings become available for withdrawal (transaction_date + holding_period)',
+    
+    -- Status tracking
+    status ENUM('held', 'available', 'withdrawn', 'refunded') DEFAULT 'held' COMMENT 'held: within holding period, available: can be withdrawn, withdrawn: already withdrawn, refunded: returned to student',
+    
+    -- Withdrawal tracking
+    withdrawn_at TIMESTAMP NULL,
+    withdrawal_id BIGINT UNSIGNED NULL COMMENT 'Reference to withdrawal request if withdrawn',
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    -- Foreign keys
+    FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (payment_transaction_id) REFERENCES payment_transactions(id) ON DELETE CASCADE,
+    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+    
+    -- Indexes for performance
+    INDEX idx_instructor_status (instructor_id, status),
+    INDEX idx_available_date (available_date),
+    INDEX idx_transaction_date (transaction_date),
+    INDEX idx_payment_transaction (payment_transaction_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+**Fields:**
+
+- `gross_amount`: Total payment dari student
+- `platform_fee`: 30% fee untuk platform
+- `instructor_share`: 70% revenue untuk instructor
+- `transaction_date`: Tanggal payment original
+- `available_date`: Tanggal earnings bisa di-withdraw (transaction_date + 14 hari)
+- `status`: held (dalam hold period), available (siap withdraw), withdrawn, refunded
+
+**Business Logic:**
+
+- Revenue split: Platform 30%, Instructor 70%
+- Holding period: 14 hari dari transaction date
+- Earnings baru bisa di-withdraw setelah available_date
+
+---
+
+### 13. withdrawal_requests
+
+Instructor withdrawal requests dengan admin approval workflow
+
+```sql
+CREATE TABLE withdrawal_requests (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL COMMENT 'Instructor who requested withdrawal',
+    
+    -- Amount breakdown
+    amount DECIMAL(15,2) NOT NULL COMMENT 'Total withdrawal amount requested',
+    admin_fee DECIMAL(15,2) NOT NULL DEFAULT 0 COMMENT 'Admin fee for processing',
+    net_amount DECIMAL(15,2) NOT NULL COMMENT 'Amount transferred to bank (amount - admin_fee)',
+    
+    -- Status management
+    status ENUM('pending', 'processing', 'completed', 'failed', 'cancelled') DEFAULT 'pending' COMMENT 'pending: waiting admin, processing: admin processing, completed: transferred, failed: transfer failed, cancelled: cancelled by instructor',
+    
+    -- Bank account reference
+    bank_account_id BIGINT UNSIGNED NOT NULL,
+    
+    -- Admin processing
+    notes TEXT NULL COMMENT 'Notes from admin or instructor',
+    processed_at TIMESTAMP NULL COMMENT 'When admin processed the withdrawal',
+    processed_by BIGINT UNSIGNED NULL COMMENT 'Admin who processed',
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    -- Foreign keys
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (processed_by) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (bank_account_id) REFERENCES instructor_bank_accounts(id) ON DELETE RESTRICT,
+    
+    -- Indexes
+    INDEX idx_user_status (user_id, status),
+    INDEX idx_status (status),
+    INDEX idx_created_at (created_at),
+    INDEX idx_processed_at (processed_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+**Fields:**
+
+- `amount`: Total withdrawal yang diminta
+- `admin_fee`: Fee untuk processing (Rp 5,000 fixed)
+- `net_amount`: Amount yang di-transfer ke bank (amount - admin_fee)
+- `status`: pending → processing → completed/failed
+- `processed_by`: Admin yang approve/reject
+
+**Business Logic:**
+
+- Minimum withdrawal: Rp 50,000
+- Maximum withdrawal: Rp 10,000,000
+- Admin fee: Rp 5,000 (fixed)
+- Withdrawal harus approved oleh admin
+
+---
+
+### 14. instructor_bank_accounts
+
+Bank account management dengan verification workflow
+
+```sql
+CREATE TABLE instructor_bank_accounts (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
+    bank_name VARCHAR(100) NOT NULL,
+    account_number VARCHAR(50) NOT NULL,
+    account_holder_name VARCHAR(100) NOT NULL,
+    
+    -- Verification
+    verification_status ENUM('pending', 'verified', 'rejected') DEFAULT 'pending',
+    verified_at TIMESTAMP NULL,
+    verified_by BIGINT UNSIGNED NULL,
+    verification_notes TEXT NULL,
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    -- Foreign keys
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (verified_by) REFERENCES users(id) ON DELETE SET NULL,
+    
+    -- Indexes
+    INDEX idx_user_id (user_id),
+    INDEX idx_account_number (bank_name, account_number),
+    INDEX idx_verification_status (verification_status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+**Fields:**
+
+- `bank_name`: Nama bank (BCA, Mandiri, BNI, dll)
+- `account_number`: Nomor rekening
+- `account_holder_name`: Nama pemilik rekening
+- `verification_status`: pending → verified/rejected
+- `verified_by`: Admin yang verify
+
+**Business Logic:**
+
+- Instructor harus verify bank account sebelum withdrawal
+- Admin melakukan verification manual
+- Setiap instructor bisa punya multiple bank accounts
+
+---
+
+### 15. activity_logs
+
+Comprehensive activity tracking untuk audit trail
+
+```sql
+CREATE TABLE activity_logs (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
+    action VARCHAR(100) NOT NULL,
+    entity_type VARCHAR(50) NULL,
+    entity_id BIGINT UNSIGNED NULL,
+    details JSON NULL,
+    ip_address VARCHAR(45) NULL,
+    user_agent TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    INDEX idx_user_id (user_id),
+    INDEX idx_action (action),
+    INDEX idx_entity (entity_type, entity_id),
+    INDEX idx_created_at (created_at),
+    
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+**Fields:**
+
+- `action`: Activity type (user_login, course_enrollment, lesson_completed, etc.)
+- `entity_type`: Type of entity (course, lesson, payment, etc.)
+- `entity_id`: ID of the entity
+- `details`: Additional data dalam JSON format
+- `ip_address`: IP address user
+- `user_agent`: Browser/device information
+
+**Activity Types:**
+
+- `user_registration`, `user_login`, `user_logout`
+- `course_enrollment`, `course_unenrollment`
+- `lesson_completed`, `course_completed`
+- `certificate_issued`
+- `payment_completed`, `payment_failed`
+- `withdrawal_requested`, `withdrawal_approved`
+- `course_created`, `lesson_created`
+
+**Use Case:**
+
+- Audit trail untuk admin
+- Monitor platform activity
+- Detect suspicious behavior
+- Track user engagement
+
+---
+
 ## 🔍 Common Queries
 
 ### Get User's Enrolled Courses with Progress
@@ -564,5 +842,7 @@ func InitialSchema(db *gorm.DB) error {
 
 ---
 
-**Schema Version**: 1.0.0  
-**Last Updated**: November 3, 2025
+**Schema Version**: 2.0.0  
+**Last Updated**: December 2, 2025  
+**Total Tables**: 15  
+**Major Features**: User Management, Course Management, Payment Integration, Instructor Earnings, Withdrawal System, Certificate Generation, Activity Logging, Live Sessions
