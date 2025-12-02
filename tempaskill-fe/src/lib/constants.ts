@@ -31,6 +31,8 @@ export const ROUTES = {
     LESSON_EDIT: (courseId: number, lessonId: number) =>
       `/admin/courses/${courseId}/lessons/${lessonId}/edit`,
     USERS: "/admin/users",
+    WITHDRAWALS: "/admin/withdrawals",
+    BANK_ACCOUNTS: "/admin/withdrawals/bank-accounts",
     SETTINGS: "/admin/settings",
   },
   INSTRUCTOR: {
@@ -49,6 +51,8 @@ export const ROUTES = {
     LESSON_EDIT: (courseId: number, lessonId: number) =>
       `/instructor/courses/${courseId}/lessons/${lessonId}/edit`,
     SETTINGS: "/instructor/settings",
+    WITHDRAWALS: "/instructor/withdrawals",
+    WITHDRAWALS_NEW: "/instructor/withdrawals/new",
   },
 } as const;
 
@@ -126,6 +130,19 @@ export const API_ENDPOINTS = {
   },
   ADMIN: {
     STATS: "/admin/stats",
+  },
+  WITHDRAWAL: {
+    BALANCE: "/instructor/withdrawals/balance",
+    LIST: "/instructor/withdrawals",
+    DETAIL: (id: number) => `/instructor/withdrawals/${id}`,
+    CREATE: "/instructor/withdrawals",
+    BANK_ACCOUNT: "/instructor/withdrawals/bank-account",
+    ADMIN_LIST: "/admin/withdrawals",
+    ADMIN_DETAIL: (id: number) => `/admin/withdrawals/${id}`,
+    ADMIN_PROCESS: (id: number) => `/admin/withdrawals/${id}/process`,
+    ADMIN_BANK_ACCOUNTS: "/admin/withdrawals/bank-accounts",
+    ADMIN_VERIFY_BANK: (id: number) =>
+      `/admin/withdrawals/bank-accounts/${id}/verify`,
   },
 } as const;
 

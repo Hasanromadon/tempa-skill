@@ -1,6 +1,9 @@
 "use client";
 
 import { PaymentListPage } from "@/components/payment/payment-list-page";
+import { Button } from "@/components/ui/button";
+import { Wallet } from "lucide-react";
+import Link from "next/link";
 
 /**
  * Instructor Payments Page
@@ -12,10 +15,22 @@ import { PaymentListPage } from "@/components/payment/payment-list-page";
  */
 export default function InstructorPaymentsPage() {
   return (
-    <PaymentListPage
-      basePath="/instructor"
-      title="Pembayaran Saya"
-      description="Pantau pendapatan dari kursus Anda"
-    />
+    <div className="space-y-6">
+      {/* Withdrawal Link */}
+      <div className="flex justify-end">
+        <Button asChild className="bg-orange-600 hover:bg-orange-700">
+          <Link href="/instructor/withdrawals">
+            <Wallet className="h-4 w-4 mr-2" />
+            Penarikan Dana
+          </Link>
+        </Button>
+      </div>
+
+      <PaymentListPage
+        basePath="/instructor"
+        title="Pembayaran Saya"
+        description="Pantau pendapatan dari kursus Anda"
+      />
+    </div>
   );
 }

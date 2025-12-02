@@ -20,6 +20,7 @@ import (
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/upload"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/user"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/instructor"
+	"github.com/Hasanromadon/tempa-skill/tempaskill-be/internal/withdrawal"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/database"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/firebase"
 	"github.com/Hasanromadon/tempa-skill/tempaskill-be/pkg/logger"
@@ -68,6 +69,9 @@ func main() {
 		&progress.LessonProgress{},
 		&review.CourseReview{},
 		&activity.ActivityLog{},
+		&withdrawal.InstructorEarning{},
+		&withdrawal.WithdrawalRequest{},
+		&withdrawal.InstructorBankAccount{},
 	); err != nil {
 		logger.Fatal("Failed to migrate database", zap.Error(err))
 	}
@@ -243,6 +247,36 @@ func main() {
 
 		// Register instructor routes
      	instructor.RegisterRoutes(v1, instructorHandler, authMiddleware)
+
+		// Initialize withdrawal module
+		withdrawalRepo := withdrawal.NewWithdrawalRepository(db)
+		withdrawalService := withdrawal.NewWithdrawalService(withdrawalRepo)
+		withdrawalHandler := withdrawal.NewWithdrawalHandler(withdrawalService)
+
+		// Instructor-only middleware
+		instructorMiddleware := func(c *gin.Context) {
+			userRole, exists := c.Get("userRole")
+			if !exists || userRole != "instructor" {
+				c.JSON(http.StatusForbidden, gin.H{"error": "Instructor access required"})
+				c.Abort()
+				return
+			}
+			c.Next()
+		}
+
+		// Admin-only middleware
+		adminMiddleware := func(c *gin.Context) {
+			userRole, exists := c.Get("userRole")
+			if !exists || userRole != "admin" {
+				c.JSON(http.StatusForbidden, gin.H{"error": "Admin access required"})
+				c.Abort()
+				return
+			}
+			c.Next()
+		}
+
+		// Register withdrawal routes
+		withdrawal.RegisterRoutes(router, withdrawalHandler, authMiddleware.RequireAuth(), instructorMiddleware, adminMiddleware)
 	}
 
 	// Start server

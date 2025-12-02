@@ -450,3 +450,74 @@ export interface PaymentListQuery {
   sort_by?: "date" | "amount" | "status";
   sort_order?: "ASC" | "DESC";
 }
+
+// Withdrawal Types
+export interface BalanceResponse {
+  total_earnings: number;
+  available_balance: number;
+  held_balance: number;
+  withdrawn_amount: number;
+  pending_amount: number;
+}
+
+export interface WithdrawalRequest {
+  id: number;
+  user_id: number;
+  amount: number;
+  admin_fee: number;
+  net_amount: number;
+  status: "pending" | "processing" | "completed" | "failed" | "cancelled";
+  bank_account_id: number;
+  notes?: string;
+  processed_at?: string;
+  processed_by?: number;
+  created_at: string;
+  updated_at: string;
+  bank_account?: BankAccount;
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+  };
+}
+
+export interface BankAccount {
+  id: number;
+  user_id?: number;
+  bank_name: string;
+  account_number: string;
+  account_holder_name: string;
+  verification_status: "pending" | "verified" | "rejected";
+  verified_at?: string;
+  verified_by?: number;
+  verification_notes?: string;
+  created_at: string;
+  updated_at?: string;
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+  };
+}
+
+export interface BankAccountsResponse {
+  verified: BankAccount | null;
+  pending: BankAccount | null;
+}
+
+export interface CreateWithdrawalRequest {
+  amount: number;
+  bank_account_id: number;
+  notes?: string;
+}
+
+export interface ProcessWithdrawalRequest {
+  status: "completed" | "failed";
+  notes?: string;
+}
+
+export interface CreateBankAccountRequest {
+  bank_name: string;
+  account_number: string;
+  account_holder_name: string;
+}

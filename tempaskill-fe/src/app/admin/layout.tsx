@@ -18,12 +18,14 @@ import { removeAuthToken } from "@/lib/auth-token";
 import { ROUTES } from "@/lib/constants";
 import {
   BookOpen,
+  Building2,
   CreditCard,
   LayoutDashboard,
   LogOut,
   Menu,
   Settings,
   Users,
+  Wallet,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -66,6 +68,16 @@ export default function AdminLayout({
       label: "Pembayaran",
       href: "/admin/payments",
       icon: CreditCard,
+    },
+    {
+      label: "Penarikan Dana",
+      href: "/admin/withdrawals",
+      icon: Wallet,
+    },
+    {
+      label: "Validasi Rekening",
+      href: "/admin/withdrawals/bank-accounts",
+      icon: Building2,
     },
     {
       label: "Pengaturan",

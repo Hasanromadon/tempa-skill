@@ -144,8 +144,12 @@ export default function InstructorLayout({
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-1">
             {navItems.map((item) => {
+              // Make payments active for both /payments and /withdrawals
               const isActive =
-                pathname === item.href || pathname.startsWith(item.href + "/");
+                pathname === item.href ||
+                pathname.startsWith(item.href + "/") ||
+                (item.href === "/instructor/payments" &&
+                  pathname.startsWith("/instructor/withdrawals"));
               return (
                 <Link
                   key={item.href}

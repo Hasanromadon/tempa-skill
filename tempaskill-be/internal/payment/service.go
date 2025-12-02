@@ -435,6 +435,12 @@ func (s *paymentService) HandleMidtransNotification(notification MidtransNotific
 			// Log error but don't fail the webhook
 			fmt.Printf("Failed to enroll user in course: %v\n", err)
 		}
+		
+		// Create instructor earning record
+		if err := s.createInstructorEarning(notification.OrderID); err != nil {
+			// Log error but don't fail the webhook
+			fmt.Printf("Failed to create instructor earning: %v\n", err)
+		}
 	}
 
 	return nil
@@ -532,5 +538,55 @@ func (s *paymentService) getUserByID(userID uint) (*auth.User, error) {
 func (s *paymentService) enrollUserInCourse(orderID string) error {
 	// This should enroll the user in the course after successful payment
 	// Implementation depends on enrollment system
+	return nil
+}
+
+func (s *paymentService) createInstructorEarning(orderID string) error {
+	// Get payment transaction
+	payment, err := s.repo.FindByOrderID(orderID)
+	if err != nil {
+		return fmt.Errorf("payment not found: %w", err)
+	}
+	
+	// Get course to find instructor
+	course, err := s.getCourseByID(payment.CourseID)
+	if err != nil {
+		return fmt.Errorf("course not found: %w", err)
+	}
+	
+	// Calculate revenue split (80% instructor, 20% platform)
+	grossAmount := payment.GrossAmount
+	platformFee := grossAmount * 0.20  // 20% platform fee
+	instructorShare := grossAmount * 0.80  // 80% instructor share
+	
+	// Determine holding period based on instructor tier (default 7 days for now)
+	// TODO: Implement instructor tier system
+	holdingDays := 7
+	transactionDate := time.Now()
+	if payment.SettlementTime != nil {
+		transactionDate = *payment.SettlementTime
+	}
+	availableDate := transactionDate.AddDate(0, 0, holdingDays)
+	
+	// Create earning record using raw SQL to avoid import cycle
+	db := s.repo.(*paymentRepository).db
+	earning := map[string]interface{}{
+		"instructor_id":          course.InstructorID,
+		"payment_transaction_id": payment.ID,
+		"course_id":              course.ID,
+		"gross_amount":           grossAmount,
+		"platform_fee":           platformFee,
+		"instructor_share":       instructorShare,
+		"transaction_date":       transactionDate,
+		"available_date":         availableDate,
+		"status":                 "held",
+		"created_at":             time.Now(),
+		"updated_at":             time.Now(),
+	}
+	
+	if err := db.Table("instructor_earnings").Create(&earning).Error; err != nil {
+		return fmt.Errorf("failed to create earning: %w", err)
+	}
+	
 	return nil
 }
