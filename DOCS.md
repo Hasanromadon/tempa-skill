@@ -16,7 +16,7 @@
 
 1. 📐 **[DEVELOPMENT.md](./DEVELOPMENT.md)** - Coding standards & patterns
 2. 📁 **[STRUCTURE.md](./STRUCTURE.md)** - Folder structure lengkap
-3. 🎯 **[CHEATSHEET.md](./CHEATSHEET.md)** - Quick reference
+3. 📝 **[SCRIPTS.md](./SCRIPTS.md)** - Quick commands & scripts
 
 ---
 
@@ -36,7 +36,8 @@
 | -------------------------------------- | ------------------------------------------------------- | --------------------------------------- |
 | **[DEVELOPMENT.md](./DEVELOPMENT.md)** | Coding standards, best practices, architecture patterns | Sebelum mulai coding, sebagai referensi |
 | **[STRUCTURE.md](./STRUCTURE.md)**     | Complete folder structure, naming conventions           | Saat membuat file/folder baru           |
-| **[CHEATSHEET.md](./CHEATSHEET.md)**   | Quick commands, code templates, shortcuts               | Daily reference, keep open!             |
+| **[SCRIPTS.md](./SCRIPTS.md)**         | Quick commands, development scripts, code templates     | Daily reference, keep open!             |
+| **[TODO.md](./TODO.md)**               | Feature checklist, task tracking, priorities            | Planning & progress tracking            |
 
 ### 📊 Technical Specs
 

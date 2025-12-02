@@ -77,7 +77,7 @@
 
 ## 🔴 High Priority (MVP Required)
 
-### 1. Admin Panel - Course Management
+### 1. Admin Panel - Course Management ✅
 
 **Status**: ✅ Completed
 **Estimated Time**: 6 hours
@@ -105,20 +105,9 @@ tempaskill-fe/src/components/admin/
 └── image-upload.tsx           # Image upload with preview ✅
 ```
 
-**Backend APIs** (Already exists):
-
-- ✅ POST /api/v1/courses
-- ✅ GET /api/v1/courses
-- ✅ GET /api/v1/courses/:id
-- ✅ PUT /api/v1/courses/:id
-- ✅ DELETE /api/v1/courses/:id
-
-**Dependencies**: None
-**Blocks**: Lesson Management
-
 ---
 
-### 2. Admin Panel - Lesson Management
+### 2. Admin Panel - Lesson Management ✅
 
 **Status**: ✅ Completed  
 **Estimated Time**: 6 hours  
@@ -133,33 +122,9 @@ Buat admin panel untuk CRUD lessons dengan fitur:
 - ✅ Set duration dan difficulty
 - ✅ Lesson preview mode
 
-**Files Created**:
-
-```
-tempaskill-fe/src/app/admin/courses/[courseId]/lessons/
-├── page.tsx                   # Lesson list with reorder
-├── new/page.tsx              # Create lesson
-└── [id]/edit/page.tsx        # Edit lesson
-
-tempaskill-fe/src/components/admin/
-├── lesson-form.tsx           # Lesson form
-└── lesson-reorder.tsx        # Drag-drop component
-```
-
-**Backend APIs** (Already exists):
-
-- ✅ POST /api/v1/courses/:id/lessons
-- ✅ GET /api/v1/courses/:id/lessons
-- ✅ GET /api/v1/lessons/:id
-- ✅ PUT /api/v1/lessons/:id
-- ✅ DELETE /api/v1/lessons/:id
-
-**Dependencies**: Course Management
-**Blocks**: MDX Editor
-
 ---
 
-### 3. MDX Editor dengan Live Preview
+### 3. MDX Editor dengan Live Preview ✅
 
 **Status**: ✅ Completed
 **Estimated Time**: 8 hours
@@ -173,41 +138,227 @@ Buat MDX editor component untuk instructor menulis content:
 - ✅ Toolbar dengan shortcuts (bold, italic, code, heading)
 - ✅ Auto-save draft functionality
 - ✅ Template snippets
+- ✅ Image upload to Firebase Storage
+- ✅ Full-screen editing capability
+
+---
+
+### 4. Certificate Generation System ✅
+
+**Status**: ✅ Completed
+**Estimated Time**: 4 hours
+**Priority**: 🔴 Critical
+
+**Description**:
+Generate PDF certificates untuk completed courses:
+
+- ✅ Certificate model dengan unique certificate_id
+- ✅ PDF generation dengan dynamic data (name, course, date)
+- ✅ Certificate verification API
+- ✅ Download certificate functionality
+- ✅ Certificate list untuk users
 
 **Files Created**:
 
 ```
-tempaskill-fe/src/components/admin/
-└── mdx-editor.tsx            # Main editor component with MDXEditorWrapper
+tempaskill-be/internal/certificate/
+├── model.go                  # Certificate model ✅
+├── dto.go                    # Certificate DTOs ✅
+├── repository.go             # Certificate queries ✅
+├── service.go                # Certificate business logic ✅
+├── handler.go                # Certificate endpoints ✅
+├── pdf.go                    # PDF generation ✅
+└── routes.go                 # Route registration ✅
+
+tempaskill-fe/src/hooks/
+└── use-certificate.ts        # Certificate hooks ✅
 ```
 
-**NPM Packages Installed**:
+**Backend APIs**:
 
-```bash
-npm install @mdxeditor/editor
-```
+- ✅ POST /api/v1/certificates/generate - Generate certificate
+- ✅ GET /api/v1/certificates/:id - Get certificate detail
+- ✅ GET /api/v1/certificates/:id/download - Download PDF
+- ✅ GET /api/v1/certificates/verify/:code - Verify certificate
 
 **Features Implemented**:
 
-- ✅ @mdxeditor/editor integration (better than Monaco)
-- ✅ Split-pane layout (editor/preview/full modes)
-- ✅ Live MDX compilation and preview
-- ✅ Toolbar (H1-H3, bold, italic, code, link, image, table, lists)
-- ✅ Auto-save functionality with configurable delay
-- ✅ Template insertion (heading, code, list, tabs, quiz, codeBlock)
-- ✅ Keyboard shortcuts and markdown shortcuts
-- ✅ Image upload to Firebase Storage
-- ✅ Syntax highlighting with CodeMirror
-- ✅ Full-screen editing capability
+- ✅ Automatic certificate generation on course completion
+- ✅ PDF generation with course and user details
+- ✅ Unique certificate ID for verification
+- ✅ Certificate download endpoint
+- ✅ Public certificate verification
 
-**Integration**:
+---
 
-- ✅ Integrated into lesson creation/editing forms
-- ✅ Used in admin lesson management pages
-- ✅ Supports all custom MDX components (Tabs, Quiz, CodeBlock, etc.)
+### 5. Instructor Earnings & Withdrawal System ✅
 
-**Dependencies**: Lesson Management
-**Blocks**: Content Migration
+**Status**: ✅ Completed (Backend)
+**Estimated Time**: 12 hours
+**Priority**: 🔴 Critical
+
+**Description**:
+Sistem lengkap untuk instructor earnings dan withdrawal:
+
+- ✅ Track instructor earnings dari setiap payment
+- ✅ Platform fee calculation (revenue sharing)
+- ✅ Withdrawal request system
+- ✅ Bank account management & verification
+- ✅ Admin approval workflow
+- ✅ Earnings available date (hold period)
+
+**Backend Files Created**:
+
+```
+tempaskill-be/internal/withdrawal/
+├── model.go                  # InstructorEarning, WithdrawalRequest, BankAccount ✅
+├── dto.go                    # Withdrawal DTOs ✅
+├── repository.go             # Withdrawal queries ✅
+├── service.go                # Withdrawal business logic ✅
+├── handler.go                # Withdrawal endpoints ✅
+└── routes.go                 # Route registration ✅
+```
+
+**Database Tables**:
+
+- ✅ instructor_earnings - Track earnings per transaction
+- ✅ withdrawal_requests - Withdrawal request management
+- ✅ instructor_bank_accounts - Bank account verification
+
+**Backend APIs**:
+
+- ✅ GET /api/v1/instructor/earnings - Get instructor earnings
+- ✅ GET /api/v1/instructor/earnings/available - Available balance
+- ✅ POST /api/v1/instructor/bank-accounts - Add bank account
+- ✅ GET /api/v1/instructor/bank-accounts - List bank accounts
+- ✅ POST /api/v1/instructor/withdrawals - Request withdrawal
+- ✅ GET /api/v1/instructor/withdrawals - List withdrawals
+- ✅ POST /api/v1/admin/withdrawals/:id/approve - Approve withdrawal
+- ✅ POST /api/v1/admin/withdrawals/:id/reject - Reject withdrawal
+
+**Frontend Integration**:
+
+- ✅ use-withdrawal.ts hook created
+- ⏸️ Instructor earnings dashboard UI
+- ⏸️ Withdrawal request form UI
+- ⏸️ Bank account management UI
+- ⏸️ Admin withdrawal approval UI
+
+**Business Logic**:
+
+- Platform takes 30% fee, instructor gets 70%
+- 14-day hold period before earnings available
+- Admin verification of bank accounts
+- Multi-step withdrawal approval process
+
+---
+
+### 6. Activity Logging System ✅
+
+**Status**: ✅ Completed (Backend)
+**Estimated Time**: 6 hours
+**Priority**: 🟡 Medium
+
+**Description**:
+Comprehensive activity logging untuk audit dan monitoring:
+
+- ✅ Log all critical user actions
+- ✅ Track admin operations
+- ✅ Monitor course/lesson changes
+- ✅ Payment transaction tracking
+- ✅ Security audit trail
+
+**Backend Files Created**:
+
+```
+tempaskill-be/internal/activity/
+├── model.go                  # ActivityLog model ✅
+├── repository.go             # Activity queries ✅
+├── service.go                # Activity logging ✅
+├── handler.go                # Activity endpoints ✅
+└── routes.go                 # Route registration ✅
+```
+
+**Database Migration**:
+
+```
+migrations/012_create_activity_logs.sql ✅
+```
+
+**Backend APIs**:
+
+- ✅ GET /api/v1/admin/activities - List all activities
+- ✅ GET /api/v1/admin/activities/user/:id - User-specific activities
+- ✅ POST /api/v1/activities - Log activity (internal)
+
+**Activity Types Logged**:
+
+- User registration, login, logout
+- Course creation, update, deletion
+- Lesson creation, update, deletion
+- Enrollment, unenrollment
+- Payment transactions
+- Certificate generation
+- Withdrawal requests
+- Admin actions (role changes, approvals)
+
+**Frontend Integration**:
+
+- ✅ use-activities.ts hook created
+- ⏸️ Activity log viewer UI (admin)
+- ⏸️ User activity timeline
+- ⏸️ Audit trail export
+
+---
+
+### 7. Instructor Management System ✅
+
+**Status**: ✅ Completed (Backend)
+**Estimated Time**: 8 hours
+**Priority**: 🟡 Medium
+
+**Description**:
+Sistem untuk instructor profile dan course statistics:
+
+- ✅ Instructor profile management
+- ✅ Course statistics per instructor
+- ✅ Earnings summary
+- ✅ Student count tracking
+- ✅ Instructor filtering and search
+
+**Backend Files Created**:
+
+```
+tempaskill-be/internal/instructor/
+├── dto.go                    # Instructor DTOs ✅
+├── repository.go             # Instructor queries ✅
+├── service.go                # Instructor business logic ✅
+├── handler.go                # Instructor endpoints ✅
+└── routes.go                 # Route registration ✅
+```
+
+**Backend APIs**:
+
+- ✅ GET /api/v1/instructors - List instructors (with filters)
+- ✅ GET /api/v1/instructors/:id - Get instructor detail
+- ✅ GET /api/v1/instructors/:id/courses - Instructor courses
+- ✅ GET /api/v1/instructors/:id/stats - Instructor statistics
+
+**Features Implemented**:
+
+- Search by name
+- Filter by specialty
+- Order by students, courses, rating
+- Pagination support
+- Course count and student count aggregation
+- Average rating calculation
+
+**Frontend Integration**:
+
+- ✅ use-instructor.ts hook created
+- ⏸️ Instructor directory page
+- ⏸️ Instructor profile page
+- ⏸️ Instructor dashboard (for instructors)
 
 ---
 
@@ -1178,12 +1329,363 @@ go get github.com/gorilla/websocket
 
 ---
 
-**Last Updated**: November 29, 2025  
-**Total Estimated Time**: ~142 hours (with dashboard enhancements)  
-**Core Tasks**: 20 tasks  
-**Dashboard Enhancements**: 5 optional tasks (30 hours)  
-**Progress**: 8/20 core tasks completed (40%)
+## 🚀 Business Flow Improvements & Future Enhancements
+
+### 26. Multi-Language Support (Internationalization)
+
+**Status**: ⏸️ Not Started  
+**Estimated Time**: 15 hours  
+**Priority**: 🟢 Low (Future)
+
+**Description**:
+Support multiple languages untuk expand market:
+
+- Indonesian (default)
+- English
+- Other regional languages (Malay, Tagalog, etc.)
+
+**Implementation**:
+
+```
+Frontend:
+- Install next-intl or react-i18next
+- Create translation files (id.json, en.json)
+- Language switcher component
+- Persist language preference
+
+Backend:
+- Localized course content (title, description)
+- Multi-language support in database
+```
+
+**Benefits**:
+
+- Expand to international market
+- Better accessibility
+- Competitive advantage
 
 ---
 
-💡 **Tip**: Update status setelah setiap task completion. Gunakan VS Code TODO extension untuk quick tracking.
+### 27. Course Bundle & Subscription
+
+**Status**: ⏸️ Not Started  
+**Estimated Time**: 12 hours  
+**Priority**: 🟢 Low (Future)
+
+**Description**:
+Alternative pricing models untuk increase revenue:
+
+- Course bundles (multiple courses at discount)
+- Monthly subscription (unlimited access)
+- Corporate plans (team licenses)
+
+**Implementation**:
+
+```
+Backend:
+- Bundle model (multiple courses)
+- Subscription model (recurring payment)
+- Corporate account management
+- Midtrans recurring payment integration
+
+Frontend:
+- Bundle selection UI
+- Subscription pricing page
+- Corporate signup flow
+```
+
+**Benefits**:
+
+- Higher revenue per user
+- Better user retention
+- Appeal to enterprise customers
+
+---
+
+### 28. Gamification & Achievements
+
+**Status**: ⏸️ Not Started  
+**Estimated Time**: 10 hours  
+**Priority**: 🟢 Low (Future)
+
+**Description**:
+Increase engagement melalui gamification:
+
+- Achievement badges (complete 5 courses, etc.)
+- Leaderboard (top learners)
+- Streak tracking (consecutive days learning)
+- Points system
+
+**Implementation**:
+
+```
+Backend:
+- Achievement model
+- Progress tracking enhancement
+- Leaderboard queries
+- Badge unlocking logic
+
+Frontend:
+- Badge showcase
+- Leaderboard component
+- Streak counter
+- Achievement notifications
+```
+
+**Benefits**:
+
+- Increase user engagement
+- Better course completion rates
+- Social proof and competition
+
+---
+
+### 29. AI-Powered Course Recommendations
+
+**Status**: ⏸️ Not Started  
+**Estimated Time**: 20 hours  
+**Priority**: 🟢 Low (Advanced)
+
+**Description**:
+Personalized course recommendations menggunakan AI:
+
+- Based on completed courses
+- Based on user interests
+- Skill gap analysis
+- Learning path suggestions
+
+**Implementation**:
+
+```
+Backend:
+- Recommendation engine (collaborative filtering)
+- OpenAI API integration for analysis
+- User preference tracking
+- Course similarity calculation
+
+Frontend:
+- "Recommended for You" section
+- Learning path visualization
+- Skill gap display
+```
+
+**Benefits**:
+
+- Better course discovery
+- Personalized learning experience
+- Increase course enrollment
+
+---
+
+### 30. Video Content Support (Optional)
+
+**Status**: ⏸️ Not Started  
+**Estimated Time**: 16 hours  
+**Priority**: 🟢 Low (Optional)
+
+**Description**:
+Optional video support untuk instructors yang ingin upload video:
+
+- Video upload to cloud storage (AWS S3 / Cloudinary)
+- Video streaming player
+- Subtitle support
+- Video progress tracking
+
+**Implementation**:
+
+```
+Backend:
+- Video upload endpoint
+- Video metadata storage
+- HLS streaming support
+- Progress tracking per video
+
+Frontend:
+- Video player component (react-player)
+- Subtitle display
+- Playback speed control
+- Video progress tracking
+```
+
+**Note**: Tetap fokus text-based, video is OPTIONAL
+
+**Benefits**:
+
+- Flexibility for instructors
+- Compete with video-heavy platforms
+- Premium course option
+
+---
+
+### 31. Mobile App (React Native)
+
+**Status**: ⏸️ Not Started  
+**Estimated Time**: 80+ hours  
+**Priority**: 🟢 Low (Future)
+
+**Description**:
+Native mobile app untuk iOS dan Android:
+
+- React Native app
+- Offline content support
+- Push notifications
+- Mobile-optimized UX
+
+**Implementation**:
+
+```
+Tech Stack:
+- React Native + Expo
+- React Query for state management
+- AsyncStorage for offline data
+- Firebase Cloud Messaging for push
+
+Features:
+- Course browsing and enrollment
+- Offline lesson reading
+- Progress syncing
+- Payment integration
+- Certificate download
+```
+
+**Benefits**:
+
+- Better mobile experience
+- Offline learning capability
+- Push notifications for engagement
+- App store presence
+
+---
+
+### 32. Live Coding Rooms (Advanced)
+
+**Status**: ⏸️ Not Started  
+**Estimated Time**: 30+ hours  
+**Priority**: 🟢 Low (Advanced)
+
+**Description**:
+Real-time collaborative coding untuk live sessions:
+
+- Code editor with real-time sync
+- Multiple participants
+- Syntax highlighting
+- Code execution
+
+**Implementation**:
+
+```
+Tech Stack:
+- WebSocket (Socket.io)
+- Monaco Editor (VS Code editor)
+- Yjs for CRDT (conflict-free replication)
+- Docker containers for code execution
+
+Features:
+- Real-time code collaboration
+- Live cursor tracking
+- Chat integration
+- Code review tools
+```
+
+**Benefits**:
+
+- Enhanced live session experience
+- Collaborative learning
+- Unique platform feature
+- Premium offering
+
+---
+
+### 33. Content Marketplace
+
+**Status**: ⏸️ Not Started  
+**Estimated Time**: 25+ hours  
+**Priority**: 🟢 Low (Future)
+
+**Description**:
+Allow anyone to become instructor dan sell courses:
+
+- Public instructor registration
+- Course submission and approval
+- Revenue sharing system
+- Quality control and moderation
+
+**Implementation**:
+
+```
+Backend:
+- Instructor application workflow
+- Course approval system
+- Automated payout system
+- Quality metrics tracking
+
+Frontend:
+- "Become Instructor" page
+- Course submission wizard
+- Instructor dashboard (earnings, students)
+- Course review and rating system
+```
+
+**Benefits**:
+
+- Scale content creation
+- Passive income for platform
+- Diverse course catalog
+- Community-driven growth
+
+---
+
+### 34. Integration with Learning Management Systems (LMS)
+
+**Status**: ⏸️ Not Started  
+**Estimated Time**: 20 hours  
+**Priority**: 🟢 Low (Enterprise)
+
+**Description**:
+Integrate dengan corporate LMS (SCORM, LTI):
+
+- SCORM package export
+- LTI integration for Canvas, Moodle
+- SSO support (SAML, OAuth)
+- Grade passback
+
+**Implementation**:
+
+```
+Backend:
+- SCORM package generator
+- LTI provider implementation
+- SSO authentication
+- Grade reporting API
+
+Features:
+- Export course as SCORM
+- Embed in corporate LMS
+- Single Sign-On support
+- Automatic grade sync
+```
+
+**Benefits**:
+
+- Enterprise market access
+- B2B revenue stream
+- Scalable to organizations
+- Competitive differentiation
+
+---
+
+**Last Updated**: December 2, 2025  
+**Total Estimated Time**: ~320+ hours (including all enhancements)  
+**Core Tasks**: 34 tasks  
+**Completed**: 13 core tasks (38%)  
+**High Priority Remaining**: 0 tasks (MVP COMPLETE!)  
+**Medium Priority**: 8 tasks  
+**Low Priority**: 13 tasks
+
+---
+
+💡 **Tip**: Fokus pada High & Medium priority dulu. Low priority adalah future enhancements untuk scale platform.
+
+🎯 **MVP Status**: ✅ **COMPLETE!** Ready untuk soft launch.
+
+📈 **Next Focus**: Medium priority tasks untuk improve UX dan business flows.

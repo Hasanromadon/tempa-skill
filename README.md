@@ -33,10 +33,17 @@
 #### Backend (✅ 100% Complete)
 
 - ✅ **Autentikasi pengguna** - Register/Login dengan JWT, middleware protection
-- ✅ **User Management** - Get profile, update profile, change password
+- ✅ **User Management** - Get profile, update profile, change password, role management
 - ✅ **Course Management** - CRUD operations, enrollment, lessons, slug-based retrieval
 - ✅ **Progress Tracking** - Mark lessons complete, track progress percentage, course completion
 - ✅ **Course Catalog** - Search & filter, pagination, optimized queries (100x faster)
+- ✅ **Payment Integration** - Midtrans payment gateway (Snap API)
+- ✅ **Certificate System** - Generate PDF certificates on course completion
+- ✅ **Review System** - Course reviews and ratings (1-5 stars)
+- ✅ **Session Management** - Live session scheduling and attendance tracking
+- ✅ **Instructor Earnings** - Revenue sharing, withdrawal requests, bank account verification
+- ✅ **Activity Logging** - Comprehensive audit trail for all critical actions
+- ✅ **Admin Dashboard** - Statistics, user management, course management
 - ✅ **Request ID Tracing** - Unique ID per request untuk debugging
 - ✅ **Rate Limiting** - Perlindungan terhadap abuse (100 req/min umum, 10 req/min auth)
 - ✅ **Security Headers** - XSS protection, clickjacking prevention
@@ -48,19 +55,27 @@
 - ✅ **Course Listing** - Search, pagination, guest/authenticated views
 - ✅ **Course Detail Page** - Full course info, lessons list, enrollment, progress tracking
 - ✅ **User Dashboard** - Enrolled courses, progress tracking, quick actions
-- ✅ **Admin Panel (NEW)** - Complete admin interface for managing courses and lessons:
+- ✅ **Lesson Viewer** - MDX rendering with prev/next navigation, completion tracking
+- ✅ **Profile Management** - Edit profile, change password, avatar upload
+- ✅ **Payment Flow** - Checkout page, Midtrans Snap integration, payment history
+- ✅ **Certificate Viewer** - View and download certificates
+- ✅ **Review System** - Submit and view course reviews
+- ✅ **Session Calendar** - View upcoming live sessions
+- ✅ **Admin Panel (Complete)** - Complete admin interface for managing platform:
   - ✅ Course CRUD - Create, edit, delete courses with rich form validation
   - ✅ Lesson CRUD - Create, edit, delete lessons with MDX editor
   - ✅ MDX Editor Integration - Rich text editor with toolbar (bold, italic, lists, code blocks, headings)
   - ✅ Image Upload - Firebase Storage integration for course thumbnails and inline MDX images
   - ✅ Drag-Drop Reorder - Intuitive lesson reordering with dnd-kit library
   - ✅ Admin Dashboard - Course statistics, recent enrollments, quick actions
-- ✅ **React Query Hooks** - Complete API integration (useAuth, useCourses, useLessons, useProgress, useUser)
-- ✅ **UI Components** - Shadcn UI (15+ components: Button, Card, Badge, Alert, Input, Form, Dialog, etc.)
+  - ✅ User Management - View, edit, delete users, change roles, toggle status
+  - ✅ Payment Monitoring - View all transactions, filter by status
+  - ✅ Session Management - Create and manage live sessions
+- ✅ **Instructor Panel** - Dashboard, earnings, courses, students, withdrawals
+- ✅ **React Query Hooks** - Complete API integration (20+ hooks)
+- ✅ **UI Components** - Shadcn UI (30+ components)
 - ✅ **Brand Compliance** - 100% compliant with TempaSKill orange (#ea580c) brand identity
-- ✅ **Lesson Viewer** - MDX rendering with prev/next navigation
-- 🚧 **Profile Management** - Edit profile, change password, settings page
-- 🚧 **Protected Routes** - Middleware for auth-only pages
+- 🚧 **Instructor Withdrawal UI** - Frontend for withdrawal requests and bank accounts
 
 ---
 
