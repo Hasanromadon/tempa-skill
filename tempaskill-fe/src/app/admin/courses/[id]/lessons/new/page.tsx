@@ -67,6 +67,8 @@ export default function NewLessonPage({ params }: PageProps) {
   }) => {
     try {
       setError(null);
+      
+      // Wait for mutation to complete and cache to invalidate
       await createLesson.mutateAsync({
         courseId: courseId,
         data: {
@@ -83,7 +85,10 @@ export default function NewLessonPage({ params }: PageProps) {
         description: `"${data.title}" telah ditambahkan ke kursus.`,
       });
 
-      router.push(ROUTES.ADMIN.COURSE_LESSONS(courseId));
+      // Small delay to ensure cache invalidation completes
+      setTimeout(() => {
+        router.push(ROUTES.ADMIN.COURSE_LESSONS(courseId));
+      }, 100);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Gagal membuat pelajaran";

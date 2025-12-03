@@ -39,13 +39,17 @@ export default function InstructorNewLessonPage({ params }: PageProps) {
         is_published: data.isPublished || false,
       };
 
+      // Wait for mutation to complete and cache to invalidate
       await createLesson.mutateAsync({ courseId, data: apiData });
 
       toast.success("Pelajaran berhasil dibuat!", {
         description: `"${data.title}" telah ditambahkan.`,
       });
 
-      router.push(`/instructor/courses/${courseId}/lessons`);
+      // Small delay to ensure cache invalidation completes
+      setTimeout(() => {
+        router.push(`/instructor/courses/${courseId}/lessons`);
+      }, 100);
     } catch (err) {
       const errorMessage =
         err instanceof Error
