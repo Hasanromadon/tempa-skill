@@ -55,7 +55,7 @@ type InstructorCourseResponse struct {
 	Difficulty       string  `json:"difficulty"`
 	Price            float64 `json:"price"`
 	ThumbnailURL     string  `json:"thumbnail_url,omitempty"`
-	Published        bool    `json:"published"`
+	IsPublished      bool    `json:"is_published"`
 	TotalLessons     int     `json:"total_lessons"`
 	TotalStudents    int     `json:"total_students"`
 	TotalEnrollments int     `json:"total_enrollments"`

@@ -156,7 +156,7 @@ func (r *repository) GetMyCourses(ctx context.Context, instructorID uint, query 
 			courses.difficulty,
 			courses.price,
 			courses.thumbnail_url,
-			courses.is_published as published,
+			courses.is_published,
 			courses.created_at,
 			courses.updated_at,
 			COUNT(DISTINCT lessons.id) as total_lessons,
