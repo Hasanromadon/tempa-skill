@@ -26,6 +26,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Edit, FileText, GripVertical, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Lesson {
   id: number;
@@ -49,6 +50,7 @@ interface SortableItemProps {
   basePath: string;
   onTogglePublish: (lessonId: number, isPublished: boolean) => void;
   onDelete: (lessonId: number) => void;
+  isToggling: boolean;
 }
 
 function SortableItem({
@@ -58,6 +60,7 @@ function SortableItem({
   basePath,
   onTogglePublish,
   onDelete,
+  isToggling,
 }: SortableItemProps) {
   const {
     attributes,
@@ -125,9 +128,16 @@ function SortableItem({
               variant="outline"
               size="sm"
               onClick={() => onTogglePublish(lesson.id, !lesson.is_published)}
+              disabled={isToggling}
               className="text-xs"
             >
-              {lesson.is_published ? "Unpublish" : "Publish"}
+              {isToggling ? (
+                "..."
+              ) : lesson.is_published ? (
+                "Sembunyikan"
+              ) : (
+                "Terbitkan"
+              )}
             </Button>
             <Button variant="outline" size="sm" asChild>
               <Link
@@ -157,8 +167,10 @@ export function DraggableLessonList({
   courseId,
   basePath = "/admin",
 }: DraggableLessonListProps) {
+  const queryClient = useQueryClient();
   const [lessons, setLessons] = useState(initialLessons);
   const [isSaving, setIsSaving] = useState(false);
+  const [togglingLesson, setTogglingLesson] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Sync local state with props when data refetches
@@ -178,11 +190,10 @@ export function DraggableLessonList({
     isPublished: boolean
   ) => {
     try {
-      await apiClient.patch(API_ENDPOINTS.LESSONS.UPDATE(lessonId), {
-        is_published: isPublished,
-      });
+      setTogglingLesson(lessonId);
+      setError(null);
 
-      // Update local state
+      // Optimistic update for immediate UI feedback
       setLessons((prev) =>
         prev.map((lesson) =>
           lesson.id === lessonId
@@ -190,9 +201,25 @@ export function DraggableLessonList({
             : lesson
         )
       );
+
+      await apiClient.patch(API_ENDPOINTS.LESSONS.UPDATE(lessonId), {
+        is_published: isPublished,
+      });
+
+      // Refetch to get fresh data and ensure consistency
+      await queryClient.refetchQueries({
+        queryKey: ["lessons", courseId],
+      });
     } catch (err) {
       console.error("Failed to toggle lesson publish status:", err);
       setError("Gagal mengubah status publikasi pelajaran");
+      
+      // Revert optimistic update on error
+      await queryClient.refetchQueries({
+        queryKey: ["lessons", courseId],
+      });
+    } finally {
+      setTogglingLesson(null);
     }
   };
 
@@ -204,8 +231,11 @@ export function DraggableLessonList({
     try {
       await apiClient.delete(API_ENDPOINTS.LESSONS.DELETE(lessonId));
 
-      // Update local state
-      setLessons((prev) => prev.filter((lesson) => lesson.id !== lessonId));
+      // Refetch to get fresh data immediately
+      await queryClient.refetchQueries({
+        queryKey: ["lessons", courseId],
+      });
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
     } catch (err) {
       console.error("Failed to delete lesson:", err);
       setError("Gagal menghapus pelajaran");
@@ -296,6 +326,7 @@ export function DraggableLessonList({
               basePath={basePath}
               onTogglePublish={handleTogglePublish}
               onDelete={handleDelete}
+              isToggling={togglingLesson === lesson.id}
             />
           ))}
         </SortableContext>

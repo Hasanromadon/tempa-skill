@@ -41,7 +41,7 @@ export default function InstructorEditLessonPage({ params }: PageProps) {
       };
 
       console.log("🔄 Updating lesson with data:", apiData);
-      
+
       await updateLesson.mutateAsync({ id: lessonIdNum, data: apiData });
 
       console.log("✅ Lesson updated successfully");
