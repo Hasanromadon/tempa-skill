@@ -77,6 +77,7 @@ export const useCurrentUser = () => {
       );
       return response.data.data || null;
     },
+    enabled: !!getAuthToken(), // Only run query if token exists
     retry: false,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });

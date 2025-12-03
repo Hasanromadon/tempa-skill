@@ -76,15 +76,26 @@ apiClient.interceptors.response.use(
     // Handle unauthorized
     if (error.response?.status === 401) {
       removeAuthToken();
-      // Only redirect to login if not already on auth pages
+      // Only redirect to login if accessing protected routes
       if (typeof window !== "undefined") {
         const currentPath = window.location.pathname;
-        const isAuthPage =
-          currentPath.startsWith("/login") ||
-          currentPath.startsWith("/register");
+        
+        // Don't redirect on public pages
+        const publicPaths = [
+          "/login",
+          "/register",
+          "/",
+          "/courses",
+          "/about",
+        ];
+        
+        const isPublicPage = publicPaths.some(
+          (path) => currentPath === path || currentPath.startsWith("/courses/")
+        );
 
-        if (!isAuthPage) {
-          window.location.href = "/login";
+        // Only redirect if NOT on public page
+        if (!isPublicPage) {
+          window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
         }
       }
     }
