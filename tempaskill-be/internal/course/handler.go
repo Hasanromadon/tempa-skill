@@ -120,17 +120,25 @@ func (h *Handler) ListCourses(c *gin.Context) {
 		query.SortOrder = "desc"
 	}
 
-	// Get user ID if authenticated (optional for is_enrolled field)
+	// Get user ID and role if authenticated (optional for is_enrolled field)
 	var userID uint
+	var userRole string
 	if uid, exists := c.Get("userID"); exists {
 		userID = uid.(uint)
 	}
+	if role, exists := c.Get("userRole"); exists {
+		userRole = role.(string)
+	}
 
-	// Note: No auto-filter for instructors here
-	// Frontend should pass instructor_id parameter explicitly when needed
-	// This allows:
-	// - Public page (/courses): Show ALL courses
-	// - Instructor dashboard: Pass instructor_id to filter
+	// SECURITY: Validate instructor_id parameter
+	// Instructors can ONLY filter their own courses (prevent unauthorized access)
+	// Admin can filter any instructor's courses
+	if query.InstructorID != nil && *query.InstructorID > 0 {
+		if userRole == "instructor" && *query.InstructorID != userID {
+			c.JSON(http.StatusForbidden, gin.H{"error": "You can only view your own courses"})
+			return
+		}
+	}
 
 	result, err := h.service.ListCourses(c.Request.Context(), userID, &query)
 	if err != nil {
