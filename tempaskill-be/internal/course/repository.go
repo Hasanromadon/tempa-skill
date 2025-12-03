@@ -387,7 +387,9 @@ func (r *repository) FindLessonsByCourseID(ctx context.Context, courseID uint) (
 }
 
 func (r *repository) UpdateLesson(ctx context.Context, lesson *Lesson) error {
-	return r.db.WithContext(ctx).Model(lesson).Updates(lesson).Error
+	// Use Select("*") to update all fields including zero values (e.g., is_published = false)
+	// GORM's Updates() skips zero values by default, which breaks boolean false
+	return r.db.WithContext(ctx).Model(lesson).Select("*").Updates(lesson).Error
 }
 
 func (r *repository) DeleteLesson(ctx context.Context, id uint) error {
