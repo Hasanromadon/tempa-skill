@@ -18,7 +18,19 @@ var (
 	ErrCourseNotPublished  = errors.New("course is not published")
 	ErrInvalidSlug         = errors.New("invalid slug format")
 	ErrNoLessonsToPublish  = errors.New("course must have at least one lesson to be published")
+	ErrInvalidCategory     = errors.New("invalid category")
 )
+
+// Valid categories
+var ValidCategories = []string{
+	"Web Development",
+	"Mobile Development",
+	"Backend Development",
+	"Data Science",
+	"DevOps",
+	"Design",
+	"Database",
+}
 
 type Service interface {
 	// Course operations
@@ -65,9 +77,24 @@ func generateSlug(title string) string {
 	return slug
 }
 
+// Helper: Validate category
+func isValidCategory(category string) bool {
+	for _, valid := range ValidCategories {
+		if category == valid {
+			return true
+		}
+	}
+	return false
+}
+
 // Course operations
 
 func (s *service) CreateCourse(ctx context.Context, userID uint, req *CreateCourseRequest) (*Course, error) {
+	// Validate category
+	if !isValidCategory(req.Category) {
+		return nil, ErrInvalidCategory
+	}
+
 	slug := generateSlug(req.Title)
 	
 	course := &Course{
@@ -189,6 +216,10 @@ func (s *service) UpdateCourse(ctx context.Context, userID uint, userRole string
 		course.ThumbnailURL = *req.ThumbnailURL
 	}
 	if req.Category != nil {
+		// Validate category
+		if !isValidCategory(*req.Category) {
+			return nil, ErrInvalidCategory
+		}
 		course.Category = *req.Category
 	}
 	if req.Difficulty != nil {
