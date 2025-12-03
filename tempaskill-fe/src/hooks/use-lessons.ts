@@ -99,7 +99,9 @@ export const useUpdateLesson = () => {
         await queryClient.refetchQueries({
           queryKey: ["lessons", data.data.course_id],
         });
-        await queryClient.refetchQueries({ queryKey: ["lesson", data.data.id] });
+        await queryClient.refetchQueries({
+          queryKey: ["lesson", data.data.id],
+        });
       }
     },
   });

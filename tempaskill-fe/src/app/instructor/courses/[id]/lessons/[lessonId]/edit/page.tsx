@@ -36,8 +36,8 @@ export default function InstructorEditLessonPage({ params }: PageProps) {
         slug: data.slug,
         content: data.content,
         order_index: data.orderIndex,
-        duration: data.duration || 0,
-        is_published: data.isPublished || false,
+        duration: data.duration ?? 0,
+        is_published: data.isPublished ?? false,
       };
 
       await updateLesson.mutateAsync({ id: lessonIdNum, data: apiData });

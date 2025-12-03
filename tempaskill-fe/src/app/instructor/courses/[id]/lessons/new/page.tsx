@@ -35,8 +35,8 @@ export default function InstructorNewLessonPage({ params }: PageProps) {
         slug: data.slug,
         content: data.content,
         order_index: data.orderIndex,
-        duration: data.duration || 0,
-        is_published: data.isPublished || false,
+        duration: data.duration ?? 0,
+        is_published: data.isPublished ?? false,
       };
 
       // Wait for mutation to complete and cache to invalidate

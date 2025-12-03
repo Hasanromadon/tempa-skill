@@ -28,9 +28,10 @@ export function CourseActions({
 }: CourseActionsProps) {
   // For /instructor route: all courses are guaranteed to be owned by current user (JWT auto-filter)
   // For /admin route: need to check permissions (admin can see all courses)
-  const permissions = basePath === "/instructor"
-    ? { canEdit: true, canDelete: true, isOwner: true, isAdmin: false }
-    : useCoursePermissions(course.instructor_id);
+  const permissions =
+    basePath === "/instructor"
+      ? { canEdit: true, canDelete: true, isOwner: true, isAdmin: false }
+      : useCoursePermissions(course.instructor_id);
 
   const { canEdit, canDelete, isOwner, isAdmin } = permissions;
 

@@ -67,7 +67,7 @@ export default function NewLessonPage({ params }: PageProps) {
   }) => {
     try {
       setError(null);
-      
+
       // Wait for mutation to complete and cache to invalidate
       await createLesson.mutateAsync({
         courseId: courseId,
@@ -76,8 +76,8 @@ export default function NewLessonPage({ params }: PageProps) {
           slug: data.slug,
           content: data.content,
           order_index: data.orderIndex,
-          duration: data.duration || 30,
-          is_published: data.isPublished || false,
+          duration: data.duration ?? 30,
+          is_published: data.isPublished ?? false,
         },
       });
 
