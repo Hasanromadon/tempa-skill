@@ -251,21 +251,21 @@ Authorization: Bearer <token>
 
 ### Authentication Endpoints
 
-| Method | Endpoint          | Auth Required | Description          | Rate Limit     |
-| ------ | ----------------- | ------------- | -------------------- | -------------- |
-| POST   | `/auth/register`  | ❌            | Register new user    | 10 req/min     |
-| POST   | `/auth/login`     | ❌            | Login user           | 10 req/min     |
-| GET    | `/auth/me`        | ✅            | Get current user     | 100 req/min    |
+| Method | Endpoint         | Auth Required | Description       | Rate Limit  |
+| ------ | ---------------- | ------------- | ----------------- | ----------- |
+| POST   | `/auth/register` | ❌            | Register new user | 10 req/min  |
+| POST   | `/auth/login`    | ❌            | Login user        | 10 req/min  |
+| GET    | `/auth/me`       | ✅            | Get current user  | 100 req/min |
 
 ---
 
 ### User Endpoints
 
-| Method | Endpoint      | Auth Required | Description       | Rate Limit  |
-| ------ | ------------- | ------------- | ----------------- | ----------- |
-| GET    | `/users/:id`  | ❌            | Get user by ID    | 100 req/min |
-| PATCH  | `/users/me`   | ✅            | Update profile    | 100 req/min |
-| PUT    | `/users/me/password` | ✅     | Change password   | 100 req/min |
+| Method | Endpoint             | Auth Required | Description     | Rate Limit  |
+| ------ | -------------------- | ------------- | --------------- | ----------- |
+| GET    | `/users/:id`         | ❌            | Get user by ID  | 100 req/min |
+| PATCH  | `/users/me`          | ✅            | Update profile  | 100 req/min |
+| PUT    | `/users/me/password` | ✅            | Change password | 100 req/min |
 
 #### Get User by ID
 
@@ -324,16 +324,16 @@ Content-Type: application/json
 
 ### Course Endpoints
 
-| Method | Endpoint                    | Auth Required | Description              | Rate Limit  |
-| ------ | --------------------------- | ------------- | ------------------------ | ----------- |
-| POST   | `/courses`                  | ✅ (admin)    | Create course            | 100 req/min |
-| GET    | `/courses`                  | ❌            | List courses (paginated) | 100 req/min |
-| GET    | `/courses/:id`              | ❌            | Get course by ID         | 100 req/min |
-| GET    | `/courses/slug/:slug`       | ❌            | Get course by slug       | 100 req/min |
-| PUT    | `/courses/:id`              | ✅ (admin)    | Update course            | 100 req/min |
-| DELETE | `/courses/:id`              | ✅ (admin)    | Delete course (soft)     | 100 req/min |
-| POST   | `/courses/:id/enroll`       | ✅            | Enroll in course         | 100 req/min |
-| DELETE | `/courses/:id/enroll`       | ✅            | Unenroll from course     | 100 req/min |
+| Method | Endpoint              | Auth Required | Description              | Rate Limit  |
+| ------ | --------------------- | ------------- | ------------------------ | ----------- |
+| POST   | `/courses`            | ✅ (admin)    | Create course            | 100 req/min |
+| GET    | `/courses`            | ❌            | List courses (paginated) | 100 req/min |
+| GET    | `/courses/:id`        | ❌            | Get course by ID         | 100 req/min |
+| GET    | `/courses/slug/:slug` | ❌            | Get course by slug       | 100 req/min |
+| PUT    | `/courses/:id`        | ✅ (admin)    | Update course            | 100 req/min |
+| DELETE | `/courses/:id`        | ✅ (admin)    | Delete course (soft)     | 100 req/min |
+| POST   | `/courses/:id/enroll` | ✅            | Enroll in course         | 100 req/min |
+| DELETE | `/courses/:id/enroll` | ✅            | Unenroll from course     | 100 req/min |
 
 #### List Courses (Optimized)
 
@@ -384,7 +384,8 @@ Authorization: Bearer <token> (optional)
 }
 ```
 
-**Note**: 
+**Note**:
+
 - `is_enrolled` is `false` for guest users (not authenticated)
 - `is_enrolled` shows actual enrollment status for authenticated users
 - **Optimized**: Single query instead of N+1 queries (100x faster)
@@ -428,13 +429,13 @@ Authorization: Bearer <token>
 
 ### Lesson Endpoints
 
-| Method | Endpoint                      | Auth Required | Description          | Rate Limit  |
-| ------ | ----------------------------- | ------------- | -------------------- | ----------- |
-| POST   | `/courses/:id/lessons`        | ✅ (admin)    | Create lesson        | 100 req/min |
-| GET    | `/courses/:id/lessons`        | ❌            | List course lessons  | 100 req/min |
-| GET    | `/courses/:courseId/lessons/:id` | ❌         | Get lesson by ID     | 100 req/min |
-| PUT    | `/courses/:courseId/lessons/:id` | ✅ (admin) | Update lesson        | 100 req/min |
-| DELETE | `/courses/:courseId/lessons/:id` | ✅ (admin) | Delete lesson        | 100 req/min |
+| Method | Endpoint                         | Auth Required | Description         | Rate Limit  |
+| ------ | -------------------------------- | ------------- | ------------------- | ----------- |
+| POST   | `/courses/:id/lessons`           | ✅ (admin)    | Create lesson       | 100 req/min |
+| GET    | `/courses/:id/lessons`           | ❌            | List course lessons | 100 req/min |
+| GET    | `/courses/:courseId/lessons/:id` | ❌            | Get lesson by ID    | 100 req/min |
+| PUT    | `/courses/:courseId/lessons/:id` | ✅ (admin)    | Update lesson       | 100 req/min |
+| DELETE | `/courses/:courseId/lessons/:id` | ✅ (admin)    | Delete lesson       | 100 req/min |
 
 #### Create Lesson
 
@@ -494,11 +495,11 @@ GET /api/v1/courses/1/lessons
 
 ### Progress Tracking Endpoints
 
-| Method | Endpoint                                    | Auth Required | Description               | Rate Limit  |
-| ------ | ------------------------------------------- | ------------- | ------------------------- | ----------- |
-| POST   | `/progress/lessons/:lessonId/complete`      | ✅            | Mark lesson complete      | 100 req/min |
-| GET    | `/progress/courses/:courseId`               | ✅            | Get course progress       | 100 req/min |
-| GET    | `/progress/me`                              | ✅            | Get all user progress     | 100 req/min |
+| Method | Endpoint                               | Auth Required | Description           | Rate Limit  |
+| ------ | -------------------------------------- | ------------- | --------------------- | ----------- |
+| POST   | `/progress/lessons/:lessonId/complete` | ✅            | Mark lesson complete  | 100 req/min |
+| GET    | `/progress/courses/:courseId`          | ✅            | Get course progress   | 100 req/min |
+| GET    | `/progress/me`                         | ✅            | Get all user progress | 100 req/min |
 
 #### Mark Lesson Complete
 
@@ -591,12 +592,12 @@ Authorization: Bearer <token>
 
 ### Certificate Management Endpoints
 
-| Method | Endpoint                                    | Auth Required | Description               | Rate Limit  |
-| ------ | ------------------------------------------- | ------------- | ------------------------- | ----------- |
-| GET    | `/certificates/courses/:courseId/eligibility` | ✅         | Check certificate eligibility | 100 req/min |
-| POST   | `/certificates/courses/:courseId/issue`     | ✅            | Issue course certificate  | 10 req/min  |
-| GET    | `/certificates/me`                          | ✅            | List my certificates      | 100 req/min |
-| GET    | `/certificates/:certificateId/download`     | ✅            | Download PDF certificate  | 50 req/min  |
+| Method | Endpoint                                      | Auth Required | Description                   | Rate Limit  |
+| ------ | --------------------------------------------- | ------------- | ----------------------------- | ----------- |
+| GET    | `/certificates/courses/:courseId/eligibility` | ✅            | Check certificate eligibility | 100 req/min |
+| POST   | `/certificates/courses/:courseId/issue`       | ✅            | Issue course certificate      | 10 req/min  |
+| GET    | `/certificates/me`                            | ✅            | List my certificates          | 100 req/min |
+| GET    | `/certificates/:certificateId/download`       | ✅            | Download PDF certificate      | 50 req/min  |
 
 #### Check Certificate Eligibility
 
@@ -777,20 +778,20 @@ Authorization: Bearer <token>
 
 ### Instructor Earnings & Withdrawals
 
-| Method | Endpoint                                    | Auth Required | Description               | Rate Limit  |
-| ------ | ------------------------------------------- | ------------- | ------------------------- | ----------- |
-| GET    | `/instructor/earnings/balance`              | ✅ (Instructor)| Get earnings balance     | 100 req/min |
-| GET    | `/instructor/earnings`                      | ✅ (Instructor)| List all earnings        | 100 req/min |
-| POST   | `/instructor/withdrawals`                   | ✅ (Instructor)| Create withdrawal request| 10 req/min  |
-| GET    | `/instructor/withdrawals`                   | ✅ (Instructor)| List withdrawal requests | 100 req/min |
-| GET    | `/instructor/bank-accounts`                 | ✅ (Instructor)| List bank accounts       | 100 req/min |
-| POST   | `/instructor/bank-accounts`                 | ✅ (Instructor)| Add bank account         | 10 req/min  |
-| PUT    | `/instructor/bank-accounts/:id/primary`     | ✅ (Instructor)| Set primary bank account | 10 req/min  |
-| GET    | `/admin/withdrawals`                        | ✅ (Admin)     | List all withdrawals     | 100 req/min |
-| PUT    | `/admin/withdrawals/:id/approve`            | ✅ (Admin)     | Approve withdrawal       | 10 req/min  |
-| PUT    | `/admin/withdrawals/:id/reject`             | ✅ (Admin)     | Reject withdrawal        | 10 req/min  |
-| PUT    | `/admin/bank-accounts/:id/verify`           | ✅ (Admin)     | Verify bank account      | 10 req/min  |
-| PUT    | `/admin/bank-accounts/:id/reject`           | ✅ (Admin)     | Reject bank account      | 10 req/min  |
+| Method | Endpoint                                | Auth Required   | Description               | Rate Limit  |
+| ------ | --------------------------------------- | --------------- | ------------------------- | ----------- |
+| GET    | `/instructor/earnings/balance`          | ✅ (Instructor) | Get earnings balance      | 100 req/min |
+| GET    | `/instructor/earnings`                  | ✅ (Instructor) | List all earnings         | 100 req/min |
+| POST   | `/instructor/withdrawals`               | ✅ (Instructor) | Create withdrawal request | 10 req/min  |
+| GET    | `/instructor/withdrawals`               | ✅ (Instructor) | List withdrawal requests  | 100 req/min |
+| GET    | `/instructor/bank-accounts`             | ✅ (Instructor) | List bank accounts        | 100 req/min |
+| POST   | `/instructor/bank-accounts`             | ✅ (Instructor) | Add bank account          | 10 req/min  |
+| PUT    | `/instructor/bank-accounts/:id/primary` | ✅ (Instructor) | Set primary bank account  | 10 req/min  |
+| GET    | `/admin/withdrawals`                    | ✅ (Admin)      | List all withdrawals      | 100 req/min |
+| PUT    | `/admin/withdrawals/:id/approve`        | ✅ (Admin)      | Approve withdrawal        | 10 req/min  |
+| PUT    | `/admin/withdrawals/:id/reject`         | ✅ (Admin)      | Reject withdrawal         | 10 req/min  |
+| PUT    | `/admin/bank-accounts/:id/verify`       | ✅ (Admin)      | Verify bank account       | 10 req/min  |
+| PUT    | `/admin/bank-accounts/:id/reject`       | ✅ (Admin)      | Reject bank account       | 10 req/min  |
 
 #### Get Earnings Balance
 
@@ -1012,10 +1013,10 @@ Content-Type: application/json
 
 ### Activity Logs
 
-| Method | Endpoint                                    | Auth Required | Description               | Rate Limit  |
-| ------ | ------------------------------------------- | ------------- | ------------------------- | ----------- |
-| GET    | `/activity/me`                              | ✅            | Get my activity logs      | 100 req/min |
-| GET    | `/admin/activity/recent`                    | ✅ (Admin)    | Get recent platform activities | 100 req/min |
+| Method | Endpoint                 | Auth Required | Description                    | Rate Limit  |
+| ------ | ------------------------ | ------------- | ------------------------------ | ----------- |
+| GET    | `/activity/me`           | ✅            | Get my activity logs           | 100 req/min |
+| GET    | `/admin/activity/recent` | ✅ (Admin)    | Get recent platform activities | 100 req/min |
 
 #### Get My Activities
 
@@ -1115,13 +1116,13 @@ Authorization: Bearer <admin-token>
 
 ### Instructor Management
 
-| Method | Endpoint                                    | Auth Required | Description               | Rate Limit  |
-| ------ | ------------------------------------------- | ------------- | ------------------------- | ----------- |
-| GET    | `/instructors`                              | ❌            | List all instructors      | 100 req/min |
-| GET    | `/instructors/:id`                          | ❌            | Get instructor details    | 100 req/min |
-| GET    | `/instructors/:id/courses`                  | ❌            | Get instructor's courses  | 100 req/min |
-| GET    | `/instructors/:id/stats`                    | ❌            | Get instructor statistics | 100 req/min |
-| GET    | `/instructor/my-students`                   | ✅ (Instructor)| Get my students list     | 100 req/min |
+| Method | Endpoint                   | Auth Required   | Description               | Rate Limit  |
+| ------ | -------------------------- | --------------- | ------------------------- | ----------- |
+| GET    | `/instructors`             | ❌              | List all instructors      | 100 req/min |
+| GET    | `/instructors/:id`         | ❌              | Get instructor details    | 100 req/min |
+| GET    | `/instructors/:id/courses` | ❌              | Get instructor's courses  | 100 req/min |
+| GET    | `/instructors/:id/stats`   | ❌              | Get instructor statistics | 100 req/min |
+| GET    | `/instructor/my-students`  | ✅ (Instructor) | Get my students list      | 100 req/min |
 
 #### List All Instructors
 
@@ -1295,7 +1296,7 @@ interface User {
   id: number;
   name: string;
   email: string;
-  role: 'student' | 'instructor' | 'admin';
+  role: "student" | "instructor" | "admin";
   bio?: string;
   avatar_url?: string;
   created_at: string; // ISO 8601
@@ -1313,7 +1314,7 @@ interface Course {
   description: string;
   thumbnail_url: string;
   category: string;
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  difficulty: "beginner" | "intermediate" | "advanced";
   instructor_id: number;
   price: number; // in cents/rupiah
   is_published: boolean;
@@ -1407,7 +1408,7 @@ interface EarningsBalance {
   available_balance: number;
   held_balance: number;
   withdrawn_total: number;
-  currency: 'IDR';
+  currency: "IDR";
 }
 
 interface Earning {
@@ -1419,7 +1420,7 @@ interface Earning {
   amount: number;
   instructor_share: number;
   platform_fee: number;
-  status: 'held' | 'available' | 'withdrawn' | 'refunded';
+  status: "held" | "available" | "withdrawn" | "refunded";
   held_until: string | null;
   released_at: string | null;
   created_at: string;
@@ -1432,7 +1433,7 @@ interface WithdrawalRequest {
   admin_fee: number;
   total_amount: number;
   bank_account_id: number;
-  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
+  status: "pending" | "processing" | "completed" | "failed" | "cancelled";
   requested_at: string;
   processed_at: string | null;
   admin_notes?: string;
@@ -1447,7 +1448,7 @@ interface BankAccount {
   account_holder_name: string;
   is_verified: boolean;
   is_primary: boolean;
-  verification_status: 'pending' | 'verified' | 'rejected';
+  verification_status: "pending" | "verified" | "rejected";
   admin_notes?: string;
   created_at: string;
 }
@@ -1457,18 +1458,18 @@ interface BankAccount {
 
 ```typescript
 type ActivityType =
-  | 'user_registered'
-  | 'user_login'
-  | 'course_enrolled'
-  | 'lesson_completed'
-  | 'course_completed'
-  | 'certificate_issued'
-  | 'withdrawal_requested'
-  | 'withdrawal_completed'
-  | 'bank_account_added'
-  | 'course_created'
-  | 'course_updated'
-  | 'lesson_created';
+  | "user_registered"
+  | "user_login"
+  | "course_enrolled"
+  | "lesson_completed"
+  | "course_completed"
+  | "certificate_issued"
+  | "withdrawal_requested"
+  | "withdrawal_completed"
+  | "bank_account_added"
+  | "course_created"
+  | "course_updated"
+  | "lesson_created";
 
 interface ActivityLog {
   id: number;
@@ -1533,15 +1534,15 @@ interface StudentProgress {
 
 ### Common Error Codes
 
-| Code                  | HTTP Status | Description                        |
-| --------------------- | ----------- | ---------------------------------- |
-| `VALIDATION_ERROR`    | 400         | Invalid input data                 |
-| `UNAUTHORIZED`        | 401         | Missing or invalid auth token      |
-| `FORBIDDEN`           | 403         | Insufficient permissions           |
-| `NOT_FOUND`           | 404         | Resource not found                 |
-| `CONFLICT`            | 409         | Duplicate entry (e.g., email)      |
-| `RATE_LIMIT_EXCEEDED` | 429         | Too many requests                  |
-| `INTERNAL_ERROR`      | 500         | Server error                       |
+| Code                  | HTTP Status | Description                   |
+| --------------------- | ----------- | ----------------------------- |
+| `VALIDATION_ERROR`    | 400         | Invalid input data            |
+| `UNAUTHORIZED`        | 401         | Missing or invalid auth token |
+| `FORBIDDEN`           | 403         | Insufficient permissions      |
+| `NOT_FOUND`           | 404         | Resource not found            |
+| `CONFLICT`            | 409         | Duplicate entry (e.g., email) |
+| `RATE_LIMIT_EXCEEDED` | 429         | Too many requests             |
+| `INTERNAL_ERROR`      | 500         | Server error                  |
 
 ### Error Response Examples
 
@@ -1594,11 +1595,11 @@ interface StudentProgress {
 
 ### Limits by Endpoint Category
 
-| Category           | Limit          | Window  | Endpoints                     |
-| ------------------ | -------------- | ------- | ----------------------------- |
-| General API        | 100 req        | 1 min   | Most endpoints                |
-| Authentication     | 10 req         | 1 min   | `/auth/register`, `/auth/login` |
-| Public (No auth)   | No limit       | -       | Health check                  |
+| Category         | Limit    | Window | Endpoints                       |
+| ---------------- | -------- | ------ | ------------------------------- |
+| General API      | 100 req  | 1 min  | Most endpoints                  |
+| Authentication   | 10 req   | 1 min  | `/auth/register`, `/auth/login` |
+| Public (No auth) | No limit | -      | Health check                    |
 
 ### Rate Limit Headers
 
@@ -1615,9 +1616,9 @@ X-RateLimit-Reset: 1699000000
 ```typescript
 // Example: Detect rate limit and retry
 try {
-  const response = await fetch('/api/v1/courses');
+  const response = await fetch("/api/v1/courses");
   if (response.status === 429) {
-    const retryAfter = response.headers.get('Retry-After');
+    const retryAfter = response.headers.get("Retry-After");
     console.log(`Rate limited. Retry after ${retryAfter} seconds`);
   }
 } catch (error) {
@@ -1664,7 +1665,7 @@ export interface User {
   id: number;
   name: string;
   email: string;
-  role: 'student' | 'instructor' | 'admin';
+  role: "student" | "instructor" | "admin";
   bio?: string;
   avatar_url?: string;
   created_at: string;
@@ -1708,7 +1709,7 @@ export interface Course {
   description: string;
   thumbnail_url: string;
   category: string;
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  difficulty: "beginner" | "intermediate" | "advanced";
   instructor_id: number;
   price: number;
   is_published: boolean;
@@ -1724,7 +1725,7 @@ export interface CourseListQuery {
   limit?: number;
   search?: string;
   category?: string;
-  difficulty?: 'beginner' | 'intermediate' | 'advanced';
+  difficulty?: "beginner" | "intermediate" | "advanced";
   published?: boolean;
 }
 
@@ -1804,20 +1805,21 @@ export interface Enrollment {
 
 ```typescript
 // lib/api-client.ts
-import axios from 'axios';
+import axios from "axios";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
 // Add auth token to requests
 apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('auth_token');
+  const token = localStorage.getItem("auth_token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -1830,8 +1832,8 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       // Redirect to login
-      localStorage.removeItem('auth_token');
-      window.location.href = '/login';
+      localStorage.removeItem("auth_token");
+      window.location.href = "/login";
     }
     return Promise.reject(error);
   }
@@ -1842,28 +1844,28 @@ apiClient.interceptors.response.use(
 
 ```typescript
 // queries/auth.ts
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api-client';
-import type { 
-  ApiResponse, 
-  AuthResponse, 
-  LoginRequest, 
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api-client";
+import type {
+  ApiResponse,
+  AuthResponse,
+  LoginRequest,
   RegisterRequest,
-  User 
-} from '@/types/api';
+  User,
+} from "@/types/api";
 
 export const useRegister = () => {
   return useMutation({
     mutationFn: async (data: RegisterRequest) => {
       const response = await apiClient.post<ApiResponse<AuthResponse>>(
-        '/auth/register',
+        "/auth/register",
         data
       );
       return response.data;
     },
     onSuccess: (data) => {
       if (data.data?.token) {
-        localStorage.setItem('auth_token', data.data.token);
+        localStorage.setItem("auth_token", data.data.token);
       }
     },
   });
@@ -1873,14 +1875,14 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: async (data: LoginRequest) => {
       const response = await apiClient.post<ApiResponse<AuthResponse>>(
-        '/auth/login',
+        "/auth/login",
         data
       );
       return response.data;
     },
     onSuccess: (data) => {
       if (data.data?.token) {
-        localStorage.setItem('auth_token', data.data.token);
+        localStorage.setItem("auth_token", data.data.token);
       }
     },
   });
@@ -1888,9 +1890,9 @@ export const useLogin = () => {
 
 export const useCurrentUser = () => {
   return useQuery({
-    queryKey: ['currentUser'],
+    queryKey: ["currentUser"],
     queryFn: async () => {
-      const response = await apiClient.get<ApiResponse<User>>('/auth/me');
+      const response = await apiClient.get<ApiResponse<User>>("/auth/me");
       return response.data.data;
     },
     retry: false,
@@ -1903,21 +1905,21 @@ export const useCurrentUser = () => {
 
 ```typescript
 // queries/courses.ts
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api-client';
-import type { 
-  ApiResponse, 
-  Course, 
-  CourseListQuery, 
-  CourseListResponse 
-} from '@/types/api';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api-client";
+import type {
+  ApiResponse,
+  Course,
+  CourseListQuery,
+  CourseListResponse,
+} from "@/types/api";
 
 export const useCourses = (params?: CourseListQuery) => {
   return useQuery({
-    queryKey: ['courses', params],
+    queryKey: ["courses", params],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<CourseListResponse>>(
-        '/courses',
+        "/courses",
         { params }
       );
       return response.data.data;
@@ -1928,7 +1930,7 @@ export const useCourses = (params?: CourseListQuery) => {
 
 export const useCourse = (slug: string) => {
   return useQuery({
-    queryKey: ['course', slug],
+    queryKey: ["course", slug],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<Course>>(
         `/courses/slug/${slug}`
@@ -1941,7 +1943,7 @@ export const useCourse = (slug: string) => {
 
 export const useEnrollCourse = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (courseId: number) => {
       const response = await apiClient.post<ApiResponse<any>>(
@@ -1951,8 +1953,8 @@ export const useEnrollCourse = () => {
     },
     onSuccess: () => {
       // Invalidate courses to refresh enrollment status
-      queryClient.invalidateQueries({ queryKey: ['courses'] });
-      queryClient.invalidateQueries({ queryKey: ['progress'] });
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      queryClient.invalidateQueries({ queryKey: ["progress"] });
     },
   });
 };
@@ -1962,18 +1964,18 @@ export const useEnrollCourse = () => {
 
 ```typescript
 // queries/progress.ts
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api-client';
-import type { 
-  ApiResponse, 
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api-client";
+import type {
+  ApiResponse,
   CourseProgress,
   UserProgress,
-  MarkLessonCompleteRequest 
-} from '@/types/api';
+  MarkLessonCompleteRequest,
+} from "@/types/api";
 
 export const useCourseProgress = (courseId: number) => {
   return useQuery({
-    queryKey: ['courseProgress', courseId],
+    queryKey: ["courseProgress", courseId],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<CourseProgress>>(
         `/progress/courses/${courseId}`
@@ -1986,10 +1988,10 @@ export const useCourseProgress = (courseId: number) => {
 
 export const useUserProgress = () => {
   return useQuery({
-    queryKey: ['userProgress'],
+    queryKey: ["userProgress"],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<UserProgress[]>>(
-        '/progress/me'
+        "/progress/me"
       );
       return response.data.data;
     },
@@ -1998,13 +2000,13 @@ export const useUserProgress = () => {
 
 export const useMarkLessonComplete = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: async ({ 
-      lessonId, 
-      courseId 
-    }: { 
-      lessonId: number; 
+    mutationFn: async ({
+      lessonId,
+      courseId,
+    }: {
+      lessonId: number;
       courseId: number;
     }) => {
       const response = await apiClient.post<ApiResponse<any>>(
@@ -2015,10 +2017,10 @@ export const useMarkLessonComplete = () => {
     },
     onSuccess: (_, variables) => {
       // Invalidate progress queries
-      queryClient.invalidateQueries({ 
-        queryKey: ['courseProgress', variables.courseId] 
+      queryClient.invalidateQueries({
+        queryKey: ["courseProgress", variables.courseId],
       });
-      queryClient.invalidateQueries({ queryKey: ['userProgress'] });
+      queryClient.invalidateQueries({ queryKey: ["userProgress"] });
     },
   });
 };
@@ -2028,10 +2030,10 @@ export const useMarkLessonComplete = () => {
 
 ```typescript
 // app/courses/page.tsx
-'use client';
+"use client";
 
-import { useCourses } from '@/queries/courses';
-import { useState } from 'react';
+import { useCourses } from "@/queries/courses";
+import { useState } from "react";
 
 export default function CoursesPage() {
   const [page, setPage] = useState(1);
@@ -2048,7 +2050,7 @@ export default function CoursesPage() {
           <CourseCard key={course.id} course={course} />
         ))}
       </div>
-      <Pagination 
+      <Pagination
         currentPage={page}
         totalPages={Math.ceil(data?.total / 12)}
         onPageChange={setPage}
@@ -2060,15 +2062,15 @@ export default function CoursesPage() {
 
 ```typescript
 // app/courses/[slug]/page.tsx
-'use client';
+"use client";
 
-import { useCourse, useEnrollCourse } from '@/queries/courses';
-import { useParams } from 'next/navigation';
+import { useCourse, useEnrollCourse } from "@/queries/courses";
+import { useParams } from "next/navigation";
 
 export default function CourseDetailPage() {
   const params = useParams();
   const slug = params.slug as string;
-  
+
   const { data: course, isLoading } = useCourse(slug);
   const enrollMutation = useEnrollCourse();
 
@@ -2087,13 +2089,10 @@ export default function CourseDetailPage() {
       <p>{course.description}</p>
       <p>Lessons: {course.lesson_count}</p>
       <p>Difficulty: {course.difficulty}</p>
-      
+
       {!course.is_enrolled && (
-        <button 
-          onClick={handleEnroll}
-          disabled={enrollMutation.isPending}
-        >
-          {enrollMutation.isPending ? 'Enrolling...' : 'Enroll Now'}
+        <button onClick={handleEnroll} disabled={enrollMutation.isPending}>
+          {enrollMutation.isPending ? "Enrolling..." : "Enroll Now"}
         </button>
       )}
     </div>
@@ -2105,14 +2104,14 @@ export default function CourseDetailPage() {
 
 ```typescript
 // queries/certificates.ts
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api-client';
-import type { Certificate, CertificateEligibility } from '@/types/api';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api-client";
+import type { Certificate, CertificateEligibility } from "@/types/api";
 
 // Check certificate eligibility
 export const useCertificateEligibility = (courseId: number) => {
   return useQuery({
-    queryKey: ['certificateEligibility', courseId],
+    queryKey: ["certificateEligibility", courseId],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<CertificateEligibility>>(
         `/certificates/courses/${courseId}/eligibility`
@@ -2126,7 +2125,7 @@ export const useCertificateEligibility = (courseId: number) => {
 // Issue certificate
 export const useIssueCertificate = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (courseId: number) => {
       const response = await apiClient.post<ApiResponse<Certificate>>(
@@ -2135,8 +2134,8 @@ export const useIssueCertificate = () => {
       return response.data.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['certificates'] });
-      queryClient.invalidateQueries({ queryKey: ['certificateEligibility'] });
+      queryClient.invalidateQueries({ queryKey: ["certificates"] });
+      queryClient.invalidateQueries({ queryKey: ["certificateEligibility"] });
     },
   });
 };
@@ -2144,9 +2143,11 @@ export const useIssueCertificate = () => {
 // List my certificates
 export const useMyCertificates = () => {
   return useQuery({
-    queryKey: ['certificates'],
+    queryKey: ["certificates"],
     queryFn: async () => {
-      const response = await apiClient.get<ApiResponse<Certificate[]>>('/certificates/me');
+      const response = await apiClient.get<ApiResponse<Certificate[]>>(
+        "/certificates/me"
+      );
       return response.data.data;
     },
   });
@@ -2154,15 +2155,18 @@ export const useMyCertificates = () => {
 
 // Download certificate PDF
 export const downloadCertificate = async (certificateId: string) => {
-  const response = await apiClient.get(`/certificates/${certificateId}/download`, {
-    responseType: 'blob',
-  });
-  
+  const response = await apiClient.get(
+    `/certificates/${certificateId}/download`,
+    {
+      responseType: "blob",
+    }
+  );
+
   // Create download link
   const url = window.URL.createObjectURL(new Blob([response.data]));
-  const link = document.createElement('a');
+  const link = document.createElement("a");
   link.href = url;
-  link.setAttribute('download', `certificate-${certificateId}.pdf`);
+  link.setAttribute("download", `certificate-${certificateId}.pdf`);
   document.body.appendChild(link);
   link.click();
   link.remove();
@@ -2173,22 +2177,22 @@ export const downloadCertificate = async (certificateId: string) => {
 
 ```typescript
 // queries/earnings.ts
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api-client';
-import type { 
-  EarningsBalance, 
-  Earning, 
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api-client";
+import type {
+  EarningsBalance,
+  Earning,
   WithdrawalRequest,
-  BankAccount 
-} from '@/types/api';
+  BankAccount,
+} from "@/types/api";
 
 // Get earnings balance
 export const useEarningsBalance = () => {
   return useQuery({
-    queryKey: ['earningsBalance'],
+    queryKey: ["earningsBalance"],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<EarningsBalance>>(
-        '/instructor/earnings/balance'
+        "/instructor/earnings/balance"
       );
       return response.data.data;
     },
@@ -2197,14 +2201,17 @@ export const useEarningsBalance = () => {
 };
 
 // List earnings
-export const useEarnings = (params?: { status?: string; page?: number; limit?: number }) => {
+export const useEarnings = (params?: {
+  status?: string;
+  page?: number;
+  limit?: number;
+}) => {
   return useQuery({
-    queryKey: ['earnings', params],
+    queryKey: ["earnings", params],
     queryFn: async () => {
-      const response = await apiClient.get<ApiResponse<{ items: Earning[]; pagination: any }>>(
-        '/instructor/earnings',
-        { params }
-      );
+      const response = await apiClient.get<
+        ApiResponse<{ items: Earning[]; pagination: any }>
+      >("/instructor/earnings", { params });
       return response.data.data;
     },
   });
@@ -2213,18 +2220,18 @@ export const useEarnings = (params?: { status?: string; page?: number; limit?: n
 // Create withdrawal request
 export const useCreateWithdrawal = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (data: { amount: number; bank_account_id: number }) => {
       const response = await apiClient.post<ApiResponse<WithdrawalRequest>>(
-        '/instructor/withdrawals',
+        "/instructor/withdrawals",
         data
       );
       return response.data.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['earningsBalance'] });
-      queryClient.invalidateQueries({ queryKey: ['withdrawals'] });
+      queryClient.invalidateQueries({ queryKey: ["earningsBalance"] });
+      queryClient.invalidateQueries({ queryKey: ["withdrawals"] });
     },
   });
 };
@@ -2232,12 +2239,11 @@ export const useCreateWithdrawal = () => {
 // List withdrawals
 export const useWithdrawals = (params?: { status?: string; page?: number }) => {
   return useQuery({
-    queryKey: ['withdrawals', params],
+    queryKey: ["withdrawals", params],
     queryFn: async () => {
-      const response = await apiClient.get<ApiResponse<{ items: WithdrawalRequest[]; pagination: any }>>(
-        '/instructor/withdrawals',
-        { params }
-      );
+      const response = await apiClient.get<
+        ApiResponse<{ items: WithdrawalRequest[]; pagination: any }>
+      >("/instructor/withdrawals", { params });
       return response.data.data;
     },
   });
@@ -2246,21 +2252,21 @@ export const useWithdrawals = (params?: { status?: string; page?: number }) => {
 // Add bank account
 export const useAddBankAccount = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: async (data: { 
-      bank_name: string; 
-      account_number: string; 
-      account_holder_name: string 
+    mutationFn: async (data: {
+      bank_name: string;
+      account_number: string;
+      account_holder_name: string;
     }) => {
       const response = await apiClient.post<ApiResponse<BankAccount>>(
-        '/instructor/bank-accounts',
+        "/instructor/bank-accounts",
         data
       );
       return response.data.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bankAccounts'] });
+      queryClient.invalidateQueries({ queryKey: ["bankAccounts"] });
     },
   });
 };
@@ -2268,10 +2274,10 @@ export const useAddBankAccount = () => {
 // List bank accounts
 export const useBankAccounts = () => {
   return useQuery({
-    queryKey: ['bankAccounts'],
+    queryKey: ["bankAccounts"],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<BankAccount[]>>(
-        '/instructor/bank-accounts'
+        "/instructor/bank-accounts"
       );
       return response.data.data;
     },
@@ -2283,25 +2289,24 @@ export const useBankAccounts = () => {
 
 ```typescript
 // queries/activity.ts
-import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api-client';
-import type { ActivityLog } from '@/types/api';
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api-client";
+import type { ActivityLog } from "@/types/api";
 
 // Get my activities
-export const useMyActivities = (params?: { 
-  type?: string; 
-  start_date?: string; 
+export const useMyActivities = (params?: {
+  type?: string;
+  start_date?: string;
   end_date?: string;
   page?: number;
   limit?: number;
 }) => {
   return useQuery({
-    queryKey: ['myActivities', params],
+    queryKey: ["myActivities", params],
     queryFn: async () => {
-      const response = await apiClient.get<ApiResponse<{ items: ActivityLog[]; pagination: any }>>(
-        '/activity/me',
-        { params }
-      );
+      const response = await apiClient.get<
+        ApiResponse<{ items: ActivityLog[]; pagination: any }>
+      >("/activity/me", { params });
       return response.data.data;
     },
   });
@@ -2310,10 +2315,10 @@ export const useMyActivities = (params?: {
 // Get recent platform activities (Admin only)
 export const useRecentActivities = (limit: number = 50) => {
   return useQuery({
-    queryKey: ['recentActivities', limit],
+    queryKey: ["recentActivities", limit],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<ActivityLog[]>>(
-        '/admin/activity/recent',
+        "/admin/activity/recent",
         { params: { limit } }
       );
       return response.data.data;
@@ -2327,25 +2332,29 @@ export const useRecentActivities = (limit: number = 50) => {
 
 ```typescript
 // queries/instructors.ts
-import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api-client';
-import type { Instructor, InstructorStats, Course, StudentProgress } from '@/types/api';
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api-client";
+import type {
+  Instructor,
+  InstructorStats,
+  Course,
+  StudentProgress,
+} from "@/types/api";
 
 // List instructors
 export const useInstructors = (params?: {
   search?: string;
-  sort?: 'name' | 'students_count' | 'courses_count' | 'created_at';
-  order?: 'asc' | 'desc';
+  sort?: "name" | "students_count" | "courses_count" | "created_at";
+  order?: "asc" | "desc";
   page?: number;
   limit?: number;
 }) => {
   return useQuery({
-    queryKey: ['instructors', params],
+    queryKey: ["instructors", params],
     queryFn: async () => {
-      const response = await apiClient.get<ApiResponse<{ items: Instructor[]; pagination: any }>>(
-        '/instructors',
-        { params }
-      );
+      const response = await apiClient.get<
+        ApiResponse<{ items: Instructor[]; pagination: any }>
+      >("/instructors", { params });
       return response.data.data;
     },
   });
@@ -2354,7 +2363,7 @@ export const useInstructors = (params?: {
 // Get instructor details
 export const useInstructor = (instructorId: number) => {
   return useQuery({
-    queryKey: ['instructor', instructorId],
+    queryKey: ["instructor", instructorId],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<Instructor>>(
         `/instructors/${instructorId}`
@@ -2368,7 +2377,7 @@ export const useInstructor = (instructorId: number) => {
 // Get instructor's courses
 export const useInstructorCourses = (instructorId: number) => {
   return useQuery({
-    queryKey: ['instructorCourses', instructorId],
+    queryKey: ["instructorCourses", instructorId],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<Course[]>>(
         `/instructors/${instructorId}/courses`
@@ -2382,7 +2391,7 @@ export const useInstructorCourses = (instructorId: number) => {
 // Get instructor statistics
 export const useInstructorStats = (instructorId: number) => {
   return useQuery({
-    queryKey: ['instructorStats', instructorId],
+    queryKey: ["instructorStats", instructorId],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<InstructorStats>>(
         `/instructors/${instructorId}/stats`
@@ -2394,19 +2403,18 @@ export const useInstructorStats = (instructorId: number) => {
 };
 
 // Get my students (Instructor only)
-export const useMyStudents = (params?: { 
-  course_id?: number; 
+export const useMyStudents = (params?: {
+  course_id?: number;
   search?: string;
   page?: number;
   limit?: number;
 }) => {
   return useQuery({
-    queryKey: ['myStudents', params],
+    queryKey: ["myStudents", params],
     queryFn: async () => {
-      const response = await apiClient.get<ApiResponse<{ items: StudentProgress[]; pagination: any }>>(
-        '/instructor/my-students',
-        { params }
-      );
+      const response = await apiClient.get<
+        ApiResponse<{ items: StudentProgress[]; pagination: any }>
+      >("/instructor/my-students", { params });
       return response.data.data;
     },
   });
@@ -2417,7 +2425,11 @@ export const useMyStudents = (params?: {
 
 ```typescript
 // components/CertificateSection.tsx
-import { useIssueCertificate, useCertificateEligibility, downloadCertificate } from '@/queries/certificates';
+import {
+  useIssueCertificate,
+  useCertificateEligibility,
+  downloadCertificate,
+} from "@/queries/certificates";
 
 export function CertificateSection({ courseId }: { courseId: number }) {
   const { data: eligibility, isLoading } = useCertificateEligibility(courseId);
@@ -2430,7 +2442,8 @@ export function CertificateSection({ courseId }: { courseId: number }) {
       <div className="border rounded p-4">
         <p>Complete all lessons to earn your certificate</p>
         <p className="text-sm text-gray-500">
-          Progress: {eligibility?.completed_lessons}/{eligibility?.total_lessons}
+          Progress: {eligibility?.completed_lessons}/
+          {eligibility?.total_lessons}
         </p>
       </div>
     );
@@ -2458,7 +2471,7 @@ export function CertificateSection({ courseId }: { courseId: number }) {
         disabled={issueMutation.isPending}
         className="mt-2 bg-orange-600 text-white px-4 py-2 rounded"
       >
-        {issueMutation.isPending ? 'Issuing...' : 'Get Certificate'}
+        {issueMutation.isPending ? "Issuing..." : "Get Certificate"}
       </button>
     </div>
   );
@@ -2469,11 +2482,15 @@ export function CertificateSection({ courseId }: { courseId: number }) {
 
 ```typescript
 // app/instructor/earnings/page.tsx
-import { useEarningsBalance, useWithdrawals, useCreateWithdrawal } from '@/queries/earnings';
+import {
+  useEarningsBalance,
+  useWithdrawals,
+  useCreateWithdrawal,
+} from "@/queries/earnings";
 
 export default function EarningsDashboard() {
   const { data: balance } = useEarningsBalance();
-  const { data: withdrawals } = useWithdrawals({ status: 'pending' });
+  const { data: withdrawals } = useWithdrawals({ status: "pending" });
   const createWithdrawal = useCreateWithdrawal();
 
   const handleWithdraw = () => {
@@ -2488,26 +2505,26 @@ export default function EarningsDashboard() {
   return (
     <div>
       <h1>Earnings Dashboard</h1>
-      
+
       <div className="grid grid-cols-3 gap-4">
         <div className="border rounded p-4">
           <p className="text-sm text-gray-600">Available Balance</p>
           <p className="text-2xl font-bold">
-            Rp {balance?.available_balance.toLocaleString('id-ID')}
+            Rp {balance?.available_balance.toLocaleString("id-ID")}
           </p>
         </div>
-        
+
         <div className="border rounded p-4">
           <p className="text-sm text-gray-600">Held Balance</p>
           <p className="text-2xl font-bold">
-            Rp {balance?.held_balance.toLocaleString('id-ID')}
+            Rp {balance?.held_balance.toLocaleString("id-ID")}
           </p>
         </div>
-        
+
         <div className="border rounded p-4">
           <p className="text-sm text-gray-600">Total Withdrawn</p>
           <p className="text-2xl font-bold">
-            Rp {balance?.withdrawn_total.toLocaleString('id-ID')}
+            Rp {balance?.withdrawn_total.toLocaleString("id-ID")}
           </p>
         </div>
       </div>
@@ -2524,9 +2541,11 @@ export default function EarningsDashboard() {
         <h2>Pending Withdrawals</h2>
         {withdrawals?.items.map((w) => (
           <div key={w.id} className="border rounded p-4 mt-2">
-            <p>Amount: Rp {w.amount.toLocaleString('id-ID')}</p>
+            <p>Amount: Rp {w.amount.toLocaleString("id-ID")}</p>
             <p>Status: {w.status}</p>
-            <p>Requested: {new Date(w.requested_at).toLocaleDateString('id-ID')}</p>
+            <p>
+              Requested: {new Date(w.requested_at).toLocaleDateString("id-ID")}
+            </p>
           </div>
         ))}
       </div>
@@ -2544,15 +2563,15 @@ export default function EarningsDashboard() {
 ```typescript
 // lib/auth.ts
 export const getAuthToken = () => {
-  return localStorage.getItem('auth_token');
+  return localStorage.getItem("auth_token");
 };
 
 export const setAuthToken = (token: string) => {
-  localStorage.setItem('auth_token', token);
+  localStorage.setItem("auth_token", token);
 };
 
 export const clearAuthToken = () => {
-  localStorage.removeItem('auth_token');
+  localStorage.removeItem("auth_token");
 };
 
 export const isAuthenticated = () => {
@@ -2564,22 +2583,22 @@ export const isAuthenticated = () => {
 
 ```typescript
 // lib/error-handler.ts
-import type { ApiError } from '@/types/api';
+import type { ApiError } from "@/types/api";
 
 export const handleApiError = (error: any): string => {
   if (error.response?.data?.error) {
     const apiError = error.response.data.error as ApiError;
-    
+
     // Handle validation errors
     if (apiError.details) {
       const firstError = Object.values(apiError.details)[0];
       return firstError || apiError.message;
     }
-    
+
     return apiError.message;
   }
-  
-  return 'An unexpected error occurred';
+
+  return "An unexpected error occurred";
 };
 ```
 
@@ -2591,12 +2610,12 @@ export const handleApiError = (error: any): string => {
 
 const handleError = (error: any) => {
   const requestId = error.response?.data?.request_id;
-  console.error('Error occurred', {
+  console.error("Error occurred", {
     requestId,
     message: error.message,
     timestamp: new Date().toISOString(),
   });
-  
+
   // Send to error tracking service
   // Sentry.captureException(error, { tags: { request_id: requestId } });
 };
@@ -2608,7 +2627,7 @@ const handleError = (error: any) => {
 // queries/progress.ts
 export const useMarkLessonComplete = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async ({ lessonId, courseId }) => {
       const response = await apiClient.post(
@@ -2619,25 +2638,28 @@ export const useMarkLessonComplete = () => {
     },
     onMutate: async ({ lessonId, courseId }) => {
       // Optimistically update UI
-      await queryClient.cancelQueries({ 
-        queryKey: ['courseProgress', courseId] 
+      await queryClient.cancelQueries({
+        queryKey: ["courseProgress", courseId],
       });
-      
-      const previousProgress = queryClient.getQueryData(['courseProgress', courseId]);
-      
-      queryClient.setQueryData(['courseProgress', courseId], (old: any) => ({
+
+      const previousProgress = queryClient.getQueryData([
+        "courseProgress",
+        courseId,
+      ]);
+
+      queryClient.setQueryData(["courseProgress", courseId], (old: any) => ({
         ...old,
         completed_lessons: old.completed_lessons + 1,
         completed_lesson_ids: [...old.completed_lesson_ids, lessonId],
       }));
-      
+
       return { previousProgress };
     },
     onError: (err, variables, context) => {
       // Rollback on error
       if (context?.previousProgress) {
         queryClient.setQueryData(
-          ['courseProgress', variables.courseId],
+          ["courseProgress", variables.courseId],
           context.previousProgress
         );
       }

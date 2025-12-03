@@ -500,31 +500,31 @@ CREATE TABLE instructor_earnings (
     instructor_id BIGINT UNSIGNED NOT NULL,
     payment_transaction_id BIGINT UNSIGNED NOT NULL,
     course_id BIGINT UNSIGNED NOT NULL,
-    
+
     -- Revenue breakdown
     gross_amount DECIMAL(15,2) NOT NULL COMMENT 'Total payment from student',
     platform_fee DECIMAL(15,2) NOT NULL COMMENT '30% platform fee',
     instructor_share DECIMAL(15,2) NOT NULL COMMENT '70% instructor share',
-    
+
     -- Holding period management
     transaction_date TIMESTAMP NOT NULL COMMENT 'Original payment date',
     available_date TIMESTAMP NOT NULL COMMENT 'Date when earnings become available for withdrawal (transaction_date + holding_period)',
-    
+
     -- Status tracking
     status ENUM('held', 'available', 'withdrawn', 'refunded') DEFAULT 'held' COMMENT 'held: within holding period, available: can be withdrawn, withdrawn: already withdrawn, refunded: returned to student',
-    
+
     -- Withdrawal tracking
     withdrawn_at TIMESTAMP NULL,
     withdrawal_id BIGINT UNSIGNED NULL COMMENT 'Reference to withdrawal request if withdrawn',
-    
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
+
     -- Foreign keys
     FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (payment_transaction_id) REFERENCES payment_transactions(id) ON DELETE CASCADE,
     FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
-    
+
     -- Indexes for performance
     INDEX idx_instructor_status (instructor_id, status),
     INDEX idx_available_date (available_date),
@@ -558,31 +558,31 @@ Instructor withdrawal requests dengan admin approval workflow
 CREATE TABLE withdrawal_requests (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT UNSIGNED NOT NULL COMMENT 'Instructor who requested withdrawal',
-    
+
     -- Amount breakdown
     amount DECIMAL(15,2) NOT NULL COMMENT 'Total withdrawal amount requested',
     admin_fee DECIMAL(15,2) NOT NULL DEFAULT 0 COMMENT 'Admin fee for processing',
     net_amount DECIMAL(15,2) NOT NULL COMMENT 'Amount transferred to bank (amount - admin_fee)',
-    
+
     -- Status management
     status ENUM('pending', 'processing', 'completed', 'failed', 'cancelled') DEFAULT 'pending' COMMENT 'pending: waiting admin, processing: admin processing, completed: transferred, failed: transfer failed, cancelled: cancelled by instructor',
-    
+
     -- Bank account reference
     bank_account_id BIGINT UNSIGNED NOT NULL,
-    
+
     -- Admin processing
     notes TEXT NULL COMMENT 'Notes from admin or instructor',
     processed_at TIMESTAMP NULL COMMENT 'When admin processed the withdrawal',
     processed_by BIGINT UNSIGNED NULL COMMENT 'Admin who processed',
-    
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
+
     -- Foreign keys
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (processed_by) REFERENCES users(id) ON DELETE SET NULL,
     FOREIGN KEY (bank_account_id) REFERENCES instructor_bank_accounts(id) ON DELETE RESTRICT,
-    
+
     -- Indexes
     INDEX idx_user_status (user_id, status),
     INDEX idx_status (status),
@@ -619,20 +619,20 @@ CREATE TABLE instructor_bank_accounts (
     bank_name VARCHAR(100) NOT NULL,
     account_number VARCHAR(50) NOT NULL,
     account_holder_name VARCHAR(100) NOT NULL,
-    
+
     -- Verification
     verification_status ENUM('pending', 'verified', 'rejected') DEFAULT 'pending',
     verified_at TIMESTAMP NULL,
     verified_by BIGINT UNSIGNED NULL,
     verification_notes TEXT NULL,
-    
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
+
     -- Foreign keys
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (verified_by) REFERENCES users(id) ON DELETE SET NULL,
-    
+
     -- Indexes
     INDEX idx_user_id (user_id),
     INDEX idx_account_number (bank_name, account_number),
@@ -671,12 +671,12 @@ CREATE TABLE activity_logs (
     ip_address VARCHAR(45) NULL,
     user_agent TEXT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
+
     INDEX idx_user_id (user_id),
     INDEX idx_action (action),
     INDEX idx_entity (entity_type, entity_id),
     INDEX idx_created_at (created_at),
-    
+
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ```

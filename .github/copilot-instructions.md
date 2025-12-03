@@ -20,6 +20,7 @@
 ## 🎯 Core Principles
 
 ### 1. Language Standards
+
 ```
 ✅ ALWAYS:
 - Bahasa Indonesia for ALL user-facing text
@@ -33,6 +34,7 @@
 ```
 
 ### 2. Brand Identity
+
 ```
 ✅ PRIMARY COLOR: Orange #ea580c (orange-600)
 ✅ Use: bg-orange-600 hover:bg-orange-700
@@ -42,6 +44,7 @@
 ```
 
 ### 3. Code Organization
+
 ```
 Backend: Clean Architecture (model → repo → service → handler)
 Frontend: Feature-based (hooks → components → pages)
@@ -54,11 +57,13 @@ Frontend: Feature-based (hooks → components → pages)
 **ALWAYS develop Backend + Frontend simultaneously:**
 
 ### 1. Plan (5 min)
+
 - Understand requirements
-- Check if migration needed  
+- Check if migration needed
 - Review existing patterns in codebase
 
 ### 2. Backend (30-60 min)
+
 ```bash
 # Pattern: model.go → dto.go → repository.go → service.go → handler.go → routes.go
 # Reference: internal/course/, internal/certificate/
@@ -69,6 +74,7 @@ go test ./internal/[module]  # Test as you build
 ```
 
 ### 3. Frontend (30-60 min)
+
 ```bash
 # Pattern: types → hooks → components → pages
 # Reference: src/hooks/use-courses.ts, src/app/courses/
@@ -81,6 +87,7 @@ cd tempaskill-fe
 ```
 
 ### 4. Quality Check (10 min) ✅ CRITICAL
+
 ```bash
 # Backend
 cd tempaskill-be
@@ -94,6 +101,7 @@ npm run lint
 ```
 
 ### 5. Document & Commit (10 min)
+
 ```bash
 # Update: API_SPEC.md, DATABASE.md (if schema changed), TODO.md
 
@@ -116,6 +124,7 @@ git push
 ```
 
 **Critical Rules**:
+
 - ✅ Test continuously, fix errors immediately
 - ✅ Use Indonesian for ALL UI text
 - ✅ Follow orange brand colors (#ea580c)
@@ -127,6 +136,7 @@ git push
 ## 🔧 Backend Patterns (Go + Gin + GORM)
 
 ### Module Structure (ALWAYS Follow)
+
 ```
 internal/[module]/
 ├── model.go      # GORM models with tags, hooks
@@ -140,6 +150,7 @@ internal/[module]/
 **Complete Examples**: `internal/course/`, `internal/certificate/`, `internal/withdrawal/`
 
 ### API Response Format
+
 ```go
 // ✅ SUCCESS
 {
@@ -165,6 +176,7 @@ internal/[module]/
 ```
 
 ### Security Rules
+
 ```go
 ✅ ALWAYS:
 1. Bcrypt for passwords (cost 10+)
@@ -180,6 +192,7 @@ internal/[module]/
 ```
 
 ### Performance
+
 ```go
 // ✅ OPTIMIZE: Preload to avoid N+1
 db.Preload("Lessons").Find(&courses)
@@ -198,6 +211,7 @@ for _, course := range courses {
 ## ⚛️ Frontend Patterns (Next.js 16 + React Query)
 
 ### Project Structure
+
 ```
 src/
 ├── app/           # Next.js 16 App Router
@@ -213,6 +227,7 @@ src/
 ```
 
 ### Next.js 16 Async Params (BREAKING CHANGE!)
+
 ```tsx
 // ❌ OLD (Next.js 14)
 export default function Page({ params }: PageProps) {
@@ -233,6 +248,7 @@ export default function Page({ params }: PageProps) {
 ```
 
 ### React Query Pattern
+
 ```tsx
 // hooks/use-courses.ts
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -265,12 +281,13 @@ export const useEnrollCourse = () => {
 ### Component Patterns
 
 #### Loading States
+
 ```tsx
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CoursesPage() {
   const { data, isLoading } = useCourses();
-  
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-3 gap-4">
@@ -280,12 +297,13 @@ export default function CoursesPage() {
       </div>
     );
   }
-  
+
   return <CourseGrid courses={data} />;
 }
 ```
 
 #### Error Handling
+
 ```tsx
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -301,6 +319,7 @@ if (error) {
 ```
 
 #### Form Handling
+
 ```tsx
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -312,16 +331,29 @@ const schema = z.object({
 });
 
 export default function LoginForm() {
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm({
     resolver: zodResolver(schema),
   });
-  
+
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <input {...register("email")} className={errors.email ? "border-red-500" : ""} />
-      {errors.email && <span className="text-red-500 text-sm">{errors.email.message}</span>}
-      
-      <button type="submit" disabled={isSubmitting} className="bg-orange-600 hover:bg-orange-700">
+      <input
+        {...register("email")}
+        className={errors.email ? "border-red-500" : ""}
+      />
+      {errors.email && (
+        <span className="text-red-500 text-sm">{errors.email.message}</span>
+      )}
+
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="bg-orange-600 hover:bg-orange-700"
+      >
         {isSubmitting ? "Memproses..." : "Masuk"}
       </button>
     </form>
@@ -330,6 +362,7 @@ export default function LoginForm() {
 ```
 
 ### UI Standards
+
 ```tsx
 // ✅ USE SHADCN COMPONENTS
 import { Button } from "@/components/ui/button";
@@ -345,6 +378,7 @@ import { Badge } from "@/components/ui/badge";
 ```
 
 ### Indonesian Text
+
 ```tsx
 // ✅ CORRECT TERMS
 Masuk          // not "Login"
@@ -361,6 +395,7 @@ Keluar         // not "Logout"
 ## 🎯 Platform-Specific Rules
 
 ### 1. Certificate System
+
 ```tsx
 // Check eligibility first
 const { data: eligibility } = useCertificateEligibility(courseId);
@@ -374,6 +409,7 @@ downloadCertificate(certificateId); // Handles blob response
 ```
 
 ### 2. Instructor Earnings
+
 ```tsx
 // Get balance
 const { data: balance } = useEarningsBalance();
@@ -385,17 +421,19 @@ createWithdrawal.mutate({ amount: 1000000, bank_account_id: 5 });
 ```
 
 ### 3. Payment Integration (Midtrans)
+
 ```tsx
 // Backend creates transaction → returns snap_token
 // Frontend opens Midtrans Snap popup
 snap.pay(snapToken, {
-  onSuccess: () => router.push('/payment/success'),
-  onPending: () => router.push('/payment/pending'),
-  onError: () => router.push('/payment/failed'),
+  onSuccess: () => router.push("/payment/success"),
+  onPending: () => router.push("/payment/pending"),
+  onError: () => router.push("/payment/failed"),
 });
 ```
 
 ### 4. Activity Logging
+
 ```tsx
 // Automatic logging on backend for:
 // - user_registered, user_login
@@ -405,7 +443,7 @@ snap.pay(snapToken, {
 // - course_created, lesson_created
 
 // Frontend: Display user activities
-const { data: activities } = useMyActivities({ type: 'course_enrolled' });
+const { data: activities } = useMyActivities({ type: "course_enrolled" });
 ```
 
 ---
@@ -413,6 +451,7 @@ const { data: activities } = useMyActivities({ type: 'course_enrolled' });
 ## 🗄️ Database Guidelines
 
 ### Migration Files
+
 ```sql
 -- migrations/XXX_feature_name.sql
 -- ✅ GOOD: Descriptive names, proper types
@@ -431,6 +470,7 @@ CREATE TABLE certificates (
 ```
 
 ### Schema Rules
+
 ```
 ✅ ALWAYS:
 1. UNSIGNED INT for IDs
@@ -452,25 +492,29 @@ CREATE TABLE certificates (
 ## 🧪 Testing Standards
 
 ### E2E Testing (Playwright)
+
 ```typescript
 // e2e/feature.spec.ts
 import { test, expect } from "@playwright/test";
 import { login, generateTestUser } from "./helpers/test-helpers";
 
-test("user dapat menyelesaikan kursus dan mendapat sertifikat", async ({ page }) => {
+test("user dapat menyelesaikan kursus dan mendapat sertifikat", async ({
+  page,
+}) => {
   const user = generateTestUser();
   await login(page, user.email, user.password);
-  
+
   await page.goto("/courses/pemrograman-web-modern-react-nextjs");
   await expect(page.locator("text=Mulai Belajar")).toBeVisible();
-  
+
   // Complete all lessons...
-  
+
   await expect(page.locator("text=Ambil Sertifikat")).toBeVisible();
 });
 ```
 
 ### Best Practices
+
 ```typescript
 ✅ DO:
 - Use test helpers (login, logout, generateTestUser)
@@ -489,6 +533,7 @@ test("user dapat menyelesaikan kursus dan mendapat sertifikat", async ({ page })
 ## 🔐 Security Checklist
 
 ### Backend
+
 ```go
 ✅ ALWAYS:
 1. Bcrypt password hashing (cost 10+)
@@ -504,6 +549,7 @@ test("user dapat menyelesaikan kursus dan mendapat sertifikat", async ({ page })
 ```
 
 ### Frontend
+
 ```typescript
 ✅ ALWAYS:
 1. Store JWT in localStorage (with expiry check)
@@ -520,6 +566,7 @@ test("user dapat menyelesaikan kursus dan mendapat sertifikat", async ({ page })
 ## 🌍 Environment Setup
 
 ### Backend (.env)
+
 ```bash
 # Database
 DATABASE_URL=mysql://user:pass@localhost:3306/tempaskill
@@ -541,6 +588,7 @@ PORT=8080
 ```
 
 ### Frontend (.env.local)
+
 ```bash
 NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1
 NEXT_PUBLIC_APP_URL=http://localhost:3000
@@ -552,23 +600,28 @@ NEXT_PUBLIC_MIDTRANS_CLIENT_KEY=your-midtrans-client-key
 ## 📚 Documentation Map
 
 **Complete API Reference**:
+
 - `API_SPEC.md` - All 100+ endpoints with examples
 - `API_QUICK_REFERENCE.md` - Quick lookup table
 - `FRONTEND_API_GUIDE.md` - TypeScript types + React Query hooks
 
 **Database**:
+
 - `DATABASE.md` - 15 tables schema + ERD diagram
 
 **Development**:
+
 - `DEVELOPMENT.md` - Setup, build, deploy guides
 - `README.md` - Project overview
 - `TODO.md` - Feature tracking
 - `ROADMAP.md` - Development timeline
 
 **Testing**:
+
 - `e2e/README.md` - E2E testing guide
 
 **Frontend Architecture**:
+
 - `docs/FRONTEND_ARCHITECTURE.md` - Component patterns
 - `docs/MDX_GUIDE.md` - MDX editor usage
 
@@ -577,11 +630,13 @@ NEXT_PUBLIC_MIDTRANS_CLIENT_KEY=your-midtrans-client-key
 ## ✅ Development Checklists
 
 ### Before Starting Feature
+
 - [ ] Read API_SPEC.md for similar patterns
 - [ ] Check existing modules in `internal/` and `src/hooks/`
 - [ ] Plan database migration if needed
 
 ### Before Committing
+
 - [ ] Backend: `go test ./...` passes
 - [ ] Backend: `go build cmd/api/main.go` succeeds
 - [ ] Frontend: `npm run build` passes (ZERO TypeScript errors!)
@@ -590,6 +645,7 @@ NEXT_PUBLIC_MIDTRANS_CLIENT_KEY=your-midtrans-client-key
 - [ ] Orange brand colors used (#ea580c)
 
 ### Before Pushing
+
 - [ ] Update API_SPEC.md with new endpoints
 - [ ] Update DATABASE.md if schema changed
 - [ ] Update TODO.md to mark tasks complete
@@ -597,6 +653,7 @@ NEXT_PUBLIC_MIDTRANS_CLIENT_KEY=your-midtrans-client-key
 - [ ] Verify git status clean after push
 
 ### Production Deployment
+
 - [ ] Run all migrations (`make migrate-up`)
 - [ ] Set production env vars
 - [ ] Build frontend (`npm run build`)
@@ -609,6 +666,7 @@ NEXT_PUBLIC_MIDTRANS_CLIENT_KEY=your-midtrans-client-key
 ## 🚀 Quick Commands
 
 ### Backend
+
 ```bash
 cd tempaskill-be
 make migrate-up          # Run migrations
@@ -618,6 +676,7 @@ go build cmd/api/main.go # Build binary
 ```
 
 ### Frontend
+
 ```bash
 cd tempaskill-fe
 npm run dev              # Dev server (port 3000)
@@ -627,6 +686,7 @@ npx shadcn@latest add button # Add Shadcn component
 ```
 
 ### Testing
+
 ```bash
 cd tempa-skill
 npm run test:e2e         # Run E2E tests (headless)
@@ -634,6 +694,7 @@ npm run test:e2e:ui      # Run with UI (debug mode)
 ```
 
 ### Git
+
 ```bash
 git status
 git add .
@@ -647,6 +708,7 @@ git log --oneline -5
 ## 🎯 Common Patterns Reference
 
 ### Pagination (Backend)
+
 ```go
 type PaginationParams struct {
     Page  int `form:"page" binding:"min=1"`
@@ -658,6 +720,7 @@ courses, total, err := h.service.List(offset, params.Limit)
 ```
 
 ### Pagination (Frontend)
+
 ```tsx
 const [page, setPage] = useState(1);
 const { data } = useCourses({ page, limit: 10 });
@@ -666,10 +729,11 @@ const { data } = useCourses({ page, limit: 10 });
   currentPage={data.pagination.page}
   totalPages={data.pagination.total_pages}
   onPageChange={setPage}
-/>
+/>;
 ```
 
 ### Search & Filter (Backend)
+
 ```go
 query := db.Model(&Course{})
 if search != "" {
@@ -681,6 +745,7 @@ if category != "" {
 ```
 
 ### Indonesian Currency Formatting
+
 ```typescript
 export function formatCurrency(amount: number): string {
   if (amount === 0) return "Gratis";
@@ -693,6 +758,7 @@ export function formatCurrency(amount: number): string {
 ```
 
 ### Date Formatting
+
 ```typescript
 export function formatDate(date: string | Date): string {
   return new Intl.DateTimeFormat("id-ID", {

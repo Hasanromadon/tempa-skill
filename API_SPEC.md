@@ -2125,9 +2125,11 @@ Response (200 OK):
 ```
 
 **Query Parameters:**
+
 - `course_id` (required): Course ID to check
 
 **Eligibility Criteria:**
+
 - User must be enrolled in course
 - Course progress must be 100%
 - All lessons completed
@@ -2159,6 +2161,7 @@ Response (201 Created):
 ```
 
 **Validation:**
+
 - Course must be completed (100% progress)
 - Certificate can only be issued once per user per course
 - Returns existing certificate if already issued
@@ -2208,6 +2211,7 @@ Content-Disposition: attachment; filename="certificate-CERT-2025-ABC123.pdf"
 ```
 
 **Features:**
+
 - Generated dynamically with gofpdf
 - Contains: User name, Course title, Certificate ID, Issue date
 - Professional certificate design
@@ -2237,6 +2241,7 @@ Response (200 OK):
 ```
 
 **Balance Types:**
+
 - `total_earnings`: Total revenue share dari semua sales (70% dari gross amount)
 - `available_balance`: Amount yang bisa di-withdraw (sudah melewati hold period)
 - `held_balance`: Amount yang masih dalam hold period (14 hari)
@@ -2244,6 +2249,7 @@ Response (200 OK):
 - `pending_amount`: Withdrawal yang sedang diproses
 
 **Business Logic:**
+
 - Platform fee: 30%, Instructor share: 70%
 - Hold period: 14 days setelah payment
 - Minimum withdrawal: Rp 50,000
@@ -2281,12 +2287,14 @@ Response (201 Created):
 ```
 
 **Validation:**
+
 - `amount`: Min 50,000, Max 10,000,000
 - Must have sufficient available balance
 - Bank account must be verified
 - Admin fee: Rp 5,000 (fixed)
 
 **Status Flow:**
+
 1. `pending` - Waiting admin approval
 2. `completed` - Approved and processed
 3. `failed` - Rejected or failed
@@ -2323,6 +2331,7 @@ Response (200 OK):
 ```
 
 **Query Parameters:**
+
 - `status` (optional): pending, completed, failed
 - `page` (optional): Default 1
 - `limit` (optional): Default 10, Max 100
@@ -2409,6 +2418,7 @@ Response (201 Created):
 ```
 
 **Verification Status:**
+
 - `pending`: Waiting admin verification
 - `verified`: Approved by admin
 - `rejected`: Rejected by admin
@@ -2480,6 +2490,7 @@ Response (200 OK):
 ```
 
 **Valid Status:**
+
 - `completed`: Withdrawal approved and money transferred
 - `failed`: Withdrawal rejected
 
@@ -2536,6 +2547,7 @@ Response (200 OK):
 ```
 
 **Valid Status:**
+
 - `verified`: Account approved
 - `rejected`: Account rejected
 
@@ -2589,6 +2601,7 @@ Response (200 OK):
 ```
 
 **Activity Types:**
+
 - `user_registration`
 - `user_login`
 - `course_enrollment`
@@ -2636,12 +2649,14 @@ Response (200 OK):
 ```
 
 **Query Parameters:**
+
 - `action` (optional): Filter by activity type
 - `user_id` (optional): Filter by specific user
 - `entity_type` (optional): Filter by entity type (course, lesson, payment)
 - `page`, `limit`: Pagination
 
 **Use Case:**
+
 - Audit trail untuk admin
 - Monitor platform activity
 - Detect suspicious behavior
@@ -2683,6 +2698,7 @@ Response (200 OK):
 ```
 
 **Query Parameters:**
+
 - `search`: Search by name or email
 - `specialty`: Filter by specialty/category
 - `order_by`: students, courses, rating, earnings (default: students DESC)
@@ -2807,6 +2823,7 @@ Response (200 OK):
 ```
 
 **Use Case:**
+
 - Instructor dashboard untuk melihat semua students
 - Track student progress
 - Identify active vs inactive students
