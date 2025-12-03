@@ -25,7 +25,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { Edit, FileText, GripVertical, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface Lesson {
   id: number;
@@ -160,6 +160,11 @@ export function DraggableLessonList({
   const [lessons, setLessons] = useState(initialLessons);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Sync local state with props when data refetches
+  useEffect(() => {
+    setLessons(initialLessons);
+  }, [initialLessons]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),

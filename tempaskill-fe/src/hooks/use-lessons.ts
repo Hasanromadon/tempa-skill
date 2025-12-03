@@ -87,14 +87,17 @@ export const useUpdateLesson = () => {
         is_published: boolean;
       }>;
     }) => {
+      console.log(`📤 PATCH /lessons/${id}`, data);
       const response = await apiClient.patch<ApiResponse<Lesson>>(
         API_ENDPOINTS.LESSONS.UPDATE(id),
         data
       );
+      console.log(`📥 Response:`, response.data.data);
       return response.data;
     },
     onSuccess: async (data) => {
       if (data.data) {
+        console.log(`🔄 Refetching lessons for course ${data.data.course_id}`);
         // Use refetchQueries for immediate update
         await queryClient.refetchQueries({
           queryKey: ["lessons", data.data.course_id],
@@ -102,6 +105,7 @@ export const useUpdateLesson = () => {
         await queryClient.refetchQueries({
           queryKey: ["lesson", data.data.id],
         });
+        console.log(`✅ Cache refreshed`);
       }
     },
   });

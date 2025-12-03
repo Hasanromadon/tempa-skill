@@ -40,7 +40,11 @@ export default function InstructorEditLessonPage({ params }: PageProps) {
         is_published: data.isPublished ?? false,
       };
 
+      console.log("🔄 Updating lesson with data:", apiData);
+      
       await updateLesson.mutateAsync({ id: lessonIdNum, data: apiData });
+
+      console.log("✅ Lesson updated successfully");
 
       toast.success("Pelajaran berhasil diperbarui!", {
         description: `"${data.title}" telah diperbarui.`,
