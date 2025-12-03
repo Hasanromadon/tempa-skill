@@ -206,6 +206,29 @@ for _, course := range courses {
 }
 ```
 
+### ⚠️ GORM Zero Value Trap (CRITICAL!)
+
+```go
+// ❌ WRONG: Updates() skips zero values (false, 0, "")
+db.Model(&lesson).Updates(lesson)
+// is_published = false → SKIPPED! Not saved to DB
+
+// ✅ CORRECT: Use Select("*") to force update all fields
+db.Model(&lesson).Select("*").Updates(lesson)
+// is_published = false → SAVED! ✓
+
+// Zero values affected: bool false, int 0, string ""
+// Always use Select("*") for partial updates with potential zero values
+// See: GORM_BEST_PRACTICES.md
+```
+db.Select("id", "title", "slug").Find(&courses)
+
+// ❌ AVOID: N+1 queries
+for _, course := range courses {
+    db.Where("course_id = ?", course.ID).Find(&lessons) // BAD!
+}
+```
+
 ---
 
 ## ⚛️ Frontend Patterns (Next.js 16 + React Query)
@@ -261,10 +284,24 @@ export const useCourses = (params?: CourseParams) => {
       const res = await apiClient.get("/courses", { params });
       return res.data.data;
     },
+    staleTime: 0, // Always refetch on invalidation for fresh data
   });
 };
 
 export const useEnrollCourse = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (courseId: number) => {
+      await apiClient.post(`/courses/${courseId}/enroll`);
+    },
+    onSuccess: async () => {
+      // Use refetchQueries (not invalidateQueries) for immediate update
+      await queryClient.refetchQueries({ queryKey: ["courses"] });
+      await queryClient.refetchQueries({ queryKey: ["my-courses"] });
+    },
+  });
+};
+```
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (courseId: number) => {

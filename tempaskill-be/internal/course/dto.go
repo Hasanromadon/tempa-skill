@@ -31,12 +31,20 @@ type CreateLessonRequest struct {
 }
 
 // UpdateLessonRequest represents lesson update payload
+// 
+// IMPORTANT: All fields use pointers to distinguish between:
+//   - nil (field not provided, don't update)
+//   - zero value (e.g., false, 0 - intentionally set, should update)
+// 
+// Example:
+//   {"is_published": false} → IsPublished = &false → Update to false
+//   {}                      → IsPublished = nil    → Keep current value
 type UpdateLessonRequest struct {
 	Title       *string `json:"title" binding:"omitempty,min=3,max=200"`
 	Content     *string `json:"content" binding:"omitempty,min=10"`
 	OrderIndex  *int    `json:"order_index" binding:"omitempty,min=0"`
 	Duration    *int    `json:"duration" binding:"omitempty,min=0"`
-	IsPublished *bool   `json:"is_published"`
+	IsPublished *bool   `json:"is_published"` // Pointer allows nil vs false distinction
 }
 
 // CourseListQuery represents query parameters for listing courses

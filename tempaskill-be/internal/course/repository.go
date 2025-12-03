@@ -386,9 +386,17 @@ func (r *repository) FindLessonsByCourseID(ctx context.Context, courseID uint) (
 	return lessons, nil
 }
 
+// UpdateLesson updates a lesson in the database
+// IMPORTANT: Uses Select("*") to force update ALL fields including zero values.
+// 
+// GORM's Updates() behavior:
+//   - Skips zero values by default (false, 0, "", nil)
+//   - is_published = true  → Updated ✓
+//   - is_published = false → SKIPPED ✗ (without Select)
+// 
+// Without Select("*"), boolean false will NOT be persisted to database!
+// This applies to all partial updates where zero values are intentional.
 func (r *repository) UpdateLesson(ctx context.Context, lesson *Lesson) error {
-	// Use Select("*") to update all fields including zero values (e.g., is_published = false)
-	// GORM's Updates() skips zero values by default, which breaks boolean false
 	return r.db.WithContext(ctx).Model(lesson).Select("*").Updates(lesson).Error
 }
 

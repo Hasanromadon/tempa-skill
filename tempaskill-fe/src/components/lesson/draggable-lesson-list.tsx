@@ -23,10 +23,10 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { useQueryClient } from "@tanstack/react-query";
 import { Edit, FileText, GripVertical, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 
 interface Lesson {
   id: number;
@@ -131,13 +131,11 @@ function SortableItem({
               disabled={isToggling}
               className="text-xs"
             >
-              {isToggling ? (
-                "..."
-              ) : lesson.is_published ? (
-                "Sembunyikan"
-              ) : (
-                "Terbitkan"
-              )}
+              {isToggling
+                ? "..."
+                : lesson.is_published
+                ? "Sembunyikan"
+                : "Terbitkan"}
             </Button>
             <Button variant="outline" size="sm" asChild>
               <Link
@@ -213,7 +211,7 @@ export function DraggableLessonList({
     } catch (err) {
       console.error("Failed to toggle lesson publish status:", err);
       setError("Gagal mengubah status publikasi pelajaran");
-      
+
       // Revert optimistic update on error
       await queryClient.refetchQueries({
         queryKey: ["lessons", courseId],
