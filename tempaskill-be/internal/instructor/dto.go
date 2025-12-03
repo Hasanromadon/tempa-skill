@@ -32,3 +32,45 @@ type StudentListQuery struct {
 	Search    string `form:"search"`    // Search by name or email
 	CourseID  uint   `form:"course_id"` // Filter by specific course
 }
+
+// CourseListQuery represents query parameters for listing instructor's courses
+type CourseListQuery struct {
+	Page       int     `form:"page" binding:"min=0"`
+	Limit      int     `form:"limit" binding:"min=0,max=100"`
+	Search     string  `form:"search"`     // Search by title or description
+	Category   string  `form:"category"`   // Filter by category
+	Difficulty string  `form:"difficulty"` // Filter by difficulty level
+	Published  *bool   `form:"published"`  // Filter by published status
+	SortBy     string  `form:"sort_by"`    // Sort field (created_at, title, etc)
+	SortOrder  string  `form:"sort_order"` // Sort order (asc/desc)
+}
+
+// InstructorCourseResponse represents a course in instructor's list
+type InstructorCourseResponse struct {
+	ID               uint    `json:"id"`
+	Title            string  `json:"title"`
+	Slug             string  `json:"slug"`
+	Description      string  `json:"description"`
+	Category         string  `json:"category"`
+	Difficulty       string  `json:"difficulty"`
+	Price            float64 `json:"price"`
+	ThumbnailURL     string  `json:"thumbnail_url,omitempty"`
+	Published        bool    `json:"published"`
+	TotalLessons     int     `json:"total_lessons"`
+	TotalStudents    int     `json:"total_students"`
+	TotalEnrollments int     `json:"total_enrollments"`
+	TotalRevenue     float64 `json:"total_revenue"`
+	AverageRating    float64 `json:"average_rating"`
+	TotalReviews     int     `json:"total_reviews"`
+	CreatedAt        string  `json:"created_at"`
+	UpdatedAt        string  `json:"updated_at"`
+}
+
+// InstructorCourseListResult represents paginated course list for instructor
+type InstructorCourseListResult struct {
+	Courses    []InstructorCourseResponse `json:"courses"`
+	Total      int64                      `json:"total"`
+	Page       int                        `json:"page"`
+	Limit      int                        `json:"limit"`
+	TotalPages int                        `json:"total_pages"`
+}

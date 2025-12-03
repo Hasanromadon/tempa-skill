@@ -79,23 +79,19 @@ apiClient.interceptors.response.use(
       // Only redirect to login if accessing protected routes
       if (typeof window !== "undefined") {
         const currentPath = window.location.pathname;
-        
+
         // Don't redirect on public pages
-        const publicPaths = [
-          "/login",
-          "/register",
-          "/",
-          "/courses",
-          "/about",
-        ];
-        
+        const publicPaths = ["/login", "/register", "/", "/courses", "/about"];
+
         const isPublicPage = publicPaths.some(
           (path) => currentPath === path || currentPath.startsWith("/courses/")
         );
 
         // Only redirect if NOT on public page
         if (!isPublicPage) {
-          window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
+          window.location.href = `/login?redirect=${encodeURIComponent(
+            currentPath
+          )}`;
         }
       }
     }

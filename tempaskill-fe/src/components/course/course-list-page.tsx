@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/card";
 import {
   useDeleteCourse,
-  useIsAuthenticated,
   useServerTable,
   useTogglePublishCourse,
 } from "@/hooks";
@@ -61,23 +60,19 @@ export function CourseListPage({
     title: string;
   } | null>(null);
 
-  // Get current user for instructor filter
-  const { user } = useIsAuthenticated();
-
-  // Determine initial filters based on role
-  // Instructor: Filter by instructor_id to show only their courses
-  // Admin: Show all courses (no filter)
-  const initialFilters =
-    basePath === "/instructor" && user?.id
-      ? { instructor_id: user.id }
-      : {};
+  // Use different endpoint for instructor (auto-filters by JWT)
+  // Admin uses general endpoint to see all courses
+  const endpoint =
+    basePath === "/instructor"
+      ? API_ENDPOINTS.INSTRUCTOR.MY_COURSES
+      : API_ENDPOINTS.COURSES.LIST;
 
   // Server-side table with filters
   const table = useServerTable<Course>({
     queryKey: ["courses", basePath],
-    endpoint: API_ENDPOINTS.COURSES.LIST,
+    endpoint,
     initialLimit: 10,
-    initialFilters,
+    initialFilters: {},
   });
 
   const togglePublish = useTogglePublishCourse();

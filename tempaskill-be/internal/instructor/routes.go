@@ -19,5 +19,6 @@ func RegisterRoutes(rg *gin.RouterGroup, handler *Handler, authMiddleware *middl
 	})
 	{
 		instructor.GET("/students", handler.GetMyStudents) // GET /instructor/students
+		instructor.GET("/courses", handler.GetMyCourses)   // GET /instructor/courses
 	}
 }

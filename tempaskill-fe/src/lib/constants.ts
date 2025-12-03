@@ -94,6 +94,7 @@ export const API_ENDPOINTS = {
   },
   INSTRUCTOR: {
     STUDENTS: "/instructor/students",
+    MY_COURSES: "/instructor/courses",
   },
   UPLOAD: {
     IMAGE: "/upload/image",

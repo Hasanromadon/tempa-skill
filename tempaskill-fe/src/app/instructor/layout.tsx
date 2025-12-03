@@ -40,10 +40,20 @@ export default function InstructorLayout({
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading } = useIsAuthenticated();
   const { data: user, isLoading: userLoading } = useCurrentUser();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const isLoading = authLoading || userLoading;
   const isInstructor = user?.role === "instructor";
+
+  // Set mounted state to avoid hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+    // Open sidebar by default on desktop
+    if (window.innerWidth >= 1024) {
+      setSidebarOpen(true);
+    }
+  }, []);
 
   // Instructor navigation items
   const navItems = [
@@ -100,7 +110,7 @@ export default function InstructorLayout({
     router.push(ROUTES.HOME);
   };
 
-  if (isLoading) {
+  if (isLoading || !mounted) {
     return <LoadingScreen message="Memuat panel instruktur..." />;
   }
 

@@ -11,6 +11,8 @@ import (
 type Repository interface {
 	// GetMyStudents returns all students enrolled in instructor's courses
 	GetMyStudents(ctx context.Context, instructorID uint, query *StudentListQuery) ([]InstructorStudentResponse, int64, error)
+	// GetMyCourses returns all courses created by the instructor
+	GetMyCourses(ctx context.Context, instructorID uint, query *CourseListQuery) ([]InstructorCourseResponse, int64, error)
 }
 
 type repository struct {
@@ -136,4 +138,101 @@ func (r *repository) GetMyStudents(ctx context.Context, instructorID uint, query
 	}
 
 	return students, total, nil
+}
+
+func (r *repository) GetMyCourses(ctx context.Context, instructorID uint, query *CourseListQuery) ([]InstructorCourseResponse, int64, error) {
+	var courses []InstructorCourseResponse
+	var total int64
+
+	// Build query with aggregates
+	baseQuery := r.db.WithContext(ctx).
+		Table("courses").
+		Select(`
+			courses.id,
+			courses.title,
+			courses.slug,
+			courses.description,
+			courses.category,
+			courses.difficulty,
+			courses.price,
+			courses.thumbnail_url,
+			courses.is_published as published,
+			courses.created_at,
+			courses.updated_at,
+			COUNT(DISTINCT lessons.id) as total_lessons,
+			COUNT(DISTINCT enrollments.user_id) as total_students,
+			COUNT(DISTINCT enrollments.id) as total_enrollments,
+			COALESCE(SUM(CASE WHEN payment_transactions.transaction_status = 'success' OR payment_transactions.transaction_status = 'settlement' THEN payment_transactions.gross_amount ELSE 0 END), 0) as total_revenue,
+			COALESCE(AVG(course_reviews.rating), 0) as average_rating,
+			COUNT(DISTINCT course_reviews.id) as total_reviews
+		`).
+		Joins("LEFT JOIN lessons ON lessons.course_id = courses.id AND lessons.deleted_at IS NULL").
+		Joins("LEFT JOIN enrollments ON enrollments.course_id = courses.id AND enrollments.deleted_at IS NULL").
+		Joins("LEFT JOIN payment_transactions ON payment_transactions.course_id = courses.id").
+		Joins("LEFT JOIN course_reviews ON course_reviews.course_id = courses.id").
+		Where("courses.instructor_id = ?", instructorID).
+		Where("courses.deleted_at IS NULL").
+		Group("courses.id, courses.title, courses.slug, courses.description, courses.category, courses.difficulty, courses.price, courses.thumbnail_url, courses.is_published, courses.created_at, courses.updated_at")
+
+	// Apply filters
+	if query.Search != "" {
+		searchPattern := "%" + query.Search + "%"
+		baseQuery = baseQuery.Where("courses.title LIKE ? OR courses.description LIKE ?", searchPattern, searchPattern)
+	}
+
+	if query.Category != "" {
+		baseQuery = baseQuery.Where("courses.category = ?", query.Category)
+	}
+
+	if query.Difficulty != "" {
+		baseQuery = baseQuery.Where("courses.difficulty = ?", query.Difficulty)
+	}
+
+	if query.Published != nil {
+		baseQuery = baseQuery.Where("courses.is_published = ?", *query.Published)
+	}
+
+	// Count total (without aggregates)
+	countQuery := r.db.WithContext(ctx).
+		Table("courses").
+		Where("courses.instructor_id = ?", instructorID).
+		Where("courses.deleted_at IS NULL")
+
+	if query.Search != "" {
+		searchPattern := "%" + query.Search + "%"
+		countQuery = countQuery.Where("courses.title LIKE ? OR courses.description LIKE ?", searchPattern, searchPattern)
+	}
+
+	if query.Category != "" {
+		countQuery = countQuery.Where("courses.category = ?", query.Category)
+	}
+
+	if query.Difficulty != "" {
+		countQuery = countQuery.Where("courses.difficulty = ?", query.Difficulty)
+	}
+
+	if query.Published != nil {
+		countQuery = countQuery.Where("courses.is_published = ?", *query.Published)
+	}
+
+	if err := countQuery.Count(&total).Error; err != nil {
+		logger.Error("Failed to count instructor's courses", zap.Error(err), zap.Uint("instructor_id", instructorID))
+		return nil, 0, err
+	}
+
+	// Apply sorting
+	orderClause := query.SortBy + " " + query.SortOrder
+	baseQuery = baseQuery.Order(orderClause)
+
+	// Apply pagination
+	offset := (query.Page - 1) * query.Limit
+	if err := baseQuery.
+		Offset(offset).
+		Limit(query.Limit).
+		Scan(&courses).Error; err != nil {
+		logger.Error("Failed to list instructor's courses", zap.Error(err), zap.Uint("instructor_id", instructorID))
+		return nil, 0, err
+	}
+
+	return courses, total, nil
 }
