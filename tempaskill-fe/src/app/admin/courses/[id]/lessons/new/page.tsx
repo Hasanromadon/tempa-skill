@@ -85,10 +85,7 @@ export default function NewLessonPage({ params }: PageProps) {
         description: `"${data.title}" telah ditambahkan ke kursus.`,
       });
 
-      // Small delay to ensure cache invalidation completes
-      setTimeout(() => {
-        router.push(ROUTES.ADMIN.COURSE_LESSONS(courseId));
-      }, 100);
+      router.push(ROUTES.ADMIN.COURSE_LESSONS(courseId));
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Gagal membuat pelajaran";

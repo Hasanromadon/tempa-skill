@@ -14,7 +14,7 @@ export const useCourseLessons = (courseId: number) => {
       return response.data.data || [];
     },
     enabled: !!courseId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 0, // Always refetch on invalidation
   });
 };
 
@@ -29,7 +29,7 @@ export const useLesson = (lessonId: number) => {
       return response.data.data;
     },
     enabled: !!lessonId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 0, // Always refetch on invalidation
   });
 };
 
@@ -58,8 +58,9 @@ export const useCreateLesson = () => {
       );
       return response.data;
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
+    onSuccess: async (_, variables) => {
+      // Use refetchQueries instead of invalidateQueries for immediate update
+      await queryClient.refetchQueries({
         queryKey: ["lessons", variables.courseId],
       });
       queryClient.invalidateQueries({ queryKey: ["courses"] });
@@ -92,12 +93,13 @@ export const useUpdateLesson = () => {
       );
       return response.data;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       if (data.data) {
-        queryClient.invalidateQueries({
+        // Use refetchQueries for immediate update
+        await queryClient.refetchQueries({
           queryKey: ["lessons", data.data.course_id],
         });
-        queryClient.invalidateQueries({ queryKey: ["lesson", data.data.id] });
+        await queryClient.refetchQueries({ queryKey: ["lesson", data.data.id] });
       }
     },
   });

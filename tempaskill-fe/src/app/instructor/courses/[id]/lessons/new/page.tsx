@@ -46,10 +46,7 @@ export default function InstructorNewLessonPage({ params }: PageProps) {
         description: `"${data.title}" telah ditambahkan.`,
       });
 
-      // Small delay to ensure cache invalidation completes
-      setTimeout(() => {
-        router.push(`/instructor/courses/${courseId}/lessons`);
-      }, 100);
+      router.push(`/instructor/courses/${courseId}/lessons`);
     } catch (err) {
       const errorMessage =
         err instanceof Error
