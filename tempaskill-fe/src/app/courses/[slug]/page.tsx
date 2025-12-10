@@ -1,5 +1,6 @@
 "use client";
 
+import { formatCurrency } from "@/app/utils/format-currency";
 import { LoadingScreen } from "@/components/common";
 import { LessonList } from "@/components/lesson";
 import { PaymentModal } from "@/components/payment/payment-modal";
@@ -37,7 +38,6 @@ import {
   useIssueCertificate,
 } from "@/hooks/use-certificate";
 import { DIFFICULTY_LABELS, ROUTES } from "@/lib/constants";
-import { formatCurrency } from "@/lib/utils";
 import {
   ArrowLeft,
   Award,

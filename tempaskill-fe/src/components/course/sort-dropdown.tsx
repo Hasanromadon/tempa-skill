@@ -1,12 +1,12 @@
 "use client";
 
+import { cn } from "@/app/utils/cn-classes";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
 import {
   ArrowDownAZ,
   ArrowUpAZ,

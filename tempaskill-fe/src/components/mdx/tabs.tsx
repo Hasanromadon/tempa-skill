@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/app/utils/cn-classes";
 import { ReactNode, useState } from "react";
 
 interface TabItem {

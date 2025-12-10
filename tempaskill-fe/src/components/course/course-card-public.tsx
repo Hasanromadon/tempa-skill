@@ -1,4 +1,4 @@
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency } from "@/app/utils/format-currency";
 import { Course } from "@/types/api";
 import { ArrowRight, BookOpen } from "lucide-react";
 import Image from "next/image";

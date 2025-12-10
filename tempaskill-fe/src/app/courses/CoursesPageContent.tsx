@@ -1,5 +1,6 @@
 "use client";
 
+import { formatCurrency } from "@/app/utils/format-currency";
 import { EmptyState, LoadingScreen, PageHeader } from "@/components/common";
 import {
   FilterSidebar,
@@ -19,7 +20,6 @@ import {
 } from "@/components/ui/card";
 import { useCourses, useIsAuthenticated } from "@/hooks";
 import { DIFFICULTY_COLORS, DIFFICULTY_LABELS, ROUTES } from "@/lib/constants";
-import { formatCurrency } from "@/lib/utils";
 import { BookOpen, Filter, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";

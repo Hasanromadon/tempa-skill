@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@/app/utils/cn-classes";
 
 interface ProgressRingProps {
   progress: number; // 0-100

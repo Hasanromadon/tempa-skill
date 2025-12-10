@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/app/utils/cn-classes";
 import { LoadingScreen } from "@/components/common";
 import { CourseCard } from "@/components/course";
 import {
@@ -23,7 +24,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useIsAuthenticated, useUserProgress } from "@/hooks";
 import { removeAuthToken } from "@/lib/auth-token";
 import { MESSAGES, ROUTES } from "@/lib/constants";
-import { cn } from "@/lib/utils";
 import {
   ArrowRight,
   BookOpen,

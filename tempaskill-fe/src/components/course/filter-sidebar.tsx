@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/app/utils/cn-classes";
 import {
   Accordion,
   AccordionContent,
@@ -19,7 +20,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
 import { Filter, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 

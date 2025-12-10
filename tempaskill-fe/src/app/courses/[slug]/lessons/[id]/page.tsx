@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/app/utils/cn-classes";
 import { MDXContent } from "@/components/mdx";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,7 +21,6 @@ import {
   useLesson,
   useMarkLessonComplete,
 } from "@/hooks";
-import { cn } from "@/lib/utils";
 import {
   AlertCircle,
   ArrowLeft,

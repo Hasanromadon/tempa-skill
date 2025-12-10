@@ -562,7 +562,7 @@ export function formatDate(date: string | Date): string {
 
 // Format currency (IDR)
 export function formatCurrency(amount: number): string {
-  if (amount === 0) return "Gratis";
+  if (amount === 0) return "0";
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",

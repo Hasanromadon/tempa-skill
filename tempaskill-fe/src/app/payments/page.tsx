@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useIsAuthenticated, usePaymentHistory } from "@/hooks";
 import { ROUTES } from "@/lib/constants";
-import { formatCurrency } from "@/lib/utils";
 import {
   AlertCircle,
   ArrowRight,
@@ -24,6 +23,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "sonner";
+import { formatCurrency } from "../utils/format-currency";
 
 // Helper function to calculate payment expiry
 function getPaymentTimeInfo(createdAt: string) {
@@ -145,7 +145,7 @@ export default function PaymentsPage() {
                 </CardContent>
               </Card>
 
-              <Card className="border border-slate-200 shadow-sm bg-gradient-to-br from-orange-50 to-white">
+              <Card className="border border-slate-200 shadow-sm bg-linear-to-br from-orange-50 to-white">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium text-orange-700">
                     Total Pengeluaran

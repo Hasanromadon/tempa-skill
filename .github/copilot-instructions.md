@@ -221,12 +221,14 @@ db.Model(&lesson).Select("*").Updates(lesson)
 // Always use Select("*") for partial updates with potential zero values
 // See: GORM_BEST_PRACTICES.md
 ```
+
 db.Select("id", "title", "slug").Find(&courses)
 
 // ❌ AVOID: N+1 queries
-for _, course := range courses {
-    db.Where("course_id = ?", course.ID).Find(&lessons) // BAD!
+for \_, course := range courses {
+db.Where("course_id = ?", course.ID).Find(&lessons) // BAD!
 }
+
 ```
 
 ---
@@ -236,18 +238,20 @@ for _, course := range courses {
 ### Project Structure
 
 ```
+
 src/
-├── app/           # Next.js 16 App Router
-│   ├── (auth)/   # Route groups
-│   ├── courses/  # Dynamic routes
-│   └── layout.tsx
+├── app/ # Next.js 16 App Router
+│ ├── (auth)/ # Route groups
+│ ├── courses/ # Dynamic routes
+│ └── layout.tsx
 ├── components/
-│   ├── ui/       # Shadcn components
-│   └── [domain]/ # Domain components
-├── hooks/        # React Query hooks
-├── lib/          # Utils, API client
-└── types/        # TypeScript types
-```
+│ ├── ui/ # Shadcn components
+│ └── [domain]/ # Domain components
+├── hooks/ # React Query hooks
+├── lib/ # Utils, API client
+└── types/ # TypeScript types
+
+````
 
 ### Next.js 16 Async Params (BREAKING CHANGE!)
 
@@ -268,7 +272,7 @@ export default function Page({ params }: PageProps) {
   const { slug } = use(params); // Unwrap Promise
   const { data: course } = useCourse(slug);
 }
-```
+````
 
 ### React Query Pattern
 
@@ -302,18 +306,20 @@ export const useEnrollCourse = () => {
   });
 };
 ```
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (courseId: number) => {
-      await apiClient.post(`/courses/${courseId}/enroll`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["courses"] });
-      queryClient.invalidateQueries({ queryKey: ["my-courses"] });
-    },
-  });
+
+const queryClient = useQueryClient();
+return useMutation({
+mutationFn: async (courseId: number) => {
+await apiClient.post(`/courses/${courseId}/enroll`);
+},
+onSuccess: () => {
+queryClient.invalidateQueries({ queryKey: ["courses"] });
+queryClient.invalidateQueries({ queryKey: ["my-courses"] });
+},
+});
 };
-```
+
+````
 
 ### Component Patterns
 
@@ -337,7 +343,7 @@ export default function CoursesPage() {
 
   return <CourseGrid courses={data} />;
 }
-```
+````
 
 #### Error Handling
 

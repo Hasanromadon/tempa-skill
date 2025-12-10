@@ -1,5 +1,6 @@
 "use client";
 
+import { formatCurrency } from "@/app/utils/format-currency";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { useCreatePayment, usePaymentStatus } from "@/hooks/use-payment";
-import { formatCurrency } from "@/lib/utils";
+
 import {
   Building2,
   CheckCircle,

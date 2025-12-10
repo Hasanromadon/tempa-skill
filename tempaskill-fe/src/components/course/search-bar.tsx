@@ -1,8 +1,8 @@
 "use client";
 
+import { cn } from "@/app/utils/cn-classes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 import { Search, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 

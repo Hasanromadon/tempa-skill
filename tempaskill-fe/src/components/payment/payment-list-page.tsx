@@ -1,15 +1,11 @@
 "use client";
 
+import { formatCurrency } from "@/app/utils/format-currency";
+import { formatDate } from "@/app/utils/format-date";
 import { ColumnDef, DataTable } from "@/components/common";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -25,48 +21,76 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrentUser, useServerTable } from "@/hooks";
 import { usePaymentStats } from "@/hooks/use-payments";
 import { API_ENDPOINTS } from "@/lib/constants";
-import { formatCurrency, formatDate } from "@/lib/utils";
+
 import type { PaymentWithDetails } from "@/types/api";
-import { CreditCard, DollarSign, FileText, Mail, Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  CreditCard,
+  Eye,
+  FileText,
+  Filter,
+  LucideProps,
+  Mail,
+  Search,
+  Wallet,
+  XCircle,
+} from "lucide-react";
+import {
+  ForwardRefExoticComponent,
+  RefAttributes,
+  useMemo,
+  useState,
+} from "react";
 
 interface PaymentListPageProps {
-  /**
-   * Base path for navigation (e.g., "/admin" or "/instructor")
-   */
   basePath: string;
-  /**
-   * Page title
-   */
   title?: string;
-  /**
-   * Page description
-   */
   description?: string;
 }
 
-/**
- * Reusable Payment List Component
- * Supports both Admin and Instructor roles with conditional features:
- *
- * ADMIN MODE:
- * - View all transactions (all statuses)
- * - 3 stats cards (Total Revenue, Pending Amount, Total Transactions)
- * - Status filter dropdown
- * - View Details dialog
- * - Shows instructor name in course column
- *
- * INSTRUCTOR MODE:
- * - View only settlement transactions (auto-filtered by backend)
- * - 2 stats cards (My Revenue, Total Transactions)
- * - No status filter (settlement only)
- * - Email Student action instead of View Details
- * - No instructor name column (redundant)
- */
+// Helper untuk status config
+const STATUS_CONFIG: Record<
+  string,
+  {
+    label: string;
+    className: string;
+    icon: ForwardRefExoticComponent<Omit<LucideProps, "ref">> &
+      RefAttributes<SVGSVGElement>;
+  }
+> = {
+  settlement: {
+    label: "Berhasil",
+    className: "bg-green-50 text-green-700 border-green-200",
+    icon: CheckCircle2,
+  },
+  pending: {
+    label: "Menunggu",
+    className: "bg-yellow-50 text-yellow-700 border-yellow-200",
+    icon: Clock,
+  },
+  expired: {
+    label: "Kadaluarsa",
+    className: "bg-orange-50 text-orange-700 border-orange-200",
+    icon: AlertCircle,
+  },
+  failed: {
+    label: "Gagal",
+    className: "bg-red-50 text-red-700 border-red-200",
+    icon: XCircle,
+  },
+  // Default fallback
+  default: {
+    label: "Unknown",
+    className: "bg-slate-50 text-slate-700 border-slate-200",
+    icon: AlertCircle,
+  },
+};
+
 export function PaymentListPage({
   basePath,
   title = "Pembayaran",
@@ -86,13 +110,6 @@ export function PaymentListPage({
     initialFilters: {},
   });
 
-  console.log("🔍 Payment Table State:", {
-    data: table.data,
-    isLoading: table.isLoading,
-    isError: table.isError,
-    total: table.total,
-  });
-
   // Payment statistics
   const { data: statsData, isLoading: statsLoading } = usePaymentStats();
   const stats = statsData?.data;
@@ -104,7 +121,9 @@ export function PaymentListPage({
         accessorKey: "order_id",
         header: "Order ID",
         cell: ({ row }) => (
-          <div className="font-mono text-sm">{row.original.order_id}</div>
+          <div className="font-mono text-xs text-slate-500 bg-slate-50 px-2 py-1 rounded w-fit">
+            {row.original.order_id}
+          </div>
         ),
       },
       {
@@ -112,8 +131,10 @@ export function PaymentListPage({
         header: "Siswa",
         cell: ({ row }) => (
           <div>
-            <div className="font-medium">{row.original.user_name}</div>
-            <div className="text-xs text-gray-500">
+            <div className="font-medium text-slate-900">
+              {row.original.user_name}
+            </div>
+            <div className="text-xs text-slate-500">
               {row.original.user_email}
             </div>
           </div>
@@ -123,14 +144,16 @@ export function PaymentListPage({
         accessorKey: "course_title",
         header: "Kursus",
         cell: ({ row }) => (
-          <div className="max-w-xs">
-            <div className="font-medium truncate">
+          <div className="max-w-[200px]">
+            <div
+              className="font-medium text-slate-900 truncate"
+              title={row.original.course_title}
+            >
               {row.original.course_title}
             </div>
-            {/* Only show instructor name for admin */}
             {isAdmin && (
-              <div className="text-xs text-gray-500">
-                oleh {row.original.instructor_name}
+              <div className="text-xs text-slate-500 truncate">
+                Oleh: {row.original.instructor_name}
               </div>
             )}
           </div>
@@ -140,7 +163,7 @@ export function PaymentListPage({
         accessorKey: "gross_amount",
         header: "Jumlah",
         cell: ({ row }) => (
-          <div className="font-semibold">
+          <div className="font-semibold text-slate-900">
             {formatCurrency(row.original.gross_amount)}
           </div>
         ),
@@ -153,35 +176,15 @@ export function PaymentListPage({
               header: "Status",
               cell: ({ row }: { row: { original: PaymentWithDetails } }) => {
                 const status = row.original.transaction_status;
-                const statusConfig: Record<
-                  string,
-                  { label: string; className: string }
-                > = {
-                  settlement: {
-                    label: "Berhasil",
-                    className: "bg-green-100 text-green-800",
-                  },
-                  pending: {
-                    label: "Pending",
-                    className: "bg-yellow-100 text-yellow-800",
-                  },
-                  expired: {
-                    label: "Kadaluarsa",
-                    className: "bg-gray-100 text-gray-800",
-                  },
-                  failed: {
-                    label: "Gagal",
-                    className: "bg-red-100 text-red-800",
-                  },
-                };
-
-                const config = statusConfig[status] || {
-                  label: status,
-                  className: "bg-gray-100 text-gray-800",
-                };
+                const config = STATUS_CONFIG[status] || STATUS_CONFIG.default;
+                const Icon = config.icon;
 
                 return (
-                  <Badge className={config.className} variant="secondary">
+                  <Badge
+                    variant="outline"
+                    className={`${config.className} gap-1 shadow-none font-medium`}
+                  >
+                    <Icon className="w-3 h-3" />
                     {config.label}
                   </Badge>
                 );
@@ -190,19 +193,10 @@ export function PaymentListPage({
           ]
         : []),
       {
-        accessorKey: "payment_type",
-        header: "Metode",
-        cell: ({ row }) => (
-          <div className="text-sm capitalize">
-            {row.original.payment_type.replace("_", " ")}
-          </div>
-        ),
-      },
-      {
         accessorKey: "transaction_time",
         header: "Tanggal",
         cell: ({ row }) => (
-          <div className="text-sm">
+          <div className="text-sm text-slate-600">
             {formatDate(row.original.transaction_time)}
           </div>
         ),
@@ -212,26 +206,31 @@ export function PaymentListPage({
         header: "Aksi",
         cell: ({ row }) =>
           isAdmin ? (
-            // Admin: View Details
             <Button
               variant="ghost"
               size="sm"
+              className="h-8 w-8 p-0 text-slate-500 hover:text-blue-600 hover:bg-blue-50"
               onClick={() => {
                 setSelectedPayment(row.original);
                 setViewDetailsOpen(true);
               }}
             >
-              Detail
+              <Eye className="h-4 w-4" />
+              <span className="sr-only">Detail</span>
             </Button>
           ) : (
-            // Instructor: Email Student
-            <Button variant="ghost" size="sm" asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2 text-slate-500 hover:text-orange-600 hover:bg-orange-50"
+              asChild
+            >
               <a
                 href={`mailto:${row.original.user_email}?subject=Mengenai Kursus ${row.original.course_title}`}
-                className="flex items-center gap-2"
+                className="flex items-center gap-1.5"
               >
-                <Mail className="h-4 w-4" />
-                Email
+                <Mail className="h-3.5 w-3.5" />
+                <span className="text-xs">Email</span>
               </a>
             </Button>
           ),
@@ -241,150 +240,91 @@ export function PaymentListPage({
   );
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold">{title}</h1>
-        <p className="text-gray-600 mt-1">{description}</p>
-      </div>
-
-      {/* Statistics Cards - Conditional based on role */}
+    <div className="space-y-8">
+      {/* 🌟 STATS CARDS */}
       <div
         className={`grid grid-cols-1 gap-4 ${
           isAdmin ? "md:grid-cols-3" : "md:grid-cols-2"
         }`}
       >
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              {isAdmin ? "Total Pendapatan" : "Pendapatan Saya"}
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            {statsLoading ? (
-              <Skeleton className="h-8 w-32" />
-            ) : (
-              <div className="text-2xl font-bold">
-                {formatCurrency(stats?.total_revenue ?? 0)}
-              </div>
-            )}
-            <p className="text-xs text-gray-500 mt-1">
-              Dari transaksi berhasil
-            </p>
-          </CardContent>
-        </Card>
+        <StatsCard
+          title={isAdmin ? "Total Pendapatan" : "Pendapatan Saya"}
+          value={formatCurrency(stats?.total_revenue ?? 0)}
+          desc="Dari transaksi berhasil"
+          icon={Wallet}
+          color="green"
+        />
 
-        {/* Pending Amount - Admin only */}
         {isAdmin && (
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Pembayaran Pending
-              </CardTitle>
-              <CreditCard className="h-4 w-4 text-yellow-600" />
-            </CardHeader>
-            <CardContent>
-              {statsLoading ? (
-                <Skeleton className="h-8 w-32" />
-              ) : (
-                <div className="text-2xl font-bold">
-                  {formatCurrency(stats?.pending_amount ?? 0)}
-                </div>
-              )}
-              <p className="text-xs text-gray-500 mt-1">Menunggu pembayaran</p>
-            </CardContent>
-          </Card>
+          <StatsCard
+            title="Pembayaran Pending"
+            value={formatCurrency(stats?.pending_amount ?? 0)}
+            desc="Menunggu pembayaran"
+            icon={Clock}
+            color="yellow"
+          />
         )}
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Total Transaksi
-            </CardTitle>
-            <FileText className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            {statsLoading ? (
-              <Skeleton className="h-8 w-24" />
-            ) : (
-              <div className="text-2xl font-bold">
-                {stats?.total_transactions ?? 0}
-              </div>
-            )}
-            <p className="text-xs text-gray-500 mt-1">
-              {isAdmin ? "Semua status" : "Pembayaran berhasil"}
-            </p>
-          </CardContent>
-        </Card>
+        <StatsCard
+          title="Total Transaksi"
+          value={stats?.total_transactions ?? 0}
+          desc={isAdmin ? "Semua status" : "Pembayaran berhasil"}
+          icon={FileText}
+          color="blue"
+        />
       </div>
 
-      {/* Filters - Conditional based on role */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{isAdmin ? "Filter & Pencarian" : "Pencarian"}</CardTitle>
-          <CardDescription>
-            {isAdmin
-              ? "Gunakan filter untuk menemukan transaksi tertentu"
-              : "Cari transaksi berdasarkan nama siswa"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col md:flex-row gap-4">
-            {/* Search */}
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder={
-                  isAdmin
-                    ? "Cari nama atau email siswa..."
-                    : "Cari nama siswa..."
-                }
-                value={table.filters.search}
-                onChange={(e) => table.filters.setSearch(e.target.value)}
-                className="pl-9"
-              />
+      {/* 🌟 FILTERS & TABLE */}
+      <Card className="border border-slate-200 shadow-sm bg-white overflow-hidden">
+        <CardHeader className="border-b border-slate-100 bg-white px-6 py-4">
+          <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+            <CardTitle className="text-base font-bold text-slate-800">
+              {isAdmin ? "Semua Transaksi" : "Riwayat Transaksi"}
+            </CardTitle>
+
+            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+              {/* Search */}
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input
+                  placeholder={isAdmin ? "Cari siswa..." : "Cari siswa..."}
+                  value={table.filters.search}
+                  onChange={(e) => table.filters.setSearch(e.target.value)}
+                  className="pl-9 h-9 border-slate-200 text-sm"
+                />
+              </div>
+
+              {/* Status Filter (Admin Only) */}
+              {isAdmin && (
+                <Select
+                  value={(table.filters.filters.status as string) || "all"}
+                  onValueChange={(value) =>
+                    table.filters.setFilter(
+                      "status",
+                      value === "all" ? undefined : value
+                    )
+                  }
+                >
+                  <SelectTrigger className="w-full sm:w-[160px] h-9 border-slate-200 text-sm">
+                    <div className="flex items-center gap-2 text-slate-600">
+                      <Filter className="h-3.5 w-3.5" />
+                      <SelectValue placeholder="Status" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Semua Status</SelectItem>
+                    <SelectItem value="settlement">Berhasil</SelectItem>
+                    <SelectItem value="pending">Menunggu</SelectItem>
+                    <SelectItem value="expired">Kadaluarsa</SelectItem>
+                    <SelectItem value="failed">Gagal</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
             </div>
-
-            {/* Status Filter - Admin only */}
-            {isAdmin && (
-              <Select
-                value={(table.filters.filters.status as string) || "all"}
-                onValueChange={(value) =>
-                  table.filters.setFilter(
-                    "status",
-                    value === "all" ? undefined : value
-                  )
-                }
-              >
-                <SelectTrigger className="w-full md:w-[180px]">
-                  <SelectValue placeholder="Semua Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Semua Status</SelectItem>
-                  <SelectItem value="settlement">Berhasil</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="expired">Kadaluarsa</SelectItem>
-                  <SelectItem value="failed">Gagal</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Payments Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            {isAdmin ? "Daftar Transaksi" : "Daftar Pembayaran"}
-          </CardTitle>
-          <CardDescription>
-            Menampilkan {table.total}{" "}
-            {isAdmin ? "transaksi" : "transaksi berhasil"}
-          </CardDescription>
         </CardHeader>
-        <CardContent>
+
+        <CardContent className="p-0">
           <DataTable<PaymentWithDetails>
             columns={columns}
             data={table.data ?? []}
@@ -399,124 +339,157 @@ export function PaymentListPage({
             pageSizeOptions={[10, 20, 50]}
             showPagination={true}
             showPageSizeSelector={true}
-            emptyMessage="Tidak ada transaksi"
+            emptyMessage="Belum ada data transaksi."
           />
         </CardContent>
       </Card>
 
-      {/* View Details Dialog - Admin only */}
+      {/* 🌟 VIEW DETAILS DIALOG (Admin Only) */}
       {isAdmin && (
         <Dialog open={viewDetailsOpen} onOpenChange={setViewDetailsOpen}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Detail Pembayaran</DialogTitle>
-              <DialogDescription>
-                Informasi lengkap transaksi pembayaran
+          <DialogContent className="max-w-2xl gap-0 p-0 overflow-hidden border-none shadow-xl">
+            <DialogHeader className="px-6 py-4 border-b bg-slate-50">
+              <DialogTitle className="text-lg font-bold text-slate-900">
+                Detail Transaksi
+              </DialogTitle>
+              <DialogDescription className="text-slate-500">
+                Informasi lengkap mengenai pembayaran ini.
               </DialogDescription>
             </DialogHeader>
 
             {selectedPayment && (
-              <div className="space-y-4">
-                {/* Order Information */}
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-sm text-gray-500">
-                    Informasi Order
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="p-6 space-y-6">
+                {/* 1. Status Banner */}
+                <div
+                  className={`p-4 rounded-lg flex items-center justify-between ${
+                    STATUS_CONFIG[selectedPayment.transaction_status]
+                      ?.className || "bg-slate-50"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 font-semibold">
+                    {/* Icon logic here if needed, simplified for brevity */}
+                    Status:{" "}
+                    {STATUS_CONFIG[selectedPayment.transaction_status]?.label ||
+                      selectedPayment.transaction_status}
+                  </div>
+                  <div className="text-sm font-mono opacity-80">
+                    #{selectedPayment.order_id}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-8">
+                  {/* Left Column */}
+                  <div className="space-y-4">
                     <div>
-                      <span className="text-gray-600">Order ID:</span>
-                      <p className="font-mono font-medium">
-                        {selectedPayment.order_id}
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
+                        Informasi Siswa
+                      </h4>
+                      <p className="font-medium text-slate-900">
+                        {selectedPayment.user_name}
+                      </p>
+                      <p className="text-sm text-slate-500">
+                        {selectedPayment.user_email}
                       </p>
                     </div>
+
                     <div>
-                      <span className="text-gray-600">Status:</span>
-                      <p className="font-medium capitalize">
-                        {selectedPayment.transaction_status}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-gray-600">Jumlah:</span>
-                      <p className="font-semibold text-lg">
-                        {formatCurrency(selectedPayment.gross_amount)}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-gray-600">Metode Pembayaran:</span>
-                      <p className="font-medium capitalize">
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
+                        Metode Pembayaran
+                      </h4>
+                      <p className="font-medium text-slate-900 capitalize flex items-center gap-2">
+                        <CreditCard className="h-4 w-4 text-slate-400" />
                         {selectedPayment.payment_type.replace("_", " ")}
                       </p>
                     </div>
                   </div>
-                </div>
 
-                {/* User Information */}
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-sm text-gray-500">
-                    Informasi Siswa
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
+                  {/* Right Column */}
+                  <div className="space-y-4">
                     <div>
-                      <span className="text-gray-600">Nama:</span>
-                      <p className="font-medium">{selectedPayment.user_name}</p>
-                    </div>
-                    <div>
-                      <span className="text-gray-600">Email:</span>
-                      <p className="font-medium">
-                        {selectedPayment.user_email}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Course Information */}
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-sm text-gray-500">
-                    Informasi Kursus
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="text-gray-600">Judul Kursus:</span>
-                      <p className="font-medium">
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
+                        Kursus
+                      </h4>
+                      <p className="font-medium text-slate-900 line-clamp-2">
                         {selectedPayment.course_title}
                       </p>
-                    </div>
-                    <div>
-                      <span className="text-gray-600">Instruktur:</span>
-                      <p className="font-medium">
-                        {selectedPayment.instructor_name}
+                      <p className="text-sm text-slate-500 mt-0.5">
+                        Instruktur: {selectedPayment.instructor_name}
                       </p>
                     </div>
-                  </div>
-                </div>
 
-                {/* Transaction Dates */}
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-sm text-gray-500">
-                    Waktu Transaksi
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="text-gray-600">Dibuat:</span>
-                      <p className="font-medium">
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
+                        Waktu Transaksi
+                      </h4>
+                      <p className="text-sm text-slate-700">
                         {formatDate(selectedPayment.transaction_time)}
                       </p>
                     </div>
-                    {selectedPayment.settlement_time && (
-                      <div>
-                        <span className="text-gray-600">Selesai:</span>
-                        <p className="font-medium">
-                          {formatDate(selectedPayment.settlement_time)}
-                        </p>
-                      </div>
-                    )}
                   </div>
+                </div>
+
+                <div className="pt-4 border-t border-slate-100 flex justify-between items-center">
+                  <span className="text-slate-500 font-medium">
+                    Total Pembayaran
+                  </span>
+                  <span className="text-2xl font-bold text-slate-900">
+                    {formatCurrency(selectedPayment.gross_amount)}
+                  </span>
                 </div>
               </div>
             )}
+
+            <div className="bg-slate-50 px-6 py-4 flex justify-end border-t border-slate-100">
+              <Button
+                variant="outline"
+                onClick={() => setViewDetailsOpen(false)}
+              >
+                Tutup
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       )}
     </div>
+  );
+}
+
+// --- SUB COMPONENT: Stats Card ---
+function StatsCard({
+  title,
+  value,
+  desc,
+  icon: Icon,
+  color,
+}: {
+  title: string;
+  value: string | number;
+  desc: string;
+  icon: ForwardRefExoticComponent<
+    Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>
+  >;
+  color: "green" | "yellow" | "blue";
+}) {
+  const styles = {
+    green: "bg-green-50 text-green-600 border-green-100",
+    yellow: "bg-yellow-50 text-yellow-600 border-yellow-100",
+    blue: "bg-blue-50 text-blue-600 border-blue-100",
+  };
+
+  return (
+    <Card className="border border-slate-200 shadow-sm">
+      <CardContent className="p-5 flex items-start justify-between">
+        <div>
+          <p className="text-sm font-medium text-slate-500">{title}</p>
+          <div className="text-2xl font-bold text-slate-900 mt-1 mb-0.5">
+            {value}
+          </div>
+          <p className="text-xs text-slate-400">{desc}</p>
+        </div>
+        <div className={`p-2.5 rounded-xl border ${styles[color]}`}>
+          <Icon className="h-5 w-5" />
+        </div>
+      </CardContent>
+    </Card>
   );
 }

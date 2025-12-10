@@ -552,7 +552,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { api } from "@/lib/api";
-import { cn } from "@/lib/utils";
+import { cn } from "@/app/utils/cn-classes";
 ```
 
 ---

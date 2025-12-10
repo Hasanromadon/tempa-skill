@@ -1,8 +1,9 @@
+import { cn } from "@/app/utils/cn-classes";
+import { formatCurrency } from "@/app/utils/format-currency";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { DIFFICULTY_COLORS, DIFFICULTY_LABELS } from "@/lib/constants";
-import { cn, formatCurrency } from "@/lib/utils";
 import { ArrowRight, BookOpen, CheckCircle2, Trophy } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";

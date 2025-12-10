@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/app/utils/cn-classes";
 import { Star } from "lucide-react";
 
 interface StarRatingProps {

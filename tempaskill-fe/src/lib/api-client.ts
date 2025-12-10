@@ -1,5 +1,5 @@
+import { generateRequestId } from "@/app/utils/generate-process-id";
 import { getAuthToken, removeAuthToken } from "@/lib/auth-token";
-import { generateRequestId } from "@/lib/utils";
 import type { ApiResponse } from "@/types/api";
 import axios, { AxiosError } from "axios";
 

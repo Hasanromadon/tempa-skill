@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/app/utils/cn-classes";
 import { CheckCircle, HelpCircle, XCircle } from "lucide-react";
 import { ReactNode, useState } from "react";
 
@@ -162,7 +162,7 @@ export function MDXQuiz({
   option4,
   correctAnswer,
   explanation,
-  children
+  children,
 }: MDXQuizProps) {
   // Convert MDX props to QuizOption format
   const options: QuizOption[] = [
@@ -173,11 +173,7 @@ export function MDXQuiz({
   ];
 
   return (
-    <Quiz
-      question={question}
-      options={options}
-      explanation={explanation}
-    >
+    <Quiz question={question} options={options} explanation={explanation}>
       {children}
     </Quiz>
   );

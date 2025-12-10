@@ -1,207 +1,301 @@
 "use client";
 
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatCurrency } from "@/app/utils/format-currency";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDashboardStats } from "@/hooks";
 import {
+  AlertCircle,
   BookOpen,
   Calendar,
   CreditCard,
   DollarSign,
   FileText,
   GraduationCap,
+  LucideProps,
   TrendingUp,
   Users,
 } from "lucide-react";
+import Link from "next/link";
+import { ForwardRefExoticComponent, RefAttributes, useMemo } from "react";
 
 export default function InstructorDashboardPage() {
   const { data: stats, isLoading, isError } = useDashboardStats();
 
-  // Format currency
-  const formatCurrency = (amount: number) => {
-    if (amount === 0) return "Rp 0";
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
-  const statCards = [
-    {
-      label: "Total Kursus",
-      value: stats?.total_courses ?? 0,
-      subtitle: `${stats?.published_courses ?? 0} dipublikasi`,
-      icon: BookOpen,
-      color: "text-orange-600",
-      bgColor: "bg-orange-100",
-    },
-    {
-      label: "Total Siswa",
-      value: stats?.total_students ?? 0,
-      subtitle: `${stats?.total_enrollments ?? 0} pendaftaran`,
-      icon: Users,
-      color: "text-blue-600",
-      bgColor: "bg-blue-100",
-    },
-    {
-      label: "Total Pendapatan",
-      value: formatCurrency(stats?.total_revenue ?? 0),
-      subtitle: `${stats?.completed_payments ?? 0} transaksi berhasil`,
-      icon: DollarSign,
-      color: "text-green-600",
-      bgColor: "bg-green-100",
-    },
-    {
-      label: "Total Pelajaran",
-      value: stats?.total_lessons ?? 0,
-      subtitle: "Konten pembelajaran",
-      icon: FileText,
-      color: "text-indigo-600",
-      bgColor: "bg-indigo-100",
-    },
-    {
-      label: "Sesi Mendatang",
-      value: stats?.upcoming_sessions ?? 0,
-      subtitle: `dari ${stats?.total_sessions ?? 0} total sesi`,
-      icon: Calendar,
-      color: "text-pink-600",
-      bgColor: "bg-pink-100",
-    },
-    {
-      label: "Pembayaran Pending",
-      value: stats?.pending_payments ?? 0,
-      subtitle: "Menunggu konfirmasi",
-      icon: CreditCard,
-      color: "text-yellow-600",
-      bgColor: "bg-yellow-100",
-    },
-    {
-      label: "Kursus Draft",
-      value: stats?.unpublished_courses ?? 0,
-      subtitle: "Belum dipublikasi",
-      icon: TrendingUp,
-      color: "text-gray-600",
-      bgColor: "bg-gray-100",
-    },
-  ];
+  const statCards = useMemo(() => {
+    return [
+      {
+        label: "Total Kursus",
+        value: stats?.total_courses ?? 0,
+        desc: `${stats?.published_courses ?? 0} dipublikasi`,
+        icon: BookOpen,
+        color: "orange",
+      },
+      {
+        label: "Total Siswa",
+        value: stats?.total_students ?? 0,
+        desc: `${stats?.total_enrollments ?? 0} pendaftaran`,
+        icon: Users,
+        color: "blue",
+      },
+      {
+        label: "Total Pendapatan",
+        value: formatCurrency(stats?.total_revenue ?? 0),
+        desc: `${stats?.completed_payments ?? 0} transaksi sukses`,
+        icon: DollarSign,
+        color: "green",
+      },
+      {
+        label: "Total Pelajaran",
+        value: stats?.total_lessons ?? 0,
+        desc: "Materi konten",
+        icon: FileText,
+        color: "indigo",
+      },
+      {
+        label: "Sesi Mendatang",
+        value: stats?.upcoming_sessions ?? 0,
+        desc: `Dari ${stats?.total_sessions ?? 0} total sesi`,
+        icon: Calendar,
+        color: "pink",
+      },
+      {
+        label: "Pembayaran Pending",
+        value: stats?.pending_payments ?? 0,
+        desc: "Menunggu konfirmasi",
+        icon: CreditCard,
+        color: "yellow",
+      },
+      {
+        label: "Kursus Draft",
+        value: stats?.unpublished_courses ?? 0,
+        desc: "Belum dipublikasi",
+        icon: TrendingUp,
+        color: "slate",
+      },
+    ];
+  }, [stats]);
 
   const quickActions = [
     {
       href: "/instructor/courses/new",
       icon: BookOpen,
-      iconColor: "text-orange-600",
-      bgColor: "bg-orange-100",
+      color: "orange",
       label: "Buat Kursus Baru",
-      description: "Tambah kursus ke platform",
+      desc: "Tambah kursus ke platform",
     },
     {
       href: "/instructor/students",
       icon: GraduationCap,
-      iconColor: "text-blue-600",
-      bgColor: "bg-blue-100",
+      color: "blue",
       label: "Siswa Saya",
-      description: "Kelola siswa di kursus Anda",
+      desc: "Kelola siswa di kursus Anda",
     },
     {
       href: "/instructor/payments",
       icon: CreditCard,
-      iconColor: "text-green-600",
-      bgColor: "bg-green-100",
+      color: "green",
       label: "Pembayaran",
-      description: "Lihat riwayat pembayaran",
+      desc: "Lihat riwayat pembayaran",
     },
   ];
 
-  return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">
-          Dashboard Instruktur
-        </h1>
-        <p className="text-gray-600 mt-1">
-          Selamat datang di panel instruktur TempaSKill
-        </p>
-      </div>
-
-      {/* Error State */}
-      {isError && (
+  if (isError) {
+    return (
+      <div className="container mx-auto px-4 py-8">
         <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
           <AlertDescription>
-            Gagal memuat statistik dashboard. Silakan refresh halaman.
+            Gagal memuat statistik dashboard. Silakan coba muat ulang halaman.
           </AlertDescription>
         </Alert>
-      )}
+      </div>
+    );
+  }
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {isLoading
-          ? // Loading skeleton
-            [...Array(7)].map((_, i) => (
-              <Card key={i}>
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-9 w-9 rounded-lg" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-8 w-16 mb-1" />
-                  <Skeleton className="h-3 w-20" />
-                </CardContent>
-              </Card>
-            ))
-          : // Real data
-            statCards.map((stat) => (
-              <Card
-                key={stat.label}
-                className="hover:shadow-md transition-shadow"
-              >
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">
-                    {stat.label}
-                  </CardTitle>
-                  <div className={`p-2 rounded-lg ${stat.bgColor}`}>
-                    <stat.icon className={`h-5 w-5 ${stat.color}`} />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-gray-900">
-                    {stat.value}
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">{stat.subtitle}</p>
-                </CardContent>
-              </Card>
-            ))}
+  return (
+    <div className="min-h-screen bg-slate-50 font-sans pb-20">
+      {/* 🌟 1. HEADER (Sticky) */}
+      <div className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+              Dashboard Instruktur
+            </h1>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Ringkasan aktivitas dan performa Anda.
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Aksi Cepat</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {quickActions.map((action) => (
-              <a
-                key={action.href}
-                href={action.href}
-                className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <div
-                  className={`w-10 h-10 ${action.bgColor} rounded-lg flex items-center justify-center`}
-                >
-                  <action.icon className={`h-5 w-5 ${action.iconColor}`} />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">{action.label}</p>
-                  <p className="text-sm text-gray-500">{action.description}</p>
-                </div>
-              </a>
+      <div className="container mx-auto px-4 py-8 space-y-8">
+        {/* 🌟 2. STATS GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {isLoading
+            ? [...Array(7)].map((_, i) => (
+                <Card key={i} className="border-slate-200 shadow-sm">
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-8 w-8 rounded-lg" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-8 w-16 mb-2" />
+                    <Skeleton className="h-3 w-20" />
+                  </CardContent>
+                </Card>
+              ))
+            : statCards.map((stat, idx) => (
+                <StatsCard
+                  key={idx}
+                  title={stat.label}
+                  value={stat.value}
+                  desc={stat.desc}
+                  icon={stat.icon}
+                  color={
+                    stat.color as
+                      | "orange"
+                      | "blue"
+                      | "green"
+                      | "indigo"
+                      | "pink"
+                      | "yellow"
+                      | "slate"
+                      | "purple"
+                  }
+                />
+              ))}
+        </div>
+
+        {/* 🌟 3. QUICK ACTIONS */}
+        <div>
+          <h2 className="text-lg font-bold text-slate-900 mb-4">Aksi Cepat</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {quickActions.map((action, idx) => (
+              <Link key={idx} href={action.href}>
+                <Card className="border-slate-200 shadow-sm hover:shadow-md hover:border-orange-200 transition-all group cursor-pointer bg-white">
+                  <CardContent className="p-6 flex items-center gap-4">
+                    <div
+                      className={`p-3 rounded-xl ${
+                        getColorClasses(action.color).bg
+                      } group-hover:scale-110 transition-transform`}
+                    >
+                      <action.icon
+                        className={`h-6 w-6 ${
+                          getColorClasses(action.color).text
+                        }`}
+                      />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-slate-900 group-hover:text-orange-600 transition-colors">
+                        {action.label}
+                      </h3>
+                      <p className="text-sm text-slate-500 mt-0.5">
+                        {action.desc}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
+}
+
+// --- SUB COMPONENT: Stats Card (Reusable Logic) ---
+function StatsCard({
+  title,
+  value,
+  desc,
+  icon: Icon,
+  color,
+}: {
+  title: string;
+  value: string | number;
+  desc: string;
+  icon: ForwardRefExoticComponent<
+    Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>
+  >;
+  color:
+    | "orange"
+    | "blue"
+    | "green"
+    | "purple"
+    | "indigo"
+    | "pink"
+    | "yellow"
+    | "slate";
+}) {
+  const styles = getColorClasses(color);
+
+  return (
+    <Card className="border border-slate-200 shadow-sm hover:shadow-md transition-shadow bg-white">
+      <CardContent className="p-6 flex items-start justify-between">
+        <div>
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">
+            {title}
+          </p>
+          <div className="text-2xl font-bold text-slate-900 mb-1">{value}</div>
+          <p className="text-xs text-slate-400 font-medium">{desc}</p>
+        </div>
+        <div
+          className={`p-2.5 rounded-xl border ${styles.border} ${styles.bg}`}
+        >
+          <Icon className={`h-5 w-5 ${styles.text}`} />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Helper for color styles (Consistent across pages)
+function getColorClasses(color: string) {
+  const colors: Record<string, { bg: string; text: string; border: string }> = {
+    orange: {
+      bg: "bg-orange-50",
+      text: "text-orange-600",
+      border: "border-orange-100",
+    },
+    blue: {
+      bg: "bg-blue-50",
+      text: "text-blue-600",
+      border: "border-blue-100",
+    },
+    green: {
+      bg: "bg-green-50",
+      text: "text-green-600",
+      border: "border-green-100",
+    },
+    purple: {
+      bg: "bg-purple-50",
+      text: "text-purple-600",
+      border: "border-purple-100",
+    },
+    indigo: {
+      bg: "bg-indigo-50",
+      text: "text-indigo-600",
+      border: "border-indigo-100",
+    },
+    pink: {
+      bg: "bg-pink-50",
+      text: "text-pink-600",
+      border: "border-pink-100",
+    },
+    yellow: {
+      bg: "bg-yellow-50",
+      text: "text-yellow-600",
+      border: "border-yellow-100",
+    },
+    slate: {
+      bg: "bg-slate-50",
+      text: "text-slate-600",
+      border: "border-slate-100",
+    },
+  };
+  return colors[color] || colors.slate;
 }

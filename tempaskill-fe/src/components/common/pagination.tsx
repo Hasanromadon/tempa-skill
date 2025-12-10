@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/app/utils/cn-classes";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -8,7 +9,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
 import {
   ChevronLeft,
   ChevronRight,

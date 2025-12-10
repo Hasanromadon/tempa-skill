@@ -1,5 +1,6 @@
 "use client";
 
+import { formatCurrency } from "@/app/utils/format-currency";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +19,6 @@ import {
   useBankAccount,
   useCreateWithdrawal,
 } from "@/hooks/use-withdrawal";
-import { formatCurrency } from "@/lib/utils";
 import { AlertCircle, ArrowLeft, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";

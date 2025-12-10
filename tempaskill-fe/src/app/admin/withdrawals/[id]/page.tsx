@@ -1,10 +1,14 @@
 "use client";
 
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { formatCurrency } from "@/app/utils/format-currency";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -12,15 +16,17 @@ import {
   useProcessWithdrawal,
   useVerifyBankAccount,
 } from "@/hooks/use-withdrawal";
-import { formatCurrency } from "@/lib/utils";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import {
   AlertCircle,
-  ArrowLeft,
+  AlertTriangle,
   Building2,
   CheckCircle,
+  CheckCircle2,
   Clock,
+  FileText,
+  Loader2,
   Mail,
   User,
   XCircle,
@@ -46,6 +52,11 @@ export default function WithdrawalDetailPage({ params }: PageProps) {
   const [showApproveForm, setShowApproveForm] = useState(false);
   const [showRejectForm, setShowRejectForm] = useState(false);
 
+  // Error type definition for consistent handling
+  interface ApiError {
+    response?: { data?: { error?: string } };
+  }
+
   const withdrawal = withdrawals?.find((w) => w.id === parseInt(id));
 
   const handleApprove = async () => {
@@ -59,7 +70,7 @@ export default function WithdrawalDetailPage({ params }: PageProps) {
       toast.success("Penarikan berhasil disetujui");
       router.push("/admin/withdrawals");
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { error?: string } } };
+      const err = error as ApiError;
       toast.error(err.response?.data?.error || "Gagal menyetujui penarikan");
     }
   };
@@ -80,7 +91,7 @@ export default function WithdrawalDetailPage({ params }: PageProps) {
       toast.success("Penarikan berhasil ditolak");
       router.push("/admin/withdrawals");
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { error?: string } } };
+      const err = error as ApiError;
       toast.error(err.response?.data?.error || "Gagal menolak penarikan");
     }
   };
@@ -97,360 +108,364 @@ export default function WithdrawalDetailPage({ params }: PageProps) {
 
       toast.success("Rekening bank berhasil diverifikasi");
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { error?: string } } };
+      const err = error as ApiError;
       toast.error(err.response?.data?.error || "Gagal memverifikasi rekening");
     }
   };
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <Skeleton className="h-10 w-64 mb-6" />
-        <Skeleton className="h-96" />
+      <div className="container mx-auto px-4 py-8 max-w-4xl space-y-6">
+        <Skeleton className="h-10 w-48" />
+        <Skeleton className="h-64 rounded-xl" />
+        <Skeleton className="h-48 rounded-xl" />
       </div>
     );
   }
 
   if (!withdrawal) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>Penarikan tidak ditemukan</AlertDescription>
-        </Alert>
+      <div className="container mx-auto px-4 py-12 max-w-4xl text-center">
+        <div className="bg-red-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+          <AlertCircle className="h-8 w-8 text-red-500" />
+        </div>
+        <h2 className="text-xl font-bold text-slate-900">
+          Data Tidak Ditemukan
+        </h2>
+        <p className="text-slate-500 mt-2 mb-6">
+          Permintaan penarikan dengan ID tersebut tidak tersedia.
+        </p>
+        <Link href="/admin/withdrawals">
+          <Button variant="outline">Kembali ke Daftar</Button>
+        </Link>
       </div>
     );
   }
 
-  const canProcess = withdrawal.status === "pending";
+  const canProcess =
+    withdrawal.status === "pending" || withdrawal.status === "processing";
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <Button variant="ghost" asChild className="mb-4">
-        <Link href="/admin/withdrawals">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Kembali
-        </Link>
-      </Button>
+    <div className="min-h-screen bg-slate-50/50 pb-20 font-sans">
+      {/* 🌟 HEADER */}
+      <div className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between max-w-4xl">
+          <div className="flex items-center gap-4">
+            <Link
+              href="/admin/withdrawals"
+              className="p-2 -ml-2 rounded-full hover:bg-slate-100 text-slate-500 transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5" />{" "}
+              {/* Using ChevronLeft for consistency */}
+            </Link>
+            <h1 className="text-lg font-bold text-slate-900">
+              Detail Penarikan #{withdrawal.id}
+            </h1>
+          </div>
 
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Detail Penarikan</h1>
-        <Badge
-          variant={
-            withdrawal.status === "completed"
-              ? "default"
-              : withdrawal.status === "failed"
-              ? "destructive"
-              : "secondary"
-          }
-          className={
-            withdrawal.status === "completed"
-              ? "bg-green-100 text-green-800 text-lg px-4 py-1"
-              : withdrawal.status === "pending"
-              ? "bg-yellow-100 text-yellow-800 text-lg px-4 py-1"
-              : withdrawal.status === "processing"
-              ? "bg-blue-100 text-blue-800 text-lg px-4 py-1"
-              : "text-lg px-4 py-1"
-          }
-        >
-          {withdrawal.status === "pending" && "Menunggu"}
-          {withdrawal.status === "processing" && "Diproses"}
-          {withdrawal.status === "completed" && "Selesai"}
-          {withdrawal.status === "failed" && "Gagal"}
-          {withdrawal.status === "cancelled" && "Dibatalkan"}
-        </Badge>
+          {/* Status Badge in Header */}
+          <Badge
+            variant="outline"
+            className={
+              withdrawal.status === "completed"
+                ? "bg-green-50 text-green-700 border-green-200"
+                : withdrawal.status === "pending"
+                ? "bg-yellow-50 text-yellow-700 border-yellow-200"
+                : withdrawal.status === "processing"
+                ? "bg-blue-50 text-blue-700 border-blue-200"
+                : withdrawal.status === "failed"
+                ? "bg-red-50 text-red-700 border-red-200"
+                : "bg-slate-50 text-slate-700 border-slate-200"
+            }
+          >
+            {withdrawal.status === "pending" && "Menunggu Approval"}
+            {withdrawal.status === "processing" && "Sedang Diproses"}
+            {withdrawal.status === "completed" && "Selesai"}
+            {withdrawal.status === "failed" && "Gagal"}
+            {withdrawal.status === "cancelled" && "Dibatalkan"}
+          </Badge>
+        </div>
       </div>
 
-      <div className="grid gap-6">
-        {/* Instructor Info */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5 text-orange-600" />
-              Informasi Instruktur
+      <div className="container mx-auto px-4 py-8 max-w-4xl space-y-6">
+        {/* 🌟 1. INSTRUCTOR INFO CARD */}
+        <Card className="border border-slate-200 shadow-sm overflow-hidden">
+          <CardHeader className="bg-slate-50/50 border-b border-slate-100 py-4">
+            <CardTitle className="text-sm font-bold text-slate-700 flex items-center gap-2">
+              <User className="h-4 w-4" /> Informasi Instruktur
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div>
-              <Label className="text-sm text-gray-600">Nama</Label>
-              <p className="text-lg font-medium">
-                {withdrawal.user?.name || "N/A"}
-              </p>
-            </div>
-            <div>
-              <Label className="text-sm text-gray-600">Email</Label>
-              <p className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-gray-400" />
-                {withdrawal.user?.email || "N/A"}
-              </p>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <Avatar className="h-14 w-14 border border-slate-200">
+                <AvatarImage src={withdrawal.user?.avatar_url} />
+                <AvatarFallback className="bg-orange-100 text-orange-700 font-bold">
+                  {withdrawal.user?.name?.substring(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">
+                  {withdrawal.user?.name}
+                </h3>
+                <div className="flex items-center gap-2 text-slate-500 text-sm mt-1">
+                  <Mail className="h-3.5 w-3.5" />
+                  {withdrawal.user?.email}
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Withdrawal Info */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Informasi Penarikan</CardTitle>
+        {/* 🌟 2. WITHDRAWAL DETAIL CARD */}
+        <Card className="border border-slate-200 shadow-sm overflow-hidden">
+          <CardHeader className="bg-slate-50/50 border-b border-slate-100 py-4">
+            <CardTitle className="text-sm font-bold text-slate-700 flex items-center gap-2">
+              <FileText className="h-4 w-4" /> Rincian Dana
+            </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="grid grid-cols-2 gap-4">
+          <CardContent className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
               <div>
-                <Label className="text-sm text-gray-600">
-                  Jumlah Penarikan
+                <Label className="text-slate-500 text-xs uppercase tracking-wide">
+                  Jumlah Diminta
                 </Label>
-                <p className="text-2xl font-bold">
+                <p className="text-2xl font-bold text-slate-900 mt-1">
                   {formatCurrency(withdrawal.amount)}
                 </p>
               </div>
               <div>
-                <Label className="text-sm text-gray-600">
+                <Label className="text-slate-500 text-xs uppercase tracking-wide">
                   Biaya Admin (2.5%)
                 </Label>
-                <p className="text-2xl font-bold text-red-600">
+                <p className="text-2xl font-bold text-red-500 mt-1">
                   -{formatCurrency(withdrawal.admin_fee)}
                 </p>
               </div>
             </div>
-            <div className="pt-3 border-t">
-              <Label className="text-sm text-gray-600">Total Diterima</Label>
-              <p className="text-3xl font-bold text-green-600">
+
+            <Separator className="my-4" />
+
+            <div className="flex justify-between items-center bg-green-50 p-4 rounded-lg border border-green-100">
+              <div>
+                <Label className="text-green-700 font-semibold">
+                  Total Transfer Bersih
+                </Label>
+                <p className="text-xs text-green-600">
+                  Nominal yang harus dikirim ke rekening.
+                </p>
+              </div>
+              <p className="text-3xl font-bold text-green-700">
                 {formatCurrency(withdrawal.net_amount)}
               </p>
             </div>
-            <div className="pt-3 border-t">
-              <Label className="text-sm text-gray-600">
-                Tanggal Permintaan
-              </Label>
-              <p>
-                {format(
-                  new Date(withdrawal.created_at),
-                  "dd MMMM yyyy, HH:mm",
-                  {
-                    locale: localeId,
-                  }
-                )}
-              </p>
+
+            <div className="mt-6 text-sm text-slate-500 flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              Dibuat pada:{" "}
+              {format(new Date(withdrawal.created_at), "dd MMMM yyyy, HH:mm", {
+                locale: localeId,
+              })}
             </div>
-            {withdrawal.notes && (
-              <div>
-                <Label className="text-sm text-gray-600">
-                  Catatan Instruktur
-                </Label>
-                <p className="text-gray-700">{withdrawal.notes}</p>
-              </div>
-            )}
           </CardContent>
         </Card>
 
-        {/* Bank Account Info */}
+        {/* 🌟 3. BANK ACCOUNT CARD */}
         {withdrawal.bank_account && (
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Building2 className="h-5 w-5 text-orange-600" />
-                  Rekening Tujuan
-                </CardTitle>
-                {withdrawal.bank_account.verification_status === "verified" ? (
-                  <Badge className="bg-green-100 text-green-800">
-                    <CheckCircle className="h-3 w-3 mr-1" />
-                    Terverifikasi
-                  </Badge>
-                ) : withdrawal.bank_account.verification_status ===
-                  "rejected" ? (
-                  <Badge className="bg-red-100 text-red-800">
-                    <XCircle className="h-3 w-3 mr-1" />
-                    Ditolak
-                  </Badge>
-                ) : (
-                  <Badge className="bg-yellow-100 text-yellow-800">
-                    <Clock className="h-3 w-3 mr-1" />
-                    Pending
-                  </Badge>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div>
-                <Label className="text-sm text-gray-600">Nama Bank</Label>
-                <p className="text-lg font-medium">
-                  {withdrawal.bank_account.bank_name}
-                </p>
-              </div>
-              <div>
-                <Label className="text-sm text-gray-600">Nomor Rekening</Label>
-                <p className="text-lg font-medium">
-                  {withdrawal.bank_account.account_number}
-                </p>
-              </div>
-              <div>
-                <Label className="text-sm text-gray-600">Nama Pemegang</Label>
-                <p className="text-lg font-medium">
-                  {withdrawal.bank_account.account_holder_name}
-                </p>
-              </div>
-
-              {withdrawal.bank_account.verification_status === "pending" && (
-                <div className="pt-4 border-t">
-                  <Label htmlFor="verification_notes">
-                    Catatan Verifikasi (Opsional)
-                  </Label>
-                  <Textarea
-                    id="verification_notes"
-                    value={verificationNotes}
-                    onChange={(e) => setVerificationNotes(e.target.value)}
-                    placeholder="Tambahkan catatan verifikasi"
-                    className="mt-2 mb-3"
-                    rows={2}
-                  />
-                  <Button
-                    onClick={handleVerifyBank}
-                    disabled={verifyBankAccount.isPending}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    {verifyBankAccount.isPending
-                      ? "Memverifikasi..."
-                      : "Verifikasi Rekening"}
-                  </Button>
-                </div>
+          <Card className="border border-slate-200 shadow-sm overflow-hidden">
+            <CardHeader className="bg-slate-50/50 border-b border-slate-100 py-4 flex flex-row items-center justify-between">
+              <CardTitle className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                <Building2 className="h-4 w-4" /> Rekening Tujuan
+              </CardTitle>
+              {withdrawal.bank_account.verification_status === "verified" ? (
+                <Badge
+                  variant="secondary"
+                  className="bg-green-100 text-green-700 flex gap-1"
+                >
+                  <CheckCircle2 className="h-3 w-3" /> Terverifikasi
+                </Badge>
+              ) : (
+                <Badge
+                  variant="secondary"
+                  className="bg-yellow-100 text-yellow-700"
+                >
+                  Belum Verifikasi
+                </Badge>
               )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Processing Notes */}
-        {withdrawal.processed_at && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Informasi Pemrosesan</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div>
-                <Label className="text-sm text-gray-600">Diproses Pada</Label>
-                <p>
-                  {format(
-                    new Date(withdrawal.processed_at),
-                    "dd MMMM yyyy, HH:mm",
-                    {
-                      locale: localeId,
-                    }
-                  )}
-                </p>
-              </div>
-              {withdrawal.notes && (
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                  <Label className="text-sm text-gray-600">Catatan Admin</Label>
-                  <p className="text-gray-700">{withdrawal.notes}</p>
+                  <Label className="text-slate-500 text-xs">Bank</Label>
+                  <p className="font-semibold text-slate-900 text-lg">
+                    {withdrawal.bank_account.bank_name}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-slate-500 text-xs">
+                    Nomor Rekening
+                  </Label>
+                  <p className="font-mono text-slate-900 text-lg">
+                    {withdrawal.bank_account.account_number}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-slate-500 text-xs">Atas Nama</Label>
+                  <p className="font-semibold text-slate-900 text-lg">
+                    {withdrawal.bank_account.account_holder_name}
+                  </p>
+                </div>
+              </div>
+
+              {/* Verification Action (If needed) */}
+              {withdrawal.bank_account.verification_status === "pending" && (
+                <div className="mt-6 pt-6 border-t border-slate-100">
+                  <Alert className="bg-blue-50 border-blue-100 mb-4">
+                    <InfoIcon className="h-4 w-4 text-blue-600" />
+                    <AlertTitle className="text-blue-800 font-bold">
+                      Verifikasi Diperlukan
+                    </AlertTitle>
+                    <AlertDescription className="text-blue-700 text-xs">
+                      Pastikan data rekening valid sebelum menyetujui penarikan.
+                    </AlertDescription>
+                  </Alert>
+                  <div className="flex gap-3">
+                    <Input
+                      placeholder="Catatan verifikasi (opsional)"
+                      value={verificationNotes}
+                      onChange={(e) => setVerificationNotes(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button
+                      onClick={handleVerifyBank}
+                      disabled={verifyBankAccount.isPending}
+                      className="bg-slate-900 hover:bg-slate-800 text-white"
+                    >
+                      {verifyBankAccount.isPending ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        "Verifikasi & Simpan"
+                      )}
+                    </Button>
+                  </div>
                 </div>
               )}
             </CardContent>
           </Card>
         )}
 
-        {/* Action Buttons */}
+        {/* 🌟 4. PROCESSING ACTION AREA */}
         {canProcess && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Tindakan</CardTitle>
+          <Card className="border border-slate-200 shadow-lg ring-1 ring-slate-200">
+            <CardHeader className="py-4">
+              <CardTitle className="text-base font-bold text-slate-900">
+                Tindakan Admin
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {!showApproveForm && !showRejectForm && (
-                <div className="flex gap-3">
+            <CardContent className="p-6 pt-2">
+              {!showApproveForm && !showRejectForm ? (
+                <div className="flex gap-4">
                   <Button
                     onClick={() => setShowApproveForm(true)}
-                    className="flex-1 bg-green-600 hover:bg-green-700"
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white h-12 text-base shadow-sm"
                   >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Setujui
+                    <CheckCircle className="h-5 w-5 mr-2" />
+                    Setujui & Transfer
                   </Button>
                   <Button
                     onClick={() => setShowRejectForm(true)}
-                    variant="destructive"
-                    className="flex-1"
+                    variant="outline"
+                    className="flex-1 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 h-12 text-base"
                   >
-                    <XCircle className="h-4 w-4 mr-2" />
-                    Tolak
+                    <XCircle className="h-5 w-5 mr-2" />
+                    Tolak Permintaan
                   </Button>
                 </div>
-              )}
-
-              {showApproveForm && (
-                <div className="space-y-3">
-                  <Alert className="border-green-200 bg-green-50">
+              ) : showApproveForm ? (
+                <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                  <Alert className="bg-green-50 border-green-200">
                     <CheckCircle className="h-4 w-4 text-green-600" />
-                    <AlertDescription className="text-green-800">
-                      Dana akan ditransfer ke rekening instruktur sesuai
-                      informasi di atas.
+                    <AlertTitle className="text-green-800 font-bold">
+                      Konfirmasi Persetujuan
+                    </AlertTitle>
+                    <AlertDescription className="text-green-700 text-xs">
+                      Pastikan Anda telah melakukan transfer manual sejumlah{" "}
+                      <span className="font-bold">
+                        {formatCurrency(withdrawal.net_amount)}
+                      </span>{" "}
+                      ke rekening di atas. Tindakan ini tidak dapat dibatalkan.
                     </AlertDescription>
                   </Alert>
-                  <Label htmlFor="approve_notes">Catatan (Opsional)</Label>
-                  <Textarea
-                    id="approve_notes"
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Tambahkan catatan jika diperlukan"
-                    rows={3}
-                  />
-                  <div className="flex gap-3">
+
+                  <div className="space-y-2">
+                    <Label>Catatan Transfer / Bukti (Opsional)</Label>
+                    <Textarea
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="Masukkan nomor referensi atau catatan transfer..."
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="flex gap-3 pt-2">
                     <Button
                       onClick={handleApprove}
                       disabled={processWithdrawal.isPending}
-                      className="flex-1 bg-green-600 hover:bg-green-700"
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                     >
-                      {processWithdrawal.isPending
-                        ? "Memproses..."
-                        : "Konfirmasi Setujui"}
+                      {processWithdrawal.isPending ? (
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      ) : (
+                        "Ya, Saya Sudah Transfer"
+                      )}
                     </Button>
                     <Button
-                      onClick={() => {
-                        setShowApproveForm(false);
-                        setNotes("");
-                      }}
                       variant="outline"
+                      onClick={() => setShowApproveForm(false)}
                       disabled={processWithdrawal.isPending}
                     >
                       Batal
                     </Button>
                   </div>
                 </div>
-              )}
-
-              {showRejectForm && (
-                <div className="space-y-3">
-                  <Alert variant="destructive">
-                    <XCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      Penarikan akan dibatalkan dan instruktur akan
-                      dinotifikasi.
+              ) : (
+                <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                  <Alert className="bg-red-50 border-red-200">
+                    <AlertTriangle className="h-4 w-4 text-red-600" />
+                    <AlertTitle className="text-red-800 font-bold">
+                      Konfirmasi Penolakan
+                    </AlertTitle>
+                    <AlertDescription className="text-red-700 text-xs">
+                      Dana akan dikembalikan ke saldo dompet instruktur. Anda
+                      wajib memberikan alasan penolakan.
                     </AlertDescription>
                   </Alert>
-                  <Label htmlFor="reject_notes">Alasan Penolakan *</Label>
-                  <Textarea
-                    id="reject_notes"
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Jelaskan alasan penolakan (wajib diisi)"
-                    rows={3}
-                    required
-                  />
-                  <div className="flex gap-3">
+
+                  <div className="space-y-2">
+                    <Label className="text-red-600">Alasan Penolakan *</Label>
+                    <Textarea
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="Contoh: Nomor rekening tidak valid, nama tidak sesuai..."
+                      rows={3}
+                      className="border-red-200 focus-visible:ring-red-500"
+                    />
+                  </div>
+
+                  <div className="flex gap-3 pt-2">
                     <Button
                       onClick={handleReject}
                       disabled={processWithdrawal.isPending || !notes.trim()}
-                      variant="destructive"
-                      className="flex-1"
+                      className="flex-1 bg-red-600 hover:bg-red-700 text-white"
                     >
-                      {processWithdrawal.isPending
-                        ? "Memproses..."
-                        : "Konfirmasi Tolak"}
+                      {processWithdrawal.isPending ? (
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      ) : (
+                        "Tolak Permintaan"
+                      )}
                     </Button>
                     <Button
-                      onClick={() => {
-                        setShowRejectForm(false);
-                        setNotes("");
-                      }}
                       variant="outline"
+                      onClick={() => setShowRejectForm(false)}
                       disabled={processWithdrawal.isPending}
                     >
                       Batal
@@ -463,5 +478,46 @@ export default function WithdrawalDetailPage({ params }: PageProps) {
         )}
       </div>
     </div>
+  );
+}
+
+// Helper Icon
+function InfoIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 16v-4" />
+      <path d="M12 8h.01" />
+    </svg>
+  );
+}
+
+function ChevronLeft({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="m15 18-6-6 6-6" />
+    </svg>
   );
 }

@@ -1,5 +1,5 @@
+import { cn } from "@/app/utils/cn-classes";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { cn } from "@/lib/utils";
 import React from "react";
 import { FormProvider, UseFormReturn } from "react-hook-form";
 

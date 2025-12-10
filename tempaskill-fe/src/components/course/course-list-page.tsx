@@ -1,5 +1,6 @@
 "use client";
 
+import { formatCurrency } from "@/app/utils/format-currency";
 import { SearchAndFilters } from "@/components/admin/search-and-filters";
 import { ColumnDef, DataTable } from "@/components/common";
 import { CourseActions } from "@/components/course/course-actions";
@@ -23,7 +24,6 @@ import {
   DIFFICULTY_COLORS,
   DIFFICULTY_LABELS,
 } from "@/lib/constants";
-import { formatCurrency } from "@/lib/utils";
 import type { Course } from "@/types/api";
 import { Plus } from "lucide-react";
 import Link from "next/link";
