@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useCourseById } from "@/hooks/use-courses";
 import { useLesson, useUpdateLesson } from "@/hooks/use-lessons";
 import { ROUTES } from "@/lib/constants";
+import { ApiError, getError } from "@/lib/get-error";
 import { AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use, useState } from "react";
@@ -81,12 +82,11 @@ export default function EditLessonPage({ params }: PageProps) {
       });
 
       router.push(ROUTES.ADMIN.COURSE_LESSONS(courseId));
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Gagal memperbarui pelajaran";
-      setError(errorMessage);
+    } catch (err: unknown) {
+      const message = getError(err as ApiError, "Gagal memperbarui pelajaran");
+      setError(message);
       toast.error("Gagal memperbarui pelajaran", {
-        description: errorMessage,
+        description: message,
       });
     }
   };

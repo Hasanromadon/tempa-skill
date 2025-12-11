@@ -33,6 +33,16 @@ export interface User {
   avatar_url?: string;
   created_at: string;
   updated_at?: string;
+  status?: "active" | "inactive" | "banned";
+}
+
+export interface UserDashboardDetail extends User {
+  enrolled_courses_count: number;
+  completed_courses_count: number;
+  total_spent: number;
+  enrolled_count: number;
+  completed_count: number;
+  progress_percentage: number;
 }
 
 export interface AuthResponse {

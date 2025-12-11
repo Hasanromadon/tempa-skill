@@ -24,6 +24,7 @@ import {
   useUpdateProfile,
 } from "@/hooks";
 import { PASSWORD_MIN_LENGTH, ROUTES } from "@/lib/constants";
+import { getError } from "@/lib/get-error";
 import {
   GraduationCap,
   Info,
@@ -99,9 +100,9 @@ export default function ProfilePage() {
         description: "Informasi Anda berhasil disimpan.",
       });
     } catch (err: unknown) {
-      const error = err as ApiError;
-      toast.error("Gagal", {
-        description: error.message || "Terjadi kesalahan.",
+      const error = getError(err as ApiError, "Gagal memperbarui profil");
+      toast.error("Gagal Memperbarui Profil", {
+        description: error,
       });
     }
   };
@@ -143,10 +144,9 @@ export default function ProfilePage() {
       setNewPassword("");
       setConfirmPassword("");
     } catch (err: unknown) {
-      const error = err as ApiError;
-      toast.error("Gagal", {
-        description:
-          error.response?.data?.error?.message || "Kata sandi saat ini salah.",
+      const error = getError(err as ApiError, "Gagal mengubah kata sandi");
+      toast.error("Gagal Mengubah Kata Sandi", {
+        description: error,
       });
     }
   };
@@ -156,14 +156,6 @@ export default function ProfilePage() {
     router.push(ROUTES.LOGIN);
     return null;
   }
-
-  const getInitials = (name: string) =>
-    name
-      ?.split(" ")
-      .map((n) => n[0])
-      .slice(0, 2)
-      .join("")
-      .toUpperCase();
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans pb-20">

@@ -14,10 +14,12 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useCourses, useCreateSession } from "@/hooks";
 import { ROUTES } from "@/lib/constants";
+import { ApiError, getError } from "@/lib/get-error";
 import { ArrowLeft, Calendar, Clock, Users, Video } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 interface CreateSessionForm {
   course_id: number;
@@ -56,9 +58,12 @@ export default function NewSessionPage() {
       });
 
       router.push(ROUTES.ADMIN.SESSIONS);
-    } catch (error) {
-      console.error("Failed to create session:", error);
-      alert("Gagal membuat sesi");
+    } catch (err: unknown) {
+      const message = getError(err as ApiError, "Gagal membuat sesi");
+
+      toast.error("Gagal membuat sesi", {
+        description: message,
+      });
     }
   };
 

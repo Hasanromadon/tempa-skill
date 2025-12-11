@@ -4,6 +4,7 @@ import { LoadingScreen, PageHeader } from "@/components/common";
 import { LessonForm } from "@/components/lesson/lesson-form";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useCourseById, useCreateLesson } from "@/hooks";
+import { ApiError, getError } from "@/lib/get-error";
 import { createLessonSchema } from "@/lib/validators";
 import { useRouter } from "next/navigation";
 import { use, useState } from "react";
@@ -48,14 +49,11 @@ export default function InstructorNewLessonPage({ params }: PageProps) {
 
       router.push(`/instructor/courses/${courseId}/lessons`);
     } catch (err) {
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : "Gagal membuat pelajaran. Silakan coba lagi.";
-      setError(errorMessage);
-      toast.error("Gagal membuat pelajaran", {
-        description: errorMessage,
-      });
+      const messageMessage = getError(
+        err as ApiError,
+        "Gagal membuat pelajaran"
+      );
+      setError(messageMessage);
     }
   };
 

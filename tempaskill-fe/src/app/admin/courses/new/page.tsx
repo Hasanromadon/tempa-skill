@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/common";
 import { CourseForm } from "@/components/course/course-form";
 import { useCreateCourse } from "@/hooks/use-courses";
 import { ROUTES } from "@/lib/constants";
+import { ApiError, getError } from "@/lib/get-error";
 import { courseSchema } from "@/lib/validators";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -36,14 +37,11 @@ export default function NewCoursePage() {
       });
 
       router.push(ROUTES.ADMIN.COURSES);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : "Gagal membuat kursus. Silakan coba lagi.";
-      setError(errorMessage);
+    } catch (err: unknown) {
+      const message = getError(err as ApiError, "Gagal membuat kursus");
+      setError(message);
       toast.error("Gagal membuat kursus", {
-        description: errorMessage,
+        description: message,
       });
     }
   };

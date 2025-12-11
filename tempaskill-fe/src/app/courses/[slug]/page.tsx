@@ -38,6 +38,7 @@ import {
   useIssueCertificate,
 } from "@/hooks/use-certificate";
 import { DIFFICULTY_LABELS, ROUTES } from "@/lib/constants";
+import { ApiError, getError } from "@/lib/get-error";
 import {
   ArrowLeft,
   Award,
@@ -66,17 +67,6 @@ interface PageProps {
   params: Promise<{
     slug: string;
   }>;
-}
-
-// Define the expected structure of the API error response
-interface ApiError {
-  response?: {
-    data?: {
-      error?: {
-        message?: string;
-      };
-    };
-  };
 }
 
 // --- Icons Components ---
@@ -169,10 +159,11 @@ export default function CourseDetailPage({ params }: PageProps) {
         description: `Selamat belajar di kursus "${course.title}"`,
       });
     } catch (err: unknown) {
-      const apiError = err as ApiError;
-      const msg = apiError.response?.data?.error?.message || "Gagal mendaftar.";
-      setEnrollError(msg);
-      toast.error(msg);
+      const error = getError(err as ApiError, "Gagal mendaftar");
+      setEnrollError(error);
+      toast.error("Gagal mendaftar Kursus", {
+        description: error,
+      });
     }
   };
 
@@ -181,9 +172,11 @@ export default function CourseDetailPage({ params }: PageProps) {
     try {
       await unenrollCourse.mutateAsync(course.id);
       toast.success("Berhasil keluar dari kursus");
-    } catch (err) {
-      console.error(err);
-      toast.error("Gagal keluar dari kursus");
+    } catch (err: unknown) {
+      const error = getError(err as ApiError, "Gagal keluar dari kursus");
+      toast.error("Gagal keluar dari kursus", {
+        description: error,
+      });
     }
   };
 
@@ -259,7 +252,7 @@ export default function CourseDetailPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-gray-50/50 pb-20">
       {/* --- Hero Section --- */}
-      <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white relative overflow-hidden">
+      <div className="bg-linear-to-r from-slate-900 to-slate-800 text-white relative overflow-hidden">
         {/* Abstract Background Decoration */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
 

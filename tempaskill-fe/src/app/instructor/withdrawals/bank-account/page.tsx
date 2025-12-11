@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBankAccount, useCreateBankAccount } from "@/hooks/use-withdrawal";
+import { getError } from "@/lib/get-error";
 import {
   Building2,
   CheckCircle2,
@@ -77,12 +78,9 @@ export default function BankAccountPage() {
       );
       router.push("/instructor/withdrawals");
     } catch (err: unknown) {
-      const error = err as ApiError;
+      const message = getError(err as ApiError, "Gagal menambahkan rekening");
       toast.error("Gagal menambahkan rekening", {
-        description:
-          error.response?.data?.error?.message ||
-          error.message ||
-          "Terjadi kesalahan saat menyimpan data.",
+        description: message,
       });
     }
   };

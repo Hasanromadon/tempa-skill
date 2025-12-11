@@ -5,6 +5,7 @@ import { CourseForm } from "@/components/course/course-form";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useCourseById, useUpdateCourse } from "@/hooks/use-courses";
 import { ROUTES } from "@/lib/constants";
+import { ApiError, getError } from "@/lib/get-error";
 import { courseSchema } from "@/lib/validators";
 import { AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -52,14 +53,12 @@ export default function EditCoursePage({ params }: PageProps) {
       });
 
       router.push(ROUTES.ADMIN.COURSES);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : "Gagal memperbarui kursus. Silakan coba lagi.";
-      setError(errorMessage);
+    } catch (err: unknown) {
+      const message = getError(err as ApiError, "Gagal memperbarui kursus");
+
+      setError(message);
       toast.error("Gagal memperbarui kursus", {
-        description: errorMessage,
+        description: message,
       });
     }
   };

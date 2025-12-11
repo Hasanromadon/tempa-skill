@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useCourseById } from "@/hooks/use-courses";
 import { useCourseLessons, useCreateLesson } from "@/hooks/use-lessons";
 import { ROUTES } from "@/lib/constants";
+import { ApiError, getError } from "@/lib/get-error";
 import { AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use, useState } from "react";
@@ -86,12 +87,11 @@ export default function NewLessonPage({ params }: PageProps) {
       });
 
       router.push(ROUTES.ADMIN.COURSE_LESSONS(courseId));
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Gagal membuat pelajaran";
-      setError(errorMessage);
+    } catch (err: unknown) {
+      const message = getError(err as ApiError, "Gagal membuat pelajaran");
+      setError(message);
       toast.error("Gagal membuat pelajaran", {
-        description: errorMessage,
+        description: message,
       });
     }
   };

@@ -16,6 +16,7 @@ import {
   useProcessWithdrawal,
   useVerifyBankAccount,
 } from "@/hooks/use-withdrawal";
+import { ApiError, getError } from "@/lib/get-error";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import {
@@ -52,11 +53,6 @@ export default function WithdrawalDetailPage({ params }: PageProps) {
   const [showApproveForm, setShowApproveForm] = useState(false);
   const [showRejectForm, setShowRejectForm] = useState(false);
 
-  // Error type definition for consistent handling
-  interface ApiError {
-    response?: { data?: { error?: string } };
-  }
-
   const withdrawal = withdrawals?.find((w) => w.id === parseInt(id));
 
   const handleApprove = async () => {
@@ -70,8 +66,13 @@ export default function WithdrawalDetailPage({ params }: PageProps) {
       toast.success("Penarikan berhasil disetujui");
       router.push("/admin/withdrawals");
     } catch (error: unknown) {
-      const err = error as ApiError;
-      toast.error(err.response?.data?.error || "Gagal menyetujui penarikan");
+      const description = getError(
+        error as ApiError,
+        "Gagal menyetujui penarikan"
+      );
+      toast.error("Gagal menyetujui penarikan", {
+        description,
+      });
     }
   };
 
@@ -91,8 +92,13 @@ export default function WithdrawalDetailPage({ params }: PageProps) {
       toast.success("Penarikan berhasil ditolak");
       router.push("/admin/withdrawals");
     } catch (error: unknown) {
-      const err = error as ApiError;
-      toast.error(err.response?.data?.error || "Gagal menolak penarikan");
+      const description = getError(
+        error as ApiError,
+        "Gagal menolak penarikan"
+      );
+      toast.error("Gagal menolak penarikan", {
+        description,
+      });
     }
   };
 
@@ -108,8 +114,13 @@ export default function WithdrawalDetailPage({ params }: PageProps) {
 
       toast.success("Rekening bank berhasil diverifikasi");
     } catch (error: unknown) {
-      const err = error as ApiError;
-      toast.error(err.response?.data?.error || "Gagal memverifikasi rekening");
+      const description = getError(
+        error as ApiError,
+        "Gagal memverifikasi rekening bank"
+      );
+      toast.error("Gagal memverifikasi rekening bank", {
+        description,
+      });
     }
   };
 

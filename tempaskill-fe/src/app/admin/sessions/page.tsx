@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/table";
 import { useDeleteSession, useSessions } from "@/hooks";
 import { ROUTES } from "@/lib/constants";
+import { ApiError, getError } from "@/lib/get-error";
 import type { Session } from "@/types/api";
 import {
   Calendar,
@@ -42,6 +43,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function AdminSessionsPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -90,8 +92,10 @@ export default function AdminSessionsPage() {
       try {
         await deleteSession.mutateAsync(sessionId);
       } catch (error) {
-        console.error("Failed to delete session:", error);
-        alert("Gagal menghapus sesi");
+        const message = getError(error as ApiError, "Gagal menghapus sesi");
+        toast.error("Gagal menghapus sesi", {
+          description: message,
+        });
       }
     }
   };

@@ -33,6 +33,7 @@ import {
 import { useBulkSelection } from "@/hooks/use-bulk-selection";
 import type { User } from "@/hooks/use-users";
 import { ExportColumn, exportToCSV } from "@/lib/export-csv";
+import { ApiError, getError } from "@/lib/get-error";
 import {
   Ban,
   CheckCircle,
@@ -286,9 +287,10 @@ export default function AdminUsersPage() {
 
       // Refetch users
       table.refetch();
-    } catch {
+    } catch (error: unknown) {
+      const message = getError(error as ApiError, "Gagal menghapus pengguna");
       toast.error("Gagal menghapus pengguna", {
-        description: "Silakan coba lagi.",
+        description: message,
       });
     }
   }, [userToDelete, deleteUser, table]);
@@ -328,9 +330,9 @@ export default function AdminUsersPage() {
         // Refetch users
         table.refetch();
       } catch (error: unknown) {
-        const err = error as { response?: { data?: { error?: string } } };
+        const errorMessage = getError(error as ApiError, "Gagal mengubah role");
         toast.error("Gagal mengubah role", {
-          description: err?.response?.data?.error || "Silakan coba lagi.",
+          description: errorMessage,
         });
       }
     },
@@ -359,9 +361,10 @@ export default function AdminUsersPage() {
 
         // Refetch users
         table.refetch();
-      } catch {
+      } catch (error: unknown) {
+        const message = getError(error as ApiError, `Gagal ${action} pengguna`);
         toast.error(`Gagal ${action} pengguna`, {
-          description: "Silakan coba lagi.",
+          description: message,
         });
       }
     },

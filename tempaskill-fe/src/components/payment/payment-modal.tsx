@@ -1,6 +1,7 @@
 "use client";
 
 import { formatCurrency } from "@/app/utils/format-currency";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,53 +13,21 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { useCreatePayment, usePaymentStatus } from "@/hooks/use-payment";
-
 import {
+  AlertCircle,
   Building2,
-  CheckCircle,
-  Clock,
+  CheckCircle2,
   CreditCard,
   ExternalLink,
+  Loader2,
   QrCode,
   Smartphone,
-  XCircle,
+  Wallet,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-// Declare Midtrans Snap type
-declare global {
-  interface Window {
-    snap?: {
-      pay: (token: string, options?: SnapPayOptions) => void;
-      embed: (
-        token: string,
-        options: {
-          embedId: string;
-          onSuccess?: () => void;
-          onPending?: () => void;
-          onError?: () => void;
-          onClose?: () => void;
-        }
-      ) => void;
-    };
-  }
-}
-
-interface SnapPayResult {
-  order_id: string;
-  status_code: string;
-  transaction_status: string;
-  gross_amount: string;
-}
-
-interface SnapPayOptions {
-  onSuccess?: (result: SnapPayResult) => void;
-  onPending?: (result: SnapPayResult) => void;
-  onError?: (result: SnapPayResult) => void;
-  onClose?: () => void;
-}
-
+// --- TYPE DEFINITIONS ---
 interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -73,29 +42,33 @@ const PAYMENT_METHODS = [
     id: "gopay",
     name: "GoPay",
     icon: Smartphone,
-    description: "Bayar dengan GoPay atau GoPayLater",
+    desc: "Scan QR atau aplikasi Gojek",
     color: "text-green-600",
+    bg: "bg-green-50",
   },
   {
     id: "qris",
     name: "QRIS",
     icon: QrCode,
-    description: "Scan QR code dengan aplikasi e-wallet",
+    desc: "Scan dengan OVO, Dana, LinkAja",
     color: "text-purple-600",
+    bg: "bg-purple-50",
   },
   {
     id: "bank_transfer",
     name: "Transfer Bank",
     icon: Building2,
-    description: "Transfer ke rekening bank",
+    desc: "BCA, Mandiri, BNI, BRI",
     color: "text-blue-600",
+    bg: "bg-blue-50",
   },
   {
     id: "credit_card",
-    name: "Kartu Kredit",
+    name: "Kartu Kredit/Debit",
     icon: CreditCard,
-    description: "Bayar dengan kartu kredit/debit",
+    desc: "Visa, Mastercard, JCB",
     color: "text-orange-600",
+    bg: "bg-orange-50",
   },
 ] as const;
 
@@ -107,44 +80,15 @@ export function PaymentModal({
   coursePrice,
   onSuccess,
 }: PaymentModalProps) {
-  const [selectedMethod, setSelectedMethod] = useState<string>("");
+  const [selectedMethod, setSelectedMethod] = useState<
+    "gopay" | "bank_transfer" | "credit_card" | "qris" | ""
+  >("");
   const [orderId, setOrderId] = useState<string>("");
 
   const createPayment = useCreatePayment();
   const { data: paymentStatus } = usePaymentStatus(orderId);
-  const [snapLoaded, setSnapLoaded] = useState(false);
 
-  // Load Midtrans Snap.js script
-  useEffect(() => {
-    console.log("📦 Loading Snap.js script...");
-    const snapScript = document.createElement("script");
-    snapScript.src = "https://app.sandbox.midtrans.com/snap/snap.js";
-    snapScript.setAttribute(
-      "data-client-key",
-      "SB-Mid-client-ZBuTiayOZocEGgLJ"
-    );
-    snapScript.async = true;
-
-    snapScript.onload = () => {
-      console.log("✅ Snap.js loaded successfully");
-      setSnapLoaded(true);
-    };
-
-    snapScript.onerror = () => {
-      console.error("❌ Failed to load Snap.js");
-    };
-
-    document.body.appendChild(snapScript);
-
-    return () => {
-      // Cleanup
-      if (document.body.contains(snapScript)) {
-        document.body.removeChild(snapScript);
-      }
-    };
-  }, []);
-
-  // Reset state when modal opens
+  // Reset state on open
   useEffect(() => {
     if (isOpen) {
       setSelectedMethod("");
@@ -152,18 +96,20 @@ export function PaymentModal({
     }
   }, [isOpen]);
 
-  // Handle payment status changes
+  // Payment Status Handler
   useEffect(() => {
     if (paymentStatus) {
       if (paymentStatus.transaction_status === "settlement") {
-        toast.success("Pembayaran berhasil!", {
-          description: "Anda sekarang dapat mengakses kursus ini.",
+        toast.success("Pembayaran Berhasil!", {
+          description: "Selamat belajar! Akses kursus telah dibuka.",
         });
         onSuccess?.();
         onClose();
-      } else if (paymentStatus.transaction_status === "failure") {
-        toast.error("Pembayaran gagal", {
-          description: "Silakan coba lagi atau pilih metode pembayaran lain.",
+      } else if (
+        ["failure", "deny"].includes(paymentStatus.transaction_status)
+      ) {
+        toast.error("Pembayaran Gagal", {
+          description: "Silakan coba metode pembayaran lain.",
         });
       }
     }
@@ -175,281 +121,170 @@ export function PaymentModal({
     try {
       const result = await createPayment.mutateAsync({
         course_id: courseId,
-        payment_method: selectedMethod as
-          | "gopay"
-          | "bank_transfer"
-          | "credit_card"
-          | "qris",
+        payment_method: selectedMethod,
       });
 
-      if (!result) {
-        throw new Error("Failed to create payment transaction");
-      }
+      if (!result) throw new Error("Gagal membuat transaksi");
 
       setOrderId(result.order_id);
 
-      console.log("🔍 Payment Result:", {
-        snap_token: result.snap_token,
-        payment_url: result.payment_url,
-        selectedMethod,
-        snapLoaded,
-        windowSnap: !!window.snap,
-      });
-
-      // Check if this is an existing pending payment (created within 24 hours)
+      // Handle Existing Pending Payment
       const createdTime = new Date(result.created_at).getTime();
-      const now = Date.now();
-      const ageInMinutes = (now - createdTime) / (1000 * 60);
+      const ageInMinutes = (Date.now() - createdTime) / (1000 * 60);
 
       if (result.transaction_status === "pending" && ageInMinutes > 5) {
-        // Existing payment (more than 5 minutes old)
-        toast.info("Pembayaran Sudah Ada", {
-          description:
-            "Anda sudah memiliki pembayaran pending untuk kursus ini. Silakan selesaikan pembayaran sebelumnya.",
-        });
-      } else if (result.transaction_status === "pending" && ageInMinutes <= 5) {
-        // New payment (just created)
-        toast.success("Transaksi dibuat", {
-          description: "Silakan selesaikan pembayaran di tab yang terbuka.",
-        });
-      }
-
-      // TEMPORARY FIX: Always use redirect URL instead of Snap popup
-      // Reason: Merchant account needs proper payment method configuration
-      if (result.payment_url) {
-        console.log("🔄 Opening payment URL in new tab");
-        window.open(result.payment_url, "_blank");
-        return;
-      }
-
-      // Original Snap.js integration (commented out until merchant is configured)
-      /*
-      // Use Snap.js for GoPay and QRIS (requires snap_token)
-      if (
-        result.snap_token &&
-        (selectedMethod === "gopay" || selectedMethod === "qris")
-      ) {
-        console.log("✅ Attempting to open Snap popup");
-        
-        if (!window.snap || !snapLoaded) {
-          console.error("❌ Snap not ready:", { windowSnap: !!window.snap, snapLoaded });
-          toast.error("Snap.js belum siap", {
-            description: "Tunggu sebentar dan coba lagi.",
-          });
-          return;
-        }
-
-        // Open Snap payment popup
-        console.log("🚀 Opening Snap with token:", result.snap_token);
-        
-        try {
-          window.snap.pay(result.snap_token, {
-            onSuccess: () => {
-              toast.success("Pembayaran berhasil!", {
-                description: "Anda sekarang dapat mengakses kursus ini.",
-              });
-              onSuccess?.();
-              onClose();
-            },
-            onPending: () => {
-              toast.info("Pembayaran pending", {
-                description: "Silakan selesaikan pembayaran Anda.",
-              });
-            },
-            onError: () => {
-              toast.error("Pembayaran gagal", {
-                description:
-                  "Silakan coba lagi atau pilih metode pembayaran lain.",
-              });
-            },
-            onClose: () => {
-              // User closed the popup
-            },
-          });
-        } catch (error) {
-          console.error("❌ Snap.pay error:", error);
-          // Fallback: open redirect URL if Snap popup fails
-          if (result.payment_url) {
-            console.log("🔄 Falling back to redirect URL");
-            window.open(result.payment_url, "_blank");
-            toast.info("Pembayaran dibuka di tab baru", {
-              description: "Silakan selesaikan pembayaran di halaman yang terbuka.",
-            });
-          }
-        }
-      } else if (result.payment_url) {
-        // Fallback to redirect for other payment methods
-        window.open(result.payment_url, "_blank");
-        toast.success("Transaksi dibuat", {
-          description: "Silakan selesaikan pembayaran di tab baru.",
+        toast.info("Lanjutkan Pembayaran", {
+          description: "Anda memiliki transaksi pending. Silakan selesaikan.",
         });
       } else {
-        toast.error("Gagal membuat transaksi", {
-          description: "Tidak ada payment URL atau snap token.",
+        toast.success("Link Pembayaran Siap", {
+          description: "Silakan selesaikan pembayaran di tab baru.",
         });
       }
-      */
+
+      // Always redirect to Midtrans hosted page for reliability
+      if (result.payment_url) {
+        window.open(result.payment_url, "_blank");
+      } else {
+        toast.error("Gagal membuka halaman pembayaran");
+      }
     } catch (error) {
-      console.error("Payment creation error:", error);
-      toast.error("Gagal membuat transaksi", {
-        description: "Silakan coba lagi.",
+      console.error("Payment Error:", error);
+      toast.error("Gagal memproses", {
+        description: "Terjadi kesalahan saat membuat transaksi.",
       });
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "settlement":
-        return <CheckCircle className="h-5 w-5 text-green-600" />;
-      case "pending":
-        return <Clock className="h-5 w-5 text-yellow-600" />;
-      case "failure":
-      case "cancel":
-      case "expire":
-        return <XCircle className="h-5 w-5 text-red-600" />;
-      default:
-        return <Clock className="h-5 w-5 text-gray-600" />;
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "settlement":
-        return "Pembayaran Berhasil";
-      case "pending":
-        return "Menunggu Pembayaran";
-      case "failure":
-        return "Pembayaran Gagal";
-      case "cancel":
-        return "Dibatalkan";
-      case "expire":
-        return "Kadaluarsa";
-      default:
-        return "Status Tidak Diketahui";
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Bayar Kursus</DialogTitle>
+      <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden">
+        <DialogHeader className="px-6 py-4 border-b bg-slate-50">
+          <DialogTitle className="flex items-center gap-2">
+            <Wallet className="w-5 h-5 text-orange-600" />
+            Pembayaran Kursus
+          </DialogTitle>
           <DialogDescription>
-            Selesaikan pembayaran untuk mengakses kursus ini
+            Selesaikan pembayaran untuk mulai belajar.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {/* Course Info */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-semibold text-lg">{courseTitle}</h3>
-            <div className="flex items-center justify-between mt-2">
-              <span className="text-2xl font-bold text-orange-600">
+        <div className="p-6 space-y-6">
+          {/* 1. ORDER SUMMARY */}
+          <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+            <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-1">
+              Item Pembelian
+            </p>
+            <h3 className="font-bold text-slate-900 line-clamp-1">
+              {courseTitle}
+            </h3>
+            <Separator className="my-3 bg-slate-200" />
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-slate-600">Total Harga</span>
+              <span className="text-xl font-bold text-orange-600">
                 {formatCurrency(coursePrice)}
               </span>
             </div>
           </div>
 
-          {/* Payment Status */}
-          {paymentStatus && (
-            <div className="bg-blue-50 p-4 rounded-lg border">
-              <div className="flex items-center gap-2 mb-2">
-                {getStatusIcon(paymentStatus.transaction_status)}
-                <span className="font-medium">
-                  {getStatusText(paymentStatus.transaction_status)}
-                </span>
-              </div>
-              <p className="text-sm text-gray-600">
-                Order ID: {paymentStatus.order_id}
-              </p>
+          {/* 2. PAYMENT STATUS (If transaction created) */}
+          {paymentStatus ? (
+            <div className="space-y-4">
+              <Alert
+                className={`border-l-4 ${
+                  paymentStatus.transaction_status === "pending"
+                    ? "border-l-yellow-500 bg-yellow-50"
+                    : paymentStatus.transaction_status === "failure"
+                    ? "border-l-red-500 bg-red-50"
+                    : "bg-slate-50"
+                }`}
+              >
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="text-sm font-medium">
+                  Status:{" "}
+                  <span className="uppercase">
+                    {paymentStatus.transaction_status}
+                  </span>
+                </AlertDescription>
+              </Alert>
+
               {paymentStatus.payment_url && (
                 <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-2"
+                  className="w-full bg-slate-900 hover:bg-slate-800"
                   onClick={() =>
                     window.open(paymentStatus.payment_url, "_blank")
                   }
                 >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Buka Halaman Pembayaran
+                  <ExternalLink className="w-4 h-4 mr-2" /> Buka Halaman
+                  Pembayaran
                 </Button>
               )}
             </div>
-          )}
-
-          {/* Payment Methods */}
-          {!orderId && (
-            <>
-              <div>
-                <h4 className="font-medium mb-3">Pilih Metode Pembayaran</h4>
-                <div className="space-y-2">
-                  {PAYMENT_METHODS.map((method) => {
-                    const Icon = method.icon;
-                    return (
-                      <button
-                        key={method.id}
-                        onClick={() => setSelectedMethod(method.id)}
-                        className={`w-full p-3 border rounded-lg text-left transition-colors ${
-                          selectedMethod === method.id
-                            ? "border-orange-500 bg-orange-50"
-                            : "border-gray-200 hover:border-gray-300"
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <Icon className={`h-5 w-5 ${method.color}`} />
-                          <div>
-                            <div className="font-medium">{method.name}</div>
-                            <div className="text-sm text-gray-600">
-                              {method.description}
-                            </div>
-                          </div>
+          ) : (
+            /* 3. PAYMENT METHODS SELECTION */
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-slate-700">
+                Pilih Metode Pembayaran
+              </p>
+              <div className="grid grid-cols-1 gap-2">
+                {PAYMENT_METHODS.map((method) => {
+                  const Icon = method.icon;
+                  const isSelected = selectedMethod === method.id;
+                  return (
+                    <div
+                      key={method.id}
+                      onClick={() => setSelectedMethod(method.id)}
+                      className={`flex items-center gap-4 p-3 rounded-lg border cursor-pointer transition-all ${
+                        isSelected
+                          ? "border-orange-500 bg-orange-50 ring-1 ring-orange-500"
+                          : "border-slate-200 hover:border-orange-200 hover:bg-slate-50"
+                      }`}
+                    >
+                      <div className={`p-2 rounded-full ${method.bg}`}>
+                        <Icon className={`w-5 h-5 ${method.color}`} />
+                      </div>
+                      <div>
+                        <div className="font-semibold text-sm text-slate-900">
+                          {method.name}
                         </div>
-                      </button>
-                    );
-                  })}
-                </div>
+                        <div className="text-xs text-slate-500">
+                          {method.desc}
+                        </div>
+                      </div>
+                      {isSelected && (
+                        <CheckCircle2 className="w-5 h-5 text-orange-600 ml-auto" />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-
-              <Separator />
-
-              <div className="text-sm text-gray-600">
-                <p>• Pembayaran akan diproses secara real-time</p>
-                <p>
-                  • Kursus akan langsung dapat diakses setelah pembayaran
-                  berhasil
-                </p>
-              </div>
-            </>
+            </div>
           )}
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="px-6 py-4 bg-slate-50 border-t border-slate-100">
           {!orderId ? (
-            <>
-              <Button variant="outline" onClick={onClose}>
+            <div className="flex w-full gap-3">
+              <Button variant="outline" className="flex-1" onClick={onClose}>
                 Batal
               </Button>
               <Button
+                className="flex-1 bg-orange-600 hover:bg-orange-700 text-white"
                 onClick={handlePayment}
-                disabled={
-                  !selectedMethod ||
-                  createPayment.isPending ||
-                  ((selectedMethod === "gopay" || selectedMethod === "qris") &&
-                    !snapLoaded)
-                }
-                className="bg-orange-600 hover:bg-orange-700"
+                disabled={!selectedMethod || createPayment.isPending}
               >
-                {createPayment.isPending
-                  ? "Memproses..."
-                  : !snapLoaded &&
-                    (selectedMethod === "gopay" || selectedMethod === "qris")
-                  ? "Loading Snap.js..."
-                  : "Bayar Sekarang"}
+                {createPayment.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />{" "}
+                    Memproses...
+                  </>
+                ) : (
+                  "Bayar Sekarang"
+                )}
               </Button>
-            </>
+            </div>
           ) : (
-            <Button variant="outline" onClick={onClose}>
+            <Button variant="outline" className="w-full" onClick={onClose}>
               Tutup
             </Button>
           )}

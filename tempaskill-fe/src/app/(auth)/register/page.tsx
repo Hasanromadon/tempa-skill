@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useRegister } from "@/hooks";
 import { setAuthToken } from "@/lib/auth-token";
 import { MESSAGES, ROUTES } from "@/lib/constants";
+import { ApiError, getError } from "@/lib/get-error";
 import { registerSchema, type RegisterInput } from "@/lib/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, CheckCircle2, Zap } from "lucide-react";
@@ -13,18 +14,6 @@ import { useRouter } from "next/navigation";
 import { Suspense, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-
-// ✅ Type Definitions
-interface ApiError {
-  response?: {
-    data?: {
-      error?: {
-        message?: string;
-      };
-    };
-  };
-  message?: string;
-}
 
 function RegisterForm() {
   const router = useRouter();
@@ -54,11 +43,11 @@ function RegisterForm() {
         router.push(ROUTES.DASHBOARD);
       }
     } catch (err: unknown) {
-      const error = err as ApiError;
-      const errorMessage =
-        error.response?.data?.error?.message ||
-        "Pendaftaran gagal. Silakan coba lagi.";
-      setApiError(errorMessage);
+      const message = getError(
+        err as ApiError,
+        "Pendaftaran gagal. Silakan coba lagi."
+      );
+      setApiError(message);
     }
   };
 

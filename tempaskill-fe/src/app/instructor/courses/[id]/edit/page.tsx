@@ -4,6 +4,7 @@ import { LoadingScreen, PageHeader } from "@/components/common";
 import { CourseForm } from "@/components/course/course-form";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useCourseById, useUpdateCourse } from "@/hooks/use-courses";
+import { ApiError, getError } from "@/lib/get-error";
 import { courseSchema } from "@/lib/validators";
 import { useRouter } from "next/navigation";
 import { use, useState } from "react";
@@ -35,14 +36,11 @@ export default function InstructorEditCoursePage({ params }: PageProps) {
       });
 
       router.push("/instructor/courses");
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : "Gagal memperbarui kursus. Silakan coba lagi.";
-      setError(errorMessage);
+    } catch (err: unknown) {
+      const message = getError(err as ApiError, "Gagal memperbarui kursus");
+
       toast.error("Gagal memperbarui kursus", {
-        description: errorMessage,
+        description: message,
       });
     }
   };

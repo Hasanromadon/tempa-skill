@@ -31,7 +31,7 @@ import {
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import React, { useState } from "react";
 
 type WithdrawalStatus =
   | "pending"
@@ -44,7 +44,11 @@ type WithdrawalStatus =
 // Helper untuk status config
 const STATUS_CONFIG: Record<
   string,
-  { label: string; color: string; icon: any }
+  {
+    label: string;
+    color: string;
+    icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  }
 > = {
   pending: {
     label: "Menunggu Approval",
@@ -352,7 +356,7 @@ function StatsCard({
 }: {
   title: string;
   value: string | number;
-  icon: any;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   color: "blue" | "yellow" | "green" | "orange";
   isCurrency?: boolean;
   highlight?: boolean;

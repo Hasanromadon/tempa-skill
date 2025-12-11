@@ -1,6 +1,6 @@
 "use client";
 
-import { formatDate } from "@/app/utils/format-date";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,13 +24,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import apiClient from "@/lib/api-client";
 import { API_ENDPOINTS } from "@/lib/constants";
+import { ApiError, getError } from "@/lib/get-error";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  AlertTriangle,
   Building2,
-  CheckCircle,
+  CheckCircle2,
   Clock,
+  CreditCard,
+  Filter,
+  Loader2,
   Search,
-  User,
   XCircle,
 } from "lucide-react";
 import { useState } from "react";
@@ -52,6 +56,7 @@ interface BankAccount {
     id: number;
     name: string;
     email: string;
+    avatar_url?: string; // Add if available
   };
 }
 
@@ -112,8 +117,13 @@ export default function BankAccountsPage() {
       setActionType("approve");
     },
     onError: (error: unknown) => {
-      const err = error as { response?: { data?: { error?: string } } };
-      toast.error(err.response?.data?.error || "Gagal memproses rekening");
+      const description = getError(
+        error as ApiError,
+        "Gagal melakukan verifikasi rekening"
+      );
+      toast.error("Gagal memproses rekening", {
+        description,
+      });
     },
   });
 
@@ -138,306 +148,334 @@ export default function BankAccountsPage() {
       accounts?.filter((a) => a.verification_status === "rejected").length || 0,
   };
 
+  // Helper for initials
+  const getInitials = (name: string) =>
+    name?.substring(0, 2).toUpperCase() || "U";
+
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Skeleton className="h-10 w-64 mb-6" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          {[...Array(3)].map((_, i) => (
-            <Skeleton key={i} className="h-24" />
+      <div className="container mx-auto px-4 py-8 space-y-6">
+        <Skeleton className="h-10 w-64" />
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-24 rounded-xl" />
           ))}
         </div>
+        <Skeleton className="h-96 rounded-xl" />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Validasi Rekening Bank</h1>
+    <div className="min-h-screen bg-slate-50/50 pb-20 font-sans">
+      <div className="container mx-auto px-4 py-8">
+        {/* 🌟 HEADER */}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+              Validasi Rekening Bank
+            </h1>
+            <p className="text-slate-500 text-sm mt-1">
+              Verifikasi rekening instruktur untuk pencairan dana.
+            </p>
+          </div>
+        </div>
 
-      {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Total Rekening
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
-          </CardContent>
-        </Card>
+        {/* 🌟 STATS CARDS */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <StatsCard
+            title="Total Rekening"
+            value={stats.total}
+            icon={Building2}
+            color="blue"
+          />
+          <StatsCard
+            title="Menunggu Verifikasi"
+            value={stats.pending}
+            icon={Clock}
+            color="yellow"
+            highlight
+          />
+          <StatsCard
+            title="Terverifikasi"
+            value={stats.verified}
+            icon={CheckCircle2}
+            color="green"
+          />
+          <StatsCard
+            title="Ditolak"
+            value={stats.rejected}
+            icon={XCircle}
+            color="red"
+          />
+        </div>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Terverifikasi
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {stats.verified}
+        {/* 🌟 FILTERS & LIST */}
+        <Card className="border border-slate-200 shadow-sm bg-white overflow-hidden">
+          <CardHeader className="border-b border-slate-100 bg-white px-6 py-4">
+            <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+              <CardTitle className="text-base font-bold text-slate-800">
+                Daftar Rekening
+              </CardTitle>
+
+              <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Input
+                    placeholder="Cari nama, bank, atau no. rek..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-9 h-9 border-slate-200 text-sm"
+                  />
+                </div>
+
+                <Select
+                  value={statusFilter}
+                  onValueChange={(
+                    value: "all" | "pending" | "verified" | "rejected"
+                  ) => setStatusFilter(value)}
+                >
+                  <SelectTrigger className="w-full sm:w-[160px] h-9 border-slate-200 text-sm">
+                    <div className="flex items-center gap-2 text-slate-600">
+                      <Filter className="h-3.5 w-3.5" />
+                      <SelectValue placeholder="Status" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Semua Status</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="verified">Terverifikasi</SelectItem>
+                    <SelectItem value="rejected">Ditolak</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Pending
-            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">
-              {stats.pending}
-            </div>
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Ditolak
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              {stats.rejected}
-            </div>
+          <CardContent className="p-0">
+            {!filteredAccounts || filteredAccounts.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CreditCard className="h-8 w-8 text-slate-300" />
+                </div>
+                <h3 className="text-slate-900 font-medium">
+                  Tidak ada data ditemukan
+                </h3>
+                <p className="text-slate-500 text-sm mt-1">
+                  Coba ubah filter atau kata kunci pencarian.
+                </p>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {filteredAccounts.map((account) => (
+                  <div
+                    key={account.id}
+                    className="p-5 hover:bg-slate-50/80 transition-colors group"
+                  >
+                    <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center">
+                      {/* User Info */}
+                      <div className="flex items-center gap-4 min-w-[250px]">
+                        <Avatar className="h-10 w-10 border border-slate-200">
+                          <AvatarImage src={account.user?.avatar_url} />
+                          <AvatarFallback className="bg-orange-100 text-orange-700 text-xs font-bold">
+                            {getInitials(account.user?.name || "")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-semibold text-slate-900 text-sm">
+                            {account.user?.name || "N/A"}
+                          </div>
+                          <div className="text-xs text-slate-500">
+                            {account.user?.email || "N/A"}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Bank Info */}
+                      <div className="flex-1 min-w-[250px]">
+                        <div className="flex items-start gap-3">
+                          <div className="p-2 bg-blue-50 rounded-lg shrink-0 text-blue-600">
+                            <Building2 className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-slate-900">
+                              {account.bank_name}
+                            </div>
+                            <div className="text-xs text-slate-500 font-mono tracking-wide mt-0.5">
+                              {account.account_number}
+                            </div>
+                            <div className="text-xs text-slate-500 mt-0.5">
+                              a.n {account.account_holder_name}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Status & Actions */}
+                      <div className="flex flex-row lg:flex-col items-center lg:items-end justify-between gap-3 min-w-[140px] ml-auto w-full lg:w-auto">
+                        {account.verification_status === "verified" ? (
+                          <Badge
+                            variant="outline"
+                            className="bg-green-50 text-green-700 border-green-200 gap-1.5 py-1"
+                          >
+                            <CheckCircle2 className="h-3.5 w-3.5" />{" "}
+                            Terverifikasi
+                          </Badge>
+                        ) : account.verification_status === "rejected" ? (
+                          <Badge
+                            variant="outline"
+                            className="bg-red-50 text-red-700 border-red-200 gap-1.5 py-1"
+                          >
+                            <XCircle className="h-3.5 w-3.5" /> Ditolak
+                          </Badge>
+                        ) : (
+                          <Badge
+                            variant="outline"
+                            className="bg-yellow-50 text-yellow-700 border-yellow-200 gap-1.5 py-1"
+                          >
+                            <Clock className="h-3.5 w-3.5" /> Menunggu
+                          </Badge>
+                        )}
+
+                        {account.verification_status === "pending" && (
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              className="h-8 bg-green-600 hover:bg-green-700 text-white text-xs px-3 shadow-sm"
+                              onClick={() => {
+                                setSelectedAccount(account);
+                                setActionType("approve");
+                                setVerifyDialogOpen(true);
+                              }}
+                            >
+                              Setujui
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 text-xs px-3"
+                              onClick={() => {
+                                setSelectedAccount(account);
+                                setActionType("reject");
+                                setVerifyDialogOpen(true);
+                              }}
+                            >
+                              Tolak
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Filters */}
-      <Card className="mb-6">
-        <CardContent className="pt-6">
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <Label className="text-sm mb-2">Filter Status</Label>
-              <Select
-                value={statusFilter}
-                onValueChange={(
-                  value: "all" | "pending" | "verified" | "rejected"
-                ) => setStatusFilter(value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Semua Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Semua Status</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="verified">Terverifikasi</SelectItem>
-                  <SelectItem value="rejected">Ditolak</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grow">
-              <Label className="text-sm mb-2">Pencarian</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Cari nama instruktur, email, bank, atau nomor rekening..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Bank Accounts List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Daftar Rekening Bank</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {!filteredAccounts || filteredAccounts.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              <Building2 className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <p>Tidak ada rekening bank</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {filteredAccounts.map((account) => (
-                <div
-                  key={account.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
-                >
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                        <User className="h-5 w-5 text-orange-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium">
-                          {account.user?.name || "N/A"}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          {account.user?.email || "N/A"}
-                        </p>
-                      </div>
-                      {account.verification_status === "verified" ? (
-                        <Badge className="bg-green-100 text-green-800">
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          Terverifikasi
-                        </Badge>
-                      ) : account.verification_status === "rejected" ? (
-                        <Badge className="bg-red-100 text-red-800">
-                          <XCircle className="h-3 w-3 mr-1" />
-                          Ditolak
-                        </Badge>
-                      ) : (
-                        <Badge className="bg-yellow-100 text-yellow-800">
-                          <Clock className="h-3 w-3 mr-1" />
-                          Pending
-                        </Badge>
-                      )}
-                    </div>
-
-                    <div className="pl-13 space-y-1">
-                      <div className="flex items-center gap-4 text-sm">
-                        <div>
-                          <span className="text-gray-500">Bank: </span>
-                          <span className="font-medium">
-                            {account.bank_name}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-gray-500">No. Rek: </span>
-                          <span className="font-medium font-mono">
-                            {account.account_number}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-gray-500">Atas Nama: </span>
-                          <span className="font-medium">
-                            {account.account_holder_name}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        Terdaftar: {formatDate(account.created_at)}
-                      </div>
-                      {account.verification_status === "verified" &&
-                        account.verified_at && (
-                          <div className="text-xs text-gray-500">
-                            Diverifikasi: {formatDate(account.verified_at)}
-                          </div>
-                        )}
-                      {account.verification_status === "rejected" &&
-                        account.verification_notes && (
-                          <div className="text-xs text-red-600">
-                            Alasan penolakan: {account.verification_notes}
-                          </div>
-                        )}
-                    </div>
-                  </div>
-
-                  {account.verification_status === "pending" && (
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => {
-                          setSelectedAccount(account);
-                          setActionType("approve");
-                          setVerifyDialogOpen(true);
-                        }}
-                        className="bg-green-600 hover:bg-green-700"
-                        size="sm"
-                      >
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        Setujui
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          setSelectedAccount(account);
-                          setActionType("reject");
-                          setVerifyDialogOpen(true);
-                        }}
-                        variant="destructive"
-                        size="sm"
-                      >
-                        Tolak
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Verify/Reject Dialog */}
+      {/* 🌟 VERIFY DIALOG */}
       <Dialog open={verifyDialogOpen} onOpenChange={setVerifyDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
+        <DialogContent className="max-w-md p-0 gap-0 border-none shadow-xl overflow-hidden">
+          <DialogHeader
+            className={`px-6 py-4 border-b ${
+              actionType === "approve"
+                ? "bg-green-50 border-green-100"
+                : "bg-red-50 border-red-100"
+            }`}
+          >
+            <DialogTitle
+              className={`text-lg font-bold flex items-center gap-2 ${
+                actionType === "approve" ? "text-green-800" : "text-red-800"
+              }`}
+            >
+              {actionType === "approve" ? (
+                <CheckCircle2 className="w-5 h-5" />
+              ) : (
+                <AlertTriangle className="w-5 h-5" />
+              )}
               {actionType === "approve"
-                ? "Verifikasi Rekening Bank"
-                : "Tolak Rekening Bank"}
+                ? "Konfirmasi Verifikasi"
+                : "Tolak Pengajuan"}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription
+              className={
+                actionType === "approve" ? "text-green-700" : "text-red-700"
+              }
+            >
               {actionType === "approve"
-                ? "Pastikan data rekening sudah benar sebelum verifikasi"
-                : "Berikan alasan penolakan untuk instruktur"}
+                ? "Pastikan data rekening sudah valid sebelum menyetujui."
+                : "Tindakan ini akan menolak pengajuan rekening instruktur."}
             </DialogDescription>
           </DialogHeader>
 
           {selectedAccount && (
-            <div className="space-y-4">
-              <div className="p-4 bg-gray-50 rounded-lg space-y-2">
-                <div>
-                  <Label className="text-sm text-gray-600">Instruktur</Label>
-                  <p className="font-medium">{selectedAccount.user?.name}</p>
+            <div className="p-6 space-y-5 bg-white">
+              {/* Account Summary */}
+              <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-500">Instruktur:</span>
+                  <span className="font-medium text-slate-900">
+                    {selectedAccount.user?.name}
+                  </span>
                 </div>
-                <div>
-                  <Label className="text-sm text-gray-600">Bank</Label>
-                  <p className="font-medium">{selectedAccount.bank_name}</p>
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-500">Bank:</span>
+                  <span className="font-medium text-slate-900">
+                    {selectedAccount.bank_name}
+                  </span>
                 </div>
-                <div>
-                  <Label className="text-sm text-gray-600">
-                    Nomor Rekening
-                  </Label>
-                  <p className="font-medium font-mono">
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-500">No. Rekening:</span>
+                  <span className="font-mono font-medium text-slate-900">
                     {selectedAccount.account_number}
-                  </p>
+                  </span>
                 </div>
-                <div>
-                  <Label className="text-sm text-gray-600">Nama Pemegang</Label>
-                  <p className="font-medium">
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-500">Atas Nama:</span>
+                  <span className="font-medium text-slate-900">
                     {selectedAccount.account_holder_name}
-                  </p>
+                  </span>
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="verification_notes">
+              {/* Notes Input */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor="notes"
+                  className={
+                    actionType === "reject"
+                      ? "text-red-600 font-semibold"
+                      : "text-slate-700"
+                  }
+                >
                   {actionType === "approve"
                     ? "Catatan Verifikasi (Opsional)"
                     : "Alasan Penolakan *"}
                 </Label>
                 <Textarea
-                  id="verification_notes"
+                  id="notes"
                   value={verificationNotes}
                   onChange={(e) => setVerificationNotes(e.target.value)}
                   placeholder={
                     actionType === "approve"
-                      ? "Tambahkan catatan verifikasi jika diperlukan"
-                      : "Jelaskan alasan penolakan (wajib diisi)"
+                      ? "Contoh: Data valid, dicek via mutasi..."
+                      : "Jelaskan mengapa data ini ditolak..."
                   }
                   rows={3}
-                  className="mt-2"
-                  required={actionType === "reject"}
+                  className={`resize-none ${
+                    actionType === "reject"
+                      ? "border-red-200 focus-visible:ring-red-500"
+                      : "border-slate-200"
+                  }`}
                 />
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex gap-3 pt-2">
                 <Button
                   onClick={() => {
                     if (actionType === "reject" && !verificationNotes.trim()) {
-                      toast.error("Alasan penolakan harus diisi");
+                      toast.error("Alasan penolakan wajib diisi");
                       return;
                     }
                     verifyMutation.mutate({
@@ -448,28 +486,25 @@ export default function BankAccountsPage() {
                     });
                   }}
                   disabled={verifyMutation.isPending}
-                  className={
+                  className={`flex-1 text-white shadow-md transition-all active:scale-95 ${
                     actionType === "approve"
-                      ? "flex-1 bg-green-600 hover:bg-green-700"
-                      : "flex-1"
-                  }
-                  variant={actionType === "reject" ? "destructive" : "default"}
+                      ? "bg-green-600 hover:bg-green-700"
+                      : "bg-red-600 hover:bg-red-700"
+                  }`}
                 >
-                  {verifyMutation.isPending
-                    ? "Memproses..."
-                    : actionType === "approve"
-                    ? "Konfirmasi Setujui"
-                    : "Konfirmasi Tolak"}
+                  {verifyMutation.isPending ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : actionType === "approve" ? (
+                    "Ya, Verifikasi"
+                  ) : (
+                    "Tolak Pengajuan"
+                  )}
                 </Button>
                 <Button
-                  onClick={() => {
-                    setVerifyDialogOpen(false);
-                    setSelectedAccount(null);
-                    setVerificationNotes("");
-                    setActionType("approve");
-                  }}
                   variant="outline"
+                  onClick={() => setVerifyDialogOpen(false)}
                   disabled={verifyMutation.isPending}
+                  className="flex-1"
                 >
                   Batal
                 </Button>
@@ -479,5 +514,49 @@ export default function BankAccountsPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+// --- SUB COMPONENT: Stats Card ---
+function StatsCard({
+  title,
+  value,
+  icon: Icon,
+  color,
+  highlight = false,
+}: {
+  title: string;
+  value: string | number;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  color: "green" | "yellow" | "blue" | "red";
+  highlight?: boolean;
+}) {
+  const styles = {
+    green: "bg-green-50 text-green-600 border-green-100",
+    yellow: "bg-yellow-50 text-yellow-600 border-yellow-100",
+    blue: "bg-blue-50 text-blue-600 border-blue-100",
+    red: "bg-red-50 text-red-600 border-red-100",
+  };
+
+  return (
+    <Card
+      className={`border shadow-sm transition-all ${
+        highlight
+          ? "ring-1 ring-yellow-400 border-yellow-300"
+          : "border-slate-200"
+      }`}
+    >
+      <CardContent className="p-5 flex items-start justify-between">
+        <div>
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">
+            {title}
+          </p>
+          <div className="text-2xl font-bold text-slate-900">{value}</div>
+        </div>
+        <div className={`p-2.5 rounded-xl border ${styles[color]}`}>
+          <Icon className="h-5 w-5" />
+        </div>
+      </CardContent>
+    </Card>
   );
 }

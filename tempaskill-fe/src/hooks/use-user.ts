@@ -5,6 +5,7 @@ import type {
   ChangePasswordRequest,
   UpdateProfileRequest,
   User,
+  UserDashboardDetail,
 } from "@/types/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -13,7 +14,7 @@ export const useUser = (userId: number) => {
   return useQuery({
     queryKey: ["user", userId],
     queryFn: async () => {
-      const response = await apiClient.get<ApiResponse<User>>(
+      const response = await apiClient.get<ApiResponse<UserDashboardDetail>>(
         API_ENDPOINTS.USERS.DETAIL(userId)
       );
       return response.data.data;

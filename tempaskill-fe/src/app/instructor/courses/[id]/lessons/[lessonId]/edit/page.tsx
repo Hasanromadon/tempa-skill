@@ -4,6 +4,7 @@ import { LoadingScreen, PageHeader } from "@/components/common";
 import { LessonForm } from "@/components/lesson/lesson-form";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLesson, useUpdateLesson } from "@/hooks";
+import { ApiError, getError } from "@/lib/get-error";
 import { createLessonSchema } from "@/lib/validators";
 import { useRouter } from "next/navigation";
 import { use, useState } from "react";
@@ -51,14 +52,11 @@ export default function InstructorEditLessonPage({ params }: PageProps) {
       });
 
       router.push(`/instructor/courses/${courseId}/lessons`);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : "Gagal memperbarui pelajaran. Silakan coba lagi.";
-      setError(errorMessage);
+    } catch (err: unknown) {
+      const message = getError(err as ApiError, "Gagal memperbarui pelajaran");
+      setError(message);
       toast.error("Gagal memperbarui pelajaran", {
-        description: errorMessage,
+        description: message,
       });
     }
   };

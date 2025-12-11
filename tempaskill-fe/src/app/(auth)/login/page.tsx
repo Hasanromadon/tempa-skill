@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useLogin } from "@/hooks";
 import { setAuthToken } from "@/lib/auth-token";
 import { MESSAGES, ROUTES } from "@/lib/constants";
+import { ApiError, getError } from "@/lib/get-error";
 import { loginSchema, type LoginInput } from "@/lib/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, CheckCircle2, Zap } from "lucide-react";
@@ -18,18 +19,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-
-// ✅ Type Definitions
-interface ApiError {
-  response?: {
-    data?: {
-      error?: {
-        message?: string;
-      };
-    };
-  };
-  message?: string;
-}
 
 function LoginForm() {
   const router = useRouter();
@@ -68,10 +57,8 @@ function LoginForm() {
         }
       }
     } catch (err: unknown) {
-      const error = err as ApiError;
-      const errorMessage =
-        error.response?.data?.error?.message || "Email atau kata sandi salah";
-      setApiError(errorMessage);
+      const message = getError(err as ApiError, "Email atau kata sandi salah");
+      setApiError(message);
       console.error("Login error:", err);
     }
   };

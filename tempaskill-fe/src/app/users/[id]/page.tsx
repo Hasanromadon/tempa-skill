@@ -6,9 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserActivities } from "@/hooks/use-activities";
-import apiClient from "@/lib/api-client";
-import type { ApiResponse } from "@/types/api";
-import { useQuery } from "@tanstack/react-query";
+import { useUser } from "@/hooks/use-user";
 import {
   ArrowLeft,
   Award,
@@ -26,36 +24,11 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-interface UserDetail {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-  bio: string;
-  avatar_url: string;
-  status: string;
-  created_at: string;
-  enrolled_count: number;
-  completed_count: number;
-}
+// Extend User type for this page to include extra fields
 
-interface EnrolledCourse {
-  id: number;
-  title: string;
-  slug: string;
-  thumbnail_url: string;
-  progress_percentage: number;
-  enrolled_at: string;
-  last_accessed_at: string;
-  completed_at: string | null;
-}
-
-interface UserCertificate {
-  id: number;
-  course_title: string;
-  issued_at: string;
-  certificate_url?: string; // Optional - might not be available yet
-}
+// Custom hooks for enrolled courses and certificates
+import { useUserCertificates } from "@/hooks/use-user-certificates";
+import { useUserEnrolledCourses } from "@/hooks/use-user-enrolled-courses";
 
 /**
  * User Detail Page
@@ -70,38 +43,12 @@ export default function UserDetailPage({ params }: PageProps) {
   const { id } = use(params);
 
   // Fetch user details
-  const { data: user, isLoading: userLoading } = useQuery({
-    queryKey: ["user-detail", id],
-    queryFn: async () => {
-      const response = await apiClient.get<ApiResponse<UserDetail>>(
-        `/users/${id}`
-      );
-      return response.data.data;
-    },
-  });
-
+  const { data: user, isLoading: userLoading } = useUser(Number(id));
   // Fetch enrolled courses
-  const { data: enrolledCourses, isLoading: coursesLoading } = useQuery({
-    queryKey: ["user-enrolled-courses", id],
-    queryFn: async () => {
-      const response = await apiClient.get<ApiResponse<EnrolledCourse[]>>(
-        `/users/${id}/enrollments`
-      );
-      return response.data.data || [];
-    },
-  });
-
+  const { data: enrolledCourses, isLoading: coursesLoading } =
+    useUserEnrolledCourses(Number(id));
   // Fetch certificates
-  const { data: certificates } = useQuery({
-    queryKey: ["user-certificates", id],
-    queryFn: async () => {
-      const response = await apiClient.get<ApiResponse<UserCertificate[]>>(
-        `/users/${id}/certificates`
-      );
-      return response.data.data || [];
-    },
-  });
-
+  const { data: certificates } = useUserCertificates(Number(id));
   // Fetch recent activities
   const { data: activities, isLoading: activitiesLoading } = useUserActivities(
     Number(id),
@@ -125,7 +72,9 @@ export default function UserDetailPage({ params }: PageProps) {
     );
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (
+    status: "active" | "inactive" | "banned" | undefined
+  ) => {
     return status === "active" ? (
       <Badge className="bg-green-100 text-green-800" variant="secondary">
         <CheckCircle className="h-3 w-3 mr-1" />
